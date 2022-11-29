@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block content %}
+{{ super() }}
+{% block off_menu %}
+    <ul class="off_menu">
+        {% for m in off_menu -%}
+    <li><a href="{{m.url}}">{{m.name}}</a></li>
+        {% endfor -%}
+    </ul>
+{% endblock off_menu %}
+{%  if title %}
+<h1>{{ title }}</h1>
+{% else %}
+<h1>Genshin Funzone</h1>
+{% endif %}
+<ul class="list-posts">
+{% for p in posts %}
+<li>
+<p class="title"><a href="{{ url_for('show_post', alias=p.url)}}">{{p.title}}</a></p>
+<p class="annonce">{{ p.text[:50] | striptags }}</p>
+</li>
+{% endfor %}
+</ul>
+{% endblock %}

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link type="text/css" href="{{ url_for('static', filename='css/styles.css')}}" rel="stylesheet" />
+    {% if title %}
+    <title>Genshin Funzone - {{ title }}</title>
+    {% else %}
+    <title>Genshin Funzone</title>
+    {% endif %}
+</head>
+</html>
+
+<body>
+    {% block content %}
+    <div class="content">
+    {% for cat, msg in get_flashed_messages(True) %}
+    <div class="flash {{cat}}">{{msg}}</div>
+    {% endfor %}
+    <form action="/authorisation" method="post" class="form-authorisation">
+        <p><label>Имя:</label> <input type="text" name="username" value="" required  />
+        <p><label>Пароль:</label> <input type="password" name="password" value="" required  />
+        <p><input type="submit", value="Войти"/>
+        </form>
+    </div>
+    {% endblock content %}
+</body>
+</html>
