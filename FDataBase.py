@@ -1,4 +1,5 @@
 import math
+from pickle import FALSE
 import time
 import sqlite3
 from transliterate import translit
@@ -67,3 +68,19 @@ class FDataBase:
         except sqlite3.Error as e:
             print("Ошибка получения постов" + str(e))
         return []
+
+    def add_user(self, name, hpsh, email):
+        try:
+            self.__cur.execute(f"SELECT COUNT() as `count` FROM users WHERE email LIKE '{email}'")
+            res = self.__cur.fetchone()
+            if res['count'] > 0:
+                print("Пользователь с таким e-mail уже существует")
+                return False
+
+            tm = math.floor(time.time())
+            self.__cur.execute("INSERT INTO users VALUES(NULL, ?, ?, ?, ?)", (name, hpsh, email, tm))
+            self.__db.commit()
+        except sqlite3.Error as e:
+            print("Ошибка добавления в бд" + str(e))
+            return False
+        return True
