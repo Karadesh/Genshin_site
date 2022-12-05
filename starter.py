@@ -5,13 +5,19 @@ from config import Config
 from FDataBase import FDataBase
 import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
-
+from flask_login import LoginManager, login_required, login_user, logout_user, current_user
+from UserLogin import UserLogin
 
 
 app = Flask(__name__)
 app.config.from_object(Config)
 app.config.update(dict(DATABASE=os.path.join(app.root_path,'gensh.db')))
 #app.permanent_session_lifetime = datetime.timedelta(days=10) #для запоминания сессии. Потом включить
+login_manager = LoginManager(app)
+login_manager.login_view = 'authorisation'
+login_manager.login_message='Авторизуйтесь, чтобы просматривать эту страницу'
+login_manager.login_message_category = "success"
+
 
 def connect_db():
     conn = sqlite3.connect(app.config['DATABASE'])
@@ -43,6 +49,11 @@ def before_request():
     db = get_db()
     dbase=FDataBase(db)
 
+@login_manager.user_loader
+def load_user(user_id):
+    print("load_user")
+    return UserLogin().fromDB(user_id, dbase)
+
 
 @app.route("/index")
 @app.route("/")
@@ -65,6 +76,7 @@ def my_posts():
     return render_template("my_posts.html",title = "My Posts", menu=dbase.getMenu(), off_menu=dbase.getOffmenu())
 
 @app.route("/create_post", methods=['POST', 'GET'])
+@login_required
 def create_post():
     if request.method == "POST":
         if len(request.form['name']) > 4 and len(request.form['post'])>1: #проверку на свой вкус
@@ -77,25 +89,32 @@ def create_post():
             flash('Ошибка добавления статьи', category = 'error')
     return render_template("create_post.html",title = "Create Post", menu=dbase.getMenu(), off_menu=dbase.getOffmenu())
 
+@app.route('/logout')
+def logout():
+    logout_user()
+    return redirect(url_for('index'))
+
+
 @app.route("/profile/<username>")
+@login_required
 def profile(username):
-    if 'userLogged' not in session or session['userLogged'] != username:
-        abort(401)
-    return render_template("profile.html",title = "Profile", menu=dbase.getMenu())
+    #if 'userLogged' not in session or session['userLogged'] != username:
+    #    abort(401)
+    return render_template("profile.html",title = "Profile", menu=dbase.getMenu(), username=current_user.get_id())
 
 @app.route("/authorisation", methods=['POST', 'GET'])
 def authorisation():
     #session.permanent = True #для запоминания сессии. потом включить
-    if 'userLogged' in session:
-        return redirect(url_for('profile', username=session['userLogged']))
-    elif request.method == 'POST':
-        if request.form['username'] == "123" and request.form['password'] == "321": #в дальнейшем эту строчку сделать типа "if пользователь в бд и пароль равен паролю в бд"
-            session['userLogged'] = request.form['username']
-        elif request.form['username'] != "123": #в дальнейшем сверка с бд
-            flash('Неправильный логин', category='error')
-        elif request.form['username'] == "123" and request.form['password']!="123":
-            flash('Неправильный пароль', category='error')
-
+    if current_user.is_authenticated:
+        return redirect(request.args.get("next") or url_for("profile", username=current_user.get_id()))
+    if request.method == "POST":
+        user = dbase.getUserByLogin(request.form['name'])
+        if user and check_password_hash(user['password'], request.form['password']):
+            userlogin = UserLogin().create(user)
+            rm = True if request.form.get('remainme') else False
+            login_user(userlogin, remember=rm)
+            return redirect(request.args.get("next") or url_for("profile", username=current_user.get_id()))
+        flash("Неверный логин или пароль", "error")
     return render_template("authorisation.html", title="Authorisation") 
 
 @app.route("/register", methods=["POST", "GET"])

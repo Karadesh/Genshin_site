@@ -19,8 +19,8 @@
     {% for cat, msg in get_flashed_messages(True) %}
     <div class="flash {{cat}}">{{msg}}</div>
     {% endfor %}
-    <form action="/authorisation" method="post" class="form-authorisation">
-        <p><label>Логин:</label> <input type="text" name="username" value="" required  />
+    <form action="" method="post" class="form-authorisation">
+        <p><label>Логин:</label> <input type="text" name="name" value="" required  />
         <p><label>Пароль:</label> <input type="password" name="password" value="" required  />
         <p><input type="checkbox" name="remainme" />Запомнить меня
         <p><input type="submit", value="Войти"/>
