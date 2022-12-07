@@ -19,6 +19,7 @@ login_manager.login_message='Авторизуйтесь, чтобы просма
 login_manager.login_message_category = "success"
 
 
+
 def connect_db():
     conn = sqlite3.connect(app.config['DATABASE'])
     conn.row_factory = sqlite3.Row
@@ -58,22 +59,22 @@ def load_user(user_id):
 @app.route("/index")
 @app.route("/")
 def index():
-    return render_template("index.html", menu=dbase.getMenu(), off_menu=dbase.getOffmenu())
+    return render_template("index.html", off_menu=dbase.getOffmenu())
 
 @app.route("/posts")
 def posts():
-    return render_template("posts.html",title = "Список постов", menu=dbase.getMenu(), off_menu=dbase.getOffmenu(), posts=dbase.getPostsAnonce())
+    return render_template("posts.html",title = "Список постов", off_menu=dbase.getOffmenu(), posts=dbase.getPostsAnonce())
 
 @app.route("/post/<alias>")
 def show_post(alias):
     title, post = dbase.get_post(alias)
     if not title:
         abort(404)
-    return render_template("post.html",title = title, post=post, menu=dbase.getMenu(), off_menu=dbase.getOffmenu())
+    return render_template("post.html",title = title, post=post, off_menu=dbase.getOffmenu())
 
 @app.route("/my_posts")
 def my_posts():
-    return render_template("my_posts.html",title = "My Posts", menu=dbase.getMenu(), off_menu=dbase.getOffmenu())
+    return render_template("my_posts.html",title = "My Posts", off_menu=dbase.getOffmenu())
 
 @app.route("/create_post", methods=['POST', 'GET'])
 @login_required
@@ -84,10 +85,10 @@ def create_post():
             if not  res:
                 flash('Ошибка добавления статьи', category = 'error')
             else:
-                flash('Статья успешно добавлена!', category = 'success')
+                return redirect(url_for('posts'))
         else:
             flash('Ошибка добавления статьи', category = 'error')
-    return render_template("create_post.html",title = "Create Post", menu=dbase.getMenu(), off_menu=dbase.getOffmenu())
+    return render_template("create_post.html",title = "Create Post", off_menu=dbase.getOffmenu())
 
 @app.route('/logout')
 def logout():
@@ -98,9 +99,9 @@ def logout():
 @app.route("/profile/<username>")
 @login_required
 def profile(username):
-    #if 'userLogged' not in session or session['userLogged'] != username:
-    #    abort(401)
-    return render_template("profile.html",title = "Profile", menu=dbase.getMenu(), username=current_user.get_id())
+    if username != current_user.get_id():
+        abort(401)
+    return render_template("profile.html",title = "Profile")
 
 @app.route("/authorisation", methods=['POST', 'GET'])
 def authorisation():
@@ -113,7 +114,7 @@ def authorisation():
             userlogin = UserLogin().create(user)
             rm = True if request.form.get('remainme') else False
             login_user(userlogin, remember=rm)
-            return redirect(request.args.get("next") or url_for("profile", username=current_user.get_id()))
+            return redirect(request.args.get("next") or url_for("index"))
         flash("Неверный логин или пароль", "error")
     return render_template("authorisation.html", title="Authorisation") 
 
@@ -134,11 +135,11 @@ def register():
 
 @app.route("/guides")
 def guides():
-    return render_template("guides.html",title = "Guides", menu=dbase.getMenu(), off_menu=dbase.getOffmenu())
+    return render_template("guides.html",title = "Guides", off_menu=dbase.getOffmenu())
 
 @app.route("/characters")
 def characters():
-    return render_template("characters.html",title = "Characters", menu=dbase.getMenu(), off_menu=dbase.getOffmenu())
+    return render_template("characters.html",title = "Characters", off_menu=dbase.getOffmenu())
 
 @app.route("/feedback", methods=["POST", "GET"])
 def feedback():
@@ -148,15 +149,15 @@ def feedback():
         else:
             flash('Сообщение отправлено', category='success')
             print(request.form['message'])
-    return render_template("feedback.html",title = "Feedback", menu=dbase.getMenu(), off_menu=dbase.getOffmenu())
+    return render_template("feedback.html",title = "Feedback", off_menu=dbase.getOffmenu())
 
 @app.errorhandler(404)
 def pageNotFound(error):
-    return render_template("page404.html",title = "Страница не найдена", menu=dbase.getMenu(), off_menu=dbase.getOffmenu()), 404
+    return render_template("page404.html",title = "Страница не найдена", off_menu=dbase.getOffmenu()), 404
 
 @app.errorhandler(401)
 def pageAbort(error):
-    return render_template("page401.html",title = "Не авторизован", menu=dbase.getMenu(), off_menu=dbase.getOffmenu()), 401
+    return render_template("page401.html",title = "Не авторизован", off_menu=dbase.getOffmenu()), 401
 
 #create_db()
 

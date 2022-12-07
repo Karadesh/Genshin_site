@@ -17,12 +17,19 @@
 
 <body>
     {% block content -%}
-        {% block mainmenu %}
+        {% block mainmenu -%}
     <ul class="mainmenu">
-        {% for m in menu -%}
-    <li><a href="{{m.url}}">{{m.name}}</a></li>
-        {% endfor -%}
+    <li><a href="{{url_for('index')}}">Главная</a></li>
+    <li><a href="{{url_for('posts')}}">Посты</a></li>
+    <li><a href="{{url_for('create_post')}}">Создать Пост</a></li>
+        {% if current_user.is_authenticated %}
+    <li><a href="{{url_for('profile', username=current_user.get_id())}}">Профиль</a></li>
+    <li><a href="{{url_for('logout')}}">Выйти</a></li>
+    {% else -%}
+    <li><a href="{{url_for('authorisation')}}">Авторизоваться</a></li>
+    <li><a href="{{url_for('register')}}">Зарегистрироваться</a></li>
     </ul>
+        {% endif %}
         {% endblock mainmenu %}
     <div class = "content">
 

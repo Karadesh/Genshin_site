@@ -5,11 +5,6 @@ CREATE TABLE IF NOT EXISTS USERS(
     email text NOT NULL,
     time integer NOT NULL
 );
-CREATE TABLE IF NOT EXISTS MENU(
-    id integer PRIMARY KEY AUTOINCREMENT,
-    name text NOT NULL,
-    url text NOT NULL
-);
 CREATE TABLE IF NOT EXISTS OFFMENU(
     id integer PRIMARY KEY AUTOINCREMENT,
     name text NOT NULL,

@@ -5,6 +5,7 @@ import sqlite3
 from transliterate import translit
 import re
 from flask import url_for
+from flask_login import current_user
 
 class FDataBase:
     def __init__(self, db):
@@ -16,7 +17,9 @@ class FDataBase:
         try:
             self.__cur.execute(sql)
             res = self.__cur.fetchall()
-            if res: return res
+            if res:
+                print(res)
+                return res
         except:
             print('DB reading error')
         return []
