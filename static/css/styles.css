@@ -33,3 +33,12 @@ ul.mainmenu {
     border: 1px solid #ff4343;
     background: #000000;
 }
+
+.profile-ava{
+    width:130px;
+    text-align: center;
+    overflow: hidden;
+    background: #eee;
+    padding:10px;
+}
+.profile-ava img {max-width: 150px; height: auto;}

@@ -1,4 +1,4 @@
-from flask import Flask, render_template, url_for, request, flash, session, redirect, abort, g
+from flask import Flask, render_template, url_for, request, flash, session, redirect, abort, g, make_response
 import sqlite3
 import os
 from config import Config
@@ -65,12 +65,21 @@ def index():
 def posts():
     return render_template("posts.html",title = "Список постов", off_menu=dbase.getOffmenu(), posts=dbase.getPostsAnonce())
 
-@app.route("/post/<alias>")
+@app.route("/post/<alias>", methods=['POST', 'GET'])
 def show_post(alias):
-    title, post = dbase.get_post(alias)
+    title, post, url = dbase.get_post(alias)     
     if not title:
         abort(404)
-    return render_template("post.html",title = title, post=post, off_menu=dbase.getOffmenu())
+    if request.method == "POST":
+        if len(request.form['comment'])> 1:
+            res = dbase.create_comment(request.form['comment'], alias)
+            if not res:
+                flash('Ошибка добавления комментария', category = 'error')
+            else:
+                return(redirect(url_for('show_post', alias=url)))
+        else:
+            flash('Ошибка добавления комментария', category = 'error')
+    return render_template("post.html",title = title, post=post, off_menu=dbase.getOffmenu(), comments=dbase.getCommentsAnonce(url), url=[url])
 
 @app.route("/my_posts")
 def my_posts():
@@ -81,7 +90,8 @@ def my_posts():
 def create_post():
     if request.method == "POST":
         if len(request.form['name']) > 4 and len(request.form['post'])>1: #проверку на свой вкус
-            res = dbase.create_post(request.form['name'], request.form['post'])
+            userid = int(current_user.get_id())
+            res = dbase.create_post(request.form['name'], request.form['post'], userid)
             if not  res:
                 flash('Ошибка добавления статьи', category = 'error')
             else:
@@ -102,6 +112,34 @@ def profile(username):
     if username != current_user.get_id():
         abort(401)
     return render_template("profile.html",title = "Profile")
+
+@app.route('/userava')
+@login_required
+def userava():
+    img=current_user.getAvatar(app)
+    if not img:
+        return ""
+    h=make_response(img)
+    h.headers['Content-Type'] = 'image/png'
+    return h
+
+@app.route('/upload', methods=["POST", "GET"])
+@login_required
+def upload():
+    if request.method == 'POST':
+        file = request.files['file']
+        if file and current_user.verifyExt(file.filename):
+            try:
+                img = file.read()
+                res = dbase.updateUserAvatar(img, current_user.get_id())
+                if not res:
+                    flash("Ошибка обновления аватара", "error")
+                flash("Аватар обновлен", "success")
+            except FileNotFoundError as e:
+                flash("Ошибка чтения файла", "error")
+        else:
+            flash("Ошибка обновления аватара", "error")
+    return redirect(url_for('profile', username=current_user.get_id()))
 
 @app.route("/authorisation", methods=['POST', 'GET'])
 def authorisation():
@@ -158,6 +196,8 @@ def pageNotFound(error):
 @app.errorhandler(401)
 def pageAbort(error):
     return render_template("page401.html",title = "Не авторизован", off_menu=dbase.getOffmenu()), 401
+
+
 
 #create_db()
 

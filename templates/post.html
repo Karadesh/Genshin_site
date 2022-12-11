@@ -14,4 +14,24 @@
 <h1>Genshin Funzone</h1>
 {% endif %}
 {{ post | safe }}
+{% block comments %}
+{% for p in comments %}
+<li>
+<p class="username">{{p.username}}</p>
+<p class="annonce">{{ p.text}}</p>
+</li>
+{% endfor %}
+{% endblock comments %}
+{% if current_user.is_authenticated %}
+{% for cat, msg in get_flashed_messages(True) %}
+<div class="flash {{cat}}">{{msg}}</div>
+{% endfor %}
+{% for p in url %}
+<form action="{{url_for('show_post', alias=p)}}" method="post" class="form-contact">
+    <p><label>Текст комментария: </label>
+    <p><textarea name="comment" rows="5" cols="60"></textarea>
+    <p><input type="submit" value="Добавить комментарий"/>
+    </form>
+{% endfor %}
+{% endif %}
 {% endblock %}
