@@ -24,7 +24,5 @@ CREATE TABLE IF NOT EXISTS COMMENTS(
     text text NOT NULL,
     postname text NOT NULL,
     username text NOT NULL,
-    time integer NOT NULL,
-    FOREIGN KEY(postname) REFERENCES POSTS(title)
-    FOREIGN KEY(username) REFERENCES USERS(login)
+    time integer NOT NULL
 );

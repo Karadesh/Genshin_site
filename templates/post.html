@@ -10,15 +10,26 @@
 {% endblock off_menu %}
 {%  if title %}
 <h1>{{ title }}</h1>
+{% if current_user.get_id() == userid %}
+<p><a href="{{url_for('confirm_delete', alias=url[0])}}">Удалить пост</a></p>
+{% endif %}
 {% else %}
 <h1>Genshin Funzone</h1>
 {% endif %}
 {{ post | safe }}
 {% block comments %}
 {% for p in comments %}
+{% for j,k in avatars.items() %}
+{% if j == p.username %}
 <li>
+<div class="profile-ava"><img src="{{avatars[j]}}"></div>
+{% endif %}
+{% endfor %}
 <p class="username">{{p.username}}</p>
 <p class="annonce">{{ p.text}}</p>
+{% if current_user.getName() == p.username %}
+<p><a href="{{url_for('delete_comment', alias=url[0], id=p.id)}}" method="delete">Удалить комментарий</a></p>
+{% endif %}
 </li>
 {% endfor %}
 {% endblock comments %}

@@ -55,12 +55,22 @@ class FDataBase:
 
     def get_post(self, alias):
         try:
-            self.__cur.execute(f"SELECT title, text, url FROM POSTS WHERE url LIKE '{alias}' LIMIT 1")
+            self.__cur.execute(f"SELECT title, text, url, userid FROM POSTS WHERE url LIKE '{alias}' LIMIT 1")
             res = self.__cur.fetchone()
             if res:
                 return res
         except sqlite3.Error as e:
             print("Ошибка получения статьи из бд" +str(e))
+        return (False, False)
+
+    def delete_post(self, alias):
+        try:
+            self.__cur.execute(f"DELETE FROM POSTS WHERE url LIKE '{alias}' LIMIT 1")
+            self.__db.commit()
+            self.__cur.execute(f"DELETE FROM COMMENTS WHERE postname LIKE '{alias}'")
+            self.__db.commit()
+        except sqlite3.Error as e:
+            print("Ошибка удаления из бд" +str(e))
         return (False, False)
 
     def getPostsAnonce(self):
@@ -74,12 +84,37 @@ class FDataBase:
     
     def getCommentsAnonce(self, url):
         try:
-            self.__cur.execute(f"SELECT id, text, postname, username, time FROM comments WHERE postname LIKE '{url}' ORDER BY time DESC")
+            self.__cur.execute(f"SELECT id, text, postname, username, time FROM COMMENTS WHERE postname LIKE '{url}' ORDER BY time")
             res = self.__cur.fetchall()
             if res: return res
         except sqlite3.Error as e:
             print("Ошибка получения постов" + str(e))
         return []
+
+    def getCommentatorsNames(self, alias):
+        try:
+            self.__cur.execute(f"SELECT username FROM COMMENTS WHERE postname LIKE '{alias}'")
+            res = self.__cur.fetchall()
+            if res: return res
+        except sqlite3.Error as e:
+            print("Ошибка получения постов" + str(e))
+        return []
+
+    def getCommentatorsAvas(self, username):
+        avas=[]
+        try:
+            for user in username:
+                self.__cur.execute(f"SELECT login, avatar FROM USERS WHERE login LIKE '{user}'")
+                res = self.__cur.fetchone()
+                avas.append(res)
+            if not res:
+                print("Пользователи не найдены")
+                return False
+            return avas
+        except sqlite3.Error as e:
+            print("Ошибка получения данных из БД "+str(e))
+        return False 
+
 
     def create_comment(self, text, postname):
         try:
@@ -92,12 +127,21 @@ class FDataBase:
             return False
         return True
 
+    def delete_comment(self, id):
+        try:
+            self.__cur.execute(f"DELETE FROM COMMENTS WHERE id = {id}")
+            self.__db.commit()
+        except sqlite3.Error as e:
+            print("Ошибка удаления из бд" +str(e))
+        return (False, False)
+
+
     def add_user(self, name, hpsh, email):
         try:
             self.__cur.execute(f"SELECT COUNT() as `count` FROM users WHERE email LIKE '{email}' OR login like '{name}'")
             res = self.__cur.fetchone()
             if res['count'] > 0:
-                print("Пользователь с таким e-mail уже существует")
+                print("Пользователь с таким e-mail или именем пользователя уже существует")
                 return False
 
             tm = math.floor(time.time())

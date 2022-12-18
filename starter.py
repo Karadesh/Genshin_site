@@ -7,6 +7,8 @@ import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import LoginManager, login_required, login_user, logout_user, current_user
 from UserLogin import UserLogin
+import base64
+from forms import AuthorisationForm, RegistrationForm
 
 
 app = Flask(__name__)
@@ -37,6 +39,25 @@ def get_db():
         g.link_db = connect_db()
         return g.link_db
 
+def get_avatars_dict(url, app=app):
+    username = dbase.getCommentatorsNames(url)
+    usernames = []
+    try:
+        for i in username:
+            usernames.append(i[0])
+        avas_dict = {}
+        for j, k in dbase.getCommentatorsAvas(usernames):
+            if k == None:
+                with app.open_resource(app.root_path + url_for('static', filename= 'images/default.jpeg'), "rb") as f:
+                    base64_string=base64.b64encode(f.read()).decode('utf-8')
+            else:
+                base64_string = base64.b64encode(k).decode('utf-8')
+            img_url=f'data:image/png;base64,{base64_string}'
+            avas_dict[j] = img_url
+    except:
+        pass
+    return avas_dict
+
 @app.teardown_appcontext
 def close_db(error):
     if hasattr(g, 'link_db'):
@@ -52,7 +73,6 @@ def before_request():
 
 @login_manager.user_loader
 def load_user(user_id):
-    print("load_user")
     return UserLogin().fromDB(user_id, dbase)
 
 
@@ -67,7 +87,7 @@ def posts():
 
 @app.route("/post/<alias>", methods=['POST', 'GET'])
 def show_post(alias):
-    title, post, url = dbase.get_post(alias)     
+    title, post, url, userid = dbase.get_post(alias)
     if not title:
         abort(404)
     if request.method == "POST":
@@ -79,7 +99,24 @@ def show_post(alias):
                 return(redirect(url_for('show_post', alias=url)))
         else:
             flash('Ошибка добавления комментария', category = 'error')
-    return render_template("post.html",title = title, post=post, off_menu=dbase.getOffmenu(), comments=dbase.getCommentsAnonce(url), url=[url])
+    return render_template("post.html", title = title, post=post, userid=str(userid), off_menu=dbase.getOffmenu(), comments=dbase.getCommentsAnonce(url), url=[url], avatars=get_avatars_dict(url))
+
+@app.route("/confirm_delete/<alias>")
+@login_required
+def confirm_delete(alias):
+    return render_template("confirm_delete.html", alias=alias)
+
+@app.route("/delete_post/<alias>", methods=['GET','DELETE'])
+@login_required
+def delete_post(alias):
+        dbase.delete_post(alias)
+        return(redirect(url_for('posts')))
+
+@app.route("/delete_comment/<alias>?<id>", methods=['GET', 'DELETE'])
+@login_required
+def delete_comment(alias, id):
+    dbase.delete_comment(id)
+    return(redirect(url_for('show_post', alias=alias)))
 
 @app.route("/my_posts")
 def my_posts():
@@ -146,30 +183,31 @@ def authorisation():
     #session.permanent = True #для запоминания сессии. потом включить
     if current_user.is_authenticated:
         return redirect(request.args.get("next") or url_for("profile", username=current_user.get_id()))
-    if request.method == "POST":
-        user = dbase.getUserByLogin(request.form['name'])
-        if user and check_password_hash(user['password'], request.form['password']):
+    form = AuthorisationForm()
+    if form.validate_on_submit():
+        user = dbase.getUserByLogin(form.name.data)
+        if user and check_password_hash(user['password'], form.password.data):
             userlogin = UserLogin().create(user)
-            rm = True if request.form.get('remainme') else False
+            rm = form.remember.data
             login_user(userlogin, remember=rm)
             return redirect(request.args.get("next") or url_for("index"))
         flash("Неверный логин или пароль", "error")
-    return render_template("authorisation.html", title="Authorisation") 
+    return render_template("authorisation.html", title="Authorisation", form=form) 
 
 @app.route("/register", methods=["POST", "GET"])
 def register():
-    if request.method == "POST":
-        if len(request.form['name']) > 1 and len(request.form['email'])>4 and len(request.form['password']) > 1 and request.form['password'] == request.form['password2']:
-            hash = generate_password_hash(request.form['password'])
-            res = dbase.add_user(request.form['name'], hash, request.form['email'])
-            if res:
-                flash("Вы успешно зарегистрированы!", "success")
-                return redirect(url_for('authorisation'))
-            else:
-                flash("Ошибка при добавлении в БД", "error")
+    form = RegistrationForm()
+    if form.validate_on_submit():
+        hash = generate_password_hash(form.password.data)
+        res = dbase.add_user(form.name.data, hash, form.email.data)
+        if res:
+            flash("Вы успешно зарегистрированы!", "success")
+            return redirect(url_for('authorisation'))
         else:
-            flash("e-mail должен быть не менее 4 символов. Пароль - не менее одного символа", "error")
-    return render_template("register.html", title="Registration")
+            flash("Ошибка при добавлении в БД", "error")
+    else:
+        flash("Проверьте поле 'e-mail'. Также пароль должен быть не менее одного символа", "error")
+    return render_template("register.html", title="Registration", form=form)
 
 @app.route("/guides")
 def guides():
