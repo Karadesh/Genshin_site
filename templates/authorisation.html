@@ -21,8 +21,19 @@
     {% endfor %}
     <form action="" method="post" class="form-authorisation">
         {{ form.hidden_tag() }}
-        <p>{{ form.name.label() }} {{ form.name() }}
-        <p>{{ form.password.label() }} {{ form.password() }}
+        {% for field in form if field.name not in ['csrf_token', 'remember', 'submit'] -%}
+        <p>{{ field.label() }}
+        {% if field.errors %}
+        {{ field(class="invalid") }}
+        <span class="invalid-feedback">
+            {% for e in field.errors %}
+            {{ e }}
+            {% endfor %}
+        </span>
+        {% else %}
+            {{ field() }}
+        {% endif %}
+        {% endfor %}
         <p>{{ form.remember.label() }} {{ form.remember() }}
         <p>{{ form.submit() }}
         <hr align=left width="300px">
