@@ -9,12 +9,14 @@ from flask_login import LoginManager, login_required, login_user, logout_user, c
 from UserLogin import UserLogin
 import base64
 from forms import AuthorisationForm, RegistrationForm
+from admin.admin import admin
 
 
 app = Flask(__name__)
 app.config.from_object(Config)
 app.config.update(dict(DATABASE=os.path.join(app.root_path,'gensh.db')))
 #app.permanent_session_lifetime = datetime.timedelta(days=10) #для запоминания сессии. Потом включить
+app.register_blueprint(admin, url_prefix='/admin')
 login_manager = LoginManager(app)
 login_manager.login_view = 'authorisation'
 login_manager.login_message='Авторизуйтесь, чтобы просматривать эту страницу'
