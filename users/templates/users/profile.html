@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link type="text/css" href="{{ url_for('static', filename='css/styles.css')}}" rel="stylesheet" />
+    <link type="text/css" href="{{ url_for('.static', filename='css/styles.css')}}" rel="stylesheet" />
     {% block title %}
     {% if title %}
     <title>Genshin Funzone - {{ title }}</title>
@@ -20,8 +20,8 @@
     <h1>{{ title }}</h1>
     <ul>
         <li><a href="{{url_for('index')}}">Главная</a></li>
-    <li><a href="{{url_for('posts')}}">Посты</a></li>
-    <li><a href="{{url_for('create_post')}}">Создать Пост</a></li>
+    <li><a href="{{url_for('all_posts.posts')}}">Посты</a></li>
+    <li><a href="{{url_for('all_posts.create_post')}}">Создать Пост</a></li>
     </ul>
     {% for cat, msg in get_flashed_messages(True)%}
     <div class="flash {{cat}}">{{msg}}</div>
@@ -29,16 +29,16 @@
     {% block userdata %}
     <table border="0" class="profile-table">
         <tr><td valign="top">
-            <div class="profile-ava"><img src="{{url_for('userava')}}"></div>
+            <div class="profile-ava"><img src="{{url_for('.userava')}}"></div>
             <div class="profile-load">
-            <form action="{{url_for('upload')}}" method="POST" enctype="multipart/form-data">
+            <form action="{{url_for('.upload')}}" method="POST" enctype="multipart/form-data">
                 <p><input type="file" name="file">
                 <p><input type="submit" value="Загрузить">
             </form>
             </div>
         </td>
         <td valign="top" class="profile-panel">
-            <p><a href="{{url_for('logout')}}">Выйти</a>
+            <p><a href="{{url_for('.logout')}}">Выйти</a>
             <ul class="profile-info">
             <li>Имя: {{ current_user.getName() }}</li>
             <li>Email: {{ current_user.getEmail() }}</li>

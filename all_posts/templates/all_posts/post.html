@@ -10,8 +10,10 @@
 {% endblock off_menu %}
 {%  if title %}
 <h1>{{ title }}</h1>
+{% if current_user.is_authenticated %}
 {% if current_user.get_id() == userid %}
-<p><a href="{{url_for('confirm_delete', alias=url[0])}}">Удалить пост</a></p>
+<p><a href="{{url_for('all_posts.confirm_delete', alias=url[0])}}">Удалить пост</a></p>
+{% endif %}
 {% endif %}
 {% else %}
 <h1>Genshin Funzone</h1>
@@ -27,8 +29,10 @@
 {% endfor %}
 <p class="username">{{p.username}}</p>
 <p class="annonce">{{ p.text}}</p>
+{% if current_user.is_authenticated %}
 {% if current_user.getName() == p.username %}
-<p><a href="{{url_for('delete_comment', alias=url[0], id=p.id)}}" method="delete">Удалить комментарий</a></p>
+<p><a href="{{url_for('all_posts.delete_comment', alias=url[0], id=p.id)}}" method="delete">Удалить комментарий</a></p>
+{% endif %}
 {% endif %}
 </li>
 {% endfor %}
@@ -38,7 +42,7 @@
 <div class="flash {{cat}}">{{msg}}</div>
 {% endfor %}
 {% for p in url %}
-<form action="{{url_for('show_post', alias=p)}}" method="post" class="form-contact">
+<form action="{{url_for('.show_post', alias=p)}}" method="post" class="form-contact">
     <p><label>Текст комментария: </label>
     <p><textarea name="comment" rows="5" cols="60"></textarea>
     <p><input type="submit" value="Добавить комментарий"/>
