@@ -12,7 +12,7 @@ def isLogged():
 def logout_admin():
     session.pop('admin_logged', None)
 
-menu = [{'url': '.index', 'title': 'Главная'},
+menu = [{'url': 'index', 'title': 'Главная'},
         {'url': '.logout', 'title': 'Выйти'},
         {'url': '.listposts', 'title': 'Список постов'},
         {'url': '.listusers', 'title': 'Список пользователей'}]

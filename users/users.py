@@ -24,7 +24,7 @@ def teardown_request(request):
 @users.route('/logout')
 def logout():
     logout_user()
-    return redirect(url_for('index'))
+    return redirect(url_for('mainapp.index'))
 
 
 @users.route("/profile/<username>")
@@ -78,7 +78,7 @@ def authorisation():
             userlogin = UserLogin().create(user)
             rm = form.remember.data
             login_user(userlogin, remember=rm)
-            return redirect(request.args.get("next") or url_for("index"))
+            return redirect(request.args.get("next") or url_for("mainapp.index"))
         flash("Неверный логин или пароль", "error")
     return render_template("users/authorisation.html", title="Authorisation", form=form) 
 

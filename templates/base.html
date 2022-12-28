@@ -19,7 +19,7 @@
     {% block content -%}
         {% block mainmenu -%}
     <ul class="mainmenu">
-    <li><a href="{{url_for('index')}}">Главная</a></li>
+    <li><a href="{{url_for('mainapp.index')}}">Главная</a></li>
     <li><a href="{{url_for('all_posts.posts')}}">Посты</a></li>
     <li><a href="{{url_for('all_posts.create_post')}}">Создать Пост</a></li>
     {% if current_user.is_authenticated %}

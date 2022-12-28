@@ -1,0 +1,44 @@
+html, body {
+    font-family: "Arial";
+    margin:0;
+    padding:0;
+    height: 100%;
+    width: 100%;
+}
+
+ul.mainmenu {
+    background:chocolate;
+    height:120px;
+    margin: 0px, 0px, 15px, 0px;
+    padding:10px;
+    font-size: 20px;
+}
+
+.content {
+    background: black;
+    color: antiquewhite;
+    padding:10px;
+    margin: 10px;
+    font-size: 20px;
+}
+
+.flash{
+    padding: 10px;
+}
+.flash.success{
+    border: 1px solid #10bd52;
+    background: #000000;
+}
+.flash.error{
+    border: 1px solid #ff4343;
+    background: #000000;
+}
+
+.profile-ava{
+    width:130px;
+    text-align: center;
+    overflow: hidden;
+    background: #eee;
+    padding:10px;
+}
+.profile-ava img {max-width: 150px; height: auto;}
