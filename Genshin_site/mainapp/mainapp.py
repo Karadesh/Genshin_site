@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template, g, request, flash
-from FDataBase import FDataBase
+from Genshin_site.FDataBase import FDataBase
+from Genshin_site.db import db
 
 mainapp = Blueprint('mainapp', __name__, template_folder='templates', static_folder='static')
 
@@ -8,8 +9,8 @@ dbase = None
 def before_request():
     """соединение с бд перед выполнением запроса"""
     global dbase
-    db =  g.get('link_db')
-    dbase = FDataBase(db)
+    #db =  g.get('link_db')
+    dbase = FDataBase()
 
 @mainapp.teardown_request
 def teardown_request(request):

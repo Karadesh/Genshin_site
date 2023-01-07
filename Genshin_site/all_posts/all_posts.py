@@ -1,6 +1,6 @@
 from flask import Blueprint, request,render_template,flash, url_for, redirect, g, abort
 from flask_login import login_required, current_user
-from FDataBase import FDataBase
+from Genshin_site.FDataBase import FDataBase
 import base64
 
 all_posts = Blueprint('all_posts', __name__, template_folder='templates', static_folder='static')
@@ -11,7 +11,7 @@ def before_request():
     """соединение с бд перед выполнением запроса"""
     global dbase
     db =  g.get('link_db')
-    dbase = FDataBase(db)
+    dbase = FDataBase()
 
 @all_posts.teardown_request
 def teardown_request(request):
@@ -20,20 +20,18 @@ def teardown_request(request):
     return request
 
 def get_avatars_dict(url, app=all_posts):
-    username = dbase.getCommentatorsNames(url)
-    usernames = []
     try:
-        for i in username:
-            usernames.append(i[0])
+        usernames = dbase.getCommentatorsNames(url)
         avas_dict = {}
-        for j, k in dbase.getCommentatorsAvas(usernames):
-            if k == None:
-                with app.open_resource(app.root_path + url_for('.static', filename= 'images/default.jpeg'), "rb") as f:
-                    base64_string=base64.b64encode(f.read()).decode('utf-8')
-            else:
-                base64_string = base64.b64encode(k).decode('utf-8')
-            img_url=f'data:image/png;base64,{base64_string}'
-            avas_dict[j] = img_url
+        for i in dbase.getCommentatorsAvas(usernames):
+            for j, k in i.items():
+                if k == None:
+                    with app.open_resource(app.root_path + url_for('.static', filename= 'images/default.jpeg'), "rb") as f:
+                        base64_string=base64.b64encode(f.read()).decode('utf-8')
+                else:
+                    base64_string = base64.b64encode(k).decode('utf-8')
+                img_url=f'data:image/png;base64,{base64_string}'
+                avas_dict[j] = img_url
     except:
         pass
     return avas_dict
@@ -44,13 +42,17 @@ def posts():
 
 @all_posts.route("/post/<alias>", methods=['POST', 'GET'])
 def show_post(alias):
-    title, post, url, userid = dbase.get_post(alias)
+    get_post = dbase.get_post(alias)
+    title = get_post['title'] 
+    post = get_post['text']
+    url = get_post['url']
+    userid = get_post['userid']
     if not title:
         abort(404)
     if request.method == "POST":
         if len(request.form['comment'])> 1:
-            res = dbase.create_comment(request.form['comment'], alias)
-            if not res:
+            c = dbase.create_comment(request.form['comment'], alias)
+            if not c:
                 flash('Ошибка добавления комментария', category = 'error')
             else:
                 return(redirect(url_for('.show_post', alias=url)))
@@ -81,11 +83,11 @@ def create_post():
     if request.method == "POST":
         if len(request.form['name']) > 4 and len(request.form['post'])>1: #проверку на свой вкус
             userid = int(current_user.get_id())
-            res = dbase.create_post(request.form['name'], request.form['post'], userid)
-            if not  res:
-                flash('Ошибка добавления статьи', category = 'error')
-            else:
+            try:
+                res = dbase.create_post(request.form['name'], request.form['post'], userid)
                 return redirect(url_for('.posts'))
+            except:
+                flash('Ошибка добавления статьи', category = 'error')
         else:
             flash('Ошибка добавления статьи', category = 'error')
     return render_template("all_posts/create_post.html",title = "Create Post", off_menu=dbase.getOffmenu())

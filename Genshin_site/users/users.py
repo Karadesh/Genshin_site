@@ -1,11 +1,15 @@
 from flask import Blueprint, g, redirect, url_for, abort, render_template, make_response, request, flash
-from FDataBase import FDataBase
+from Genshin_site.FDataBase import FDataBase
 from flask_login import LoginManager, login_required, login_user, logout_user, current_user
-from UserLogin import UserLogin
-from forms import AuthorisationForm, RegistrationForm
+from Genshin_site.UserLogin import UserLogin
+from Genshin_site.forms import AuthorisationForm, RegistrationForm
 from werkzeug.security import generate_password_hash, check_password_hash
 
 users = Blueprint('users', __name__, template_folder='templates', static_folder='static')
+login_manager = LoginManager(users)
+login_manager.login_view = 'authorisation'
+login_manager.login_message='Авторизуйтесь, чтобы просматривать эту страницу'
+login_manager.login_message_category = "success"
 
 dbase = None
 @users.before_request
@@ -13,7 +17,7 @@ def before_request():
     """соединение с бд перед выполнением запроса"""
     global dbase
     db =  g.get('link_db')
-    dbase = FDataBase(db)
+    dbase = FDataBase()
 
 @users.teardown_request
 def teardown_request(request):
@@ -74,7 +78,7 @@ def authorisation():
     form = AuthorisationForm()
     if form.validate_on_submit():
         user = dbase.getUserByLogin(form.name.data)
-        if user and check_password_hash(user['password'], form.password.data):
+        if user and check_password_hash(user.password, form.password.data):
             userlogin = UserLogin().create(user)
             rm = form.remember.data
             login_user(userlogin, remember=rm)
@@ -87,11 +91,11 @@ def register():
     form = RegistrationForm()
     if form.validate_on_submit():
         hash = generate_password_hash(form.password.data)
-        res = dbase.add_user(form.name.data, hash, form.email.data)
-        if res:
+        try:
+            dbase.add_user(form.name.data, hash, form.email.data)
             flash("Вы успешно зарегистрированы!", "success")
             return redirect(url_for('.authorisation'))
-        else:
+        except:
             flash("Ошибка при добавлении в БД", "error")
     else:
         flash("Проверьте поле 'e-mail'. Также пароль должен быть не менее одного символа", "error")

@@ -1,6 +1,13 @@
 {% extends 'base.html' %}
 {% block content %}
 {{ super() }}
+{% block title %}
+    {% if title %}
+    <title>Genshin Funzone - {{ title }}</title>
+    {% else %}
+    <title>Genshin Funzone</title>
+    {% endif %}
+    {% endblock %}
 {% block off_menu %}
     <ul class="off_menu">
         {% for m in off_menu -%}

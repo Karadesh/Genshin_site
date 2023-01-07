@@ -1,5 +1,6 @@
 from flask import Blueprint, request,render_template,flash, url_for, redirect, session, g
 import sqlite3
+from Genshin_site.FDataBase import FDataBase
 
 admin = Blueprint('admin', __name__, template_folder='templates', static_folder='static')
 
@@ -12,16 +13,18 @@ def isLogged():
 def logout_admin():
     session.pop('admin_logged', None)
 
-menu = [{'url': 'index', 'title': 'Главная'},
+menu = [{'url': '.index', 'title': 'Главная'},
         {'url': '.logout', 'title': 'Выйти'},
         {'url': '.listposts', 'title': 'Список постов'},
         {'url': '.listusers', 'title': 'Список пользователей'}]
 
-db=None
+dbase = None
 @admin.before_request
 def before_request():
-    global db
+    """соединение с бд перед выполнением запроса"""
+    global dbase
     db =  g.get('link_db')
+    dbase = FDataBase()
 
 @admin.teardown_request
 def teardown_request(request):
@@ -40,7 +43,7 @@ def login():
     if isLogged():
         return redirect(url_for('.index'))
     if request.method == "POST":
-        if request.form['user'] == "admin" and request.form['password'] == '123':
+        if request.form['user'] == "admin" and request.form['password'] == '123': #сделать полноценную проверку с бд
             login_admin()
             return redirect(url_for('.index'))
         else:
@@ -60,13 +63,10 @@ def listposts():
     if not isLogged():
         return redirect(url_for('.login'))
     list_posts = []
-    if db:
-        try:
-            cur = db.cursor()
-            cur.execute(f"SELECT title, text, url FROM posts")
-            list_posts = cur.fetchall()
-        except sqlite3.Error as e:
-            print("Ошибка получения статей" + str(e))
+    try:
+        list_posts = dbase.get_admin_posts()
+    except:
+        print("Ошибка получения статей listposts")
     return render_template('admin/listposts.html', title="Список постов", menu=menu, list_posts=list_posts)
 
 @admin.route('/list-users')
@@ -74,11 +74,8 @@ def listusers():
     if not isLogged():
         return redirect(url_for('.login'))
     list_users = []
-    if db:
-        try:
-            cur = db.cursor()
-            cur.execute(f"SELECT login, email FROM users ORDER BY time DESC")
-            list_users = cur.fetchall()
-        except sqlite3.Error as e:
-            print("Ошибка получения статей" + str(e))
+    try:
+        list_users = dbase.admin_users()
+    except:
+            print("Ошибка получения статей listusers")
     return render_template('admin/listusers.html', title="Список пользователей", menu=menu, list_users=list_users)
