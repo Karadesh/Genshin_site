@@ -2,7 +2,7 @@ from transliterate import translit
 import re
 from flask import url_for
 from flask_login import current_user
-from Genshin_site.starter import Comments, Users, Offmenu, Posts, db
+from Genshin_site.starter import Comments, Users, Offmenu, Posts, Feedback, Feedback_answer, db
 
 class FDataBase:
     def __init__(self):
@@ -180,3 +180,51 @@ class FDataBase:
         except:
              print("Ошибка выборки постов в БД: get_admin_posts")
              return False
+        
+    def feedback_save(self, username, email, message):
+        try:
+            feedback_to_database = Feedback(email=email, username=username, message=message)
+            db.session.add(feedback_to_database)
+            db.session.commit()
+            return True
+        except:
+             print("Ошибка добавления в БД: feedback_save")
+             return False
+
+    def admin_feedback(self):
+        feedbacks = []
+        try:
+            admin_feedback_show = Feedback.query.filter(Feedback.isactive==True).all()
+            print(admin_feedback_show)
+            for i in admin_feedback_show:
+                feedbacks.append({'id' : i.id, 'username' : i.username, 'email': i.email, 'message' : i.message})
+            return feedbacks
+        except:
+             print("Ошибка выборки: admin_feedback")
+             return False
+
+    def get_feedback(self, id):
+        try:
+            fb = Feedback.query.filter(Feedback.id==id).first()
+            feedback_dict = {'id' : fb.id, 'username': fb.username, 'email' : fb.email, 'message' : fb.message}
+            return feedback_dict
+        except:
+             print("Ошибка выборки: get_feedback")
+             return False
+
+    def create_answer(self, feedbackid, username, email, message, admin_username, admin_message):
+        try:
+            answer_to_database = Feedback_answer(feedbackid=feedbackid, username=username, email=email, message=message, admin_username = admin_username, answer = admin_message)
+            db.session.add(answer_to_database)
+            db.session.commit()
+            feedback_query = Feedback.query.filter(Feedback.id==feedbackid).first()
+            feedback_query.isactive = False
+            db.session.add(feedback_query)
+            db.session.commit()
+            return True
+        except:
+             print("Ошибка добавления в БД: create_answer")
+             return False
+
+            
+

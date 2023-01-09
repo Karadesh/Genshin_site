@@ -38,5 +38,6 @@ def feedback():
             flash('Пожалуйста, напишите ваше сообщение', category='error')
         else:
             flash('Сообщение отправлено', category='success')
-            print(request.form['message'])
+            dbase.feedback_save(request.form['username'], request.form['email'], request.form['message'])
+            #print(request.form['message'])
     return render_template("mainapp/feedback.html",title = "Feedback", off_menu=dbase.getOffmenu())

@@ -48,6 +48,27 @@ class Comments(db.Model):
     def __repr__(self):
         return f"<comments {self.id}>"
 
+class Feedback(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(50), nullable=False)
+    email = db.Column(db.String(50), nullable=False)
+    message = db.Column(db.String, nullable=False)
+    isactive = db.Column(db.Boolean, default=True)
+
+    def __repr__(self):
+        return f"<feedback {self.id}>"
+
+class Feedback_answer(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    feedbackid = db.Column(db.Integer, nullable=False)
+    username = db.Column(db.String(50), nullable=False)
+    email = db.Column(db.String(50), nullable=False)
+    message = db.Column(db.String, nullable=False)
+    admin_username = db.Column(db.String(50), nullable=False)
+    answer = db.Column(db.String, nullable=False)
+
+    def __repr__(self):
+        return f"<feedback_answer {self.id}>"
 
 @login_manager.user_loader
 def load_user(user_id):

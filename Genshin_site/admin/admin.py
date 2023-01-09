@@ -16,7 +16,8 @@ def logout_admin():
 menu = [{'url': '.index', 'title': 'Главная'},
         {'url': '.logout', 'title': 'Выйти'},
         {'url': '.listposts', 'title': 'Список постов'},
-        {'url': '.listusers', 'title': 'Список пользователей'}]
+        {'url': '.listusers', 'title': 'Список пользователей'},
+        {'url': '.listfeedbacks', 'title': 'Фидбек'}]
 
 dbase = None
 @admin.before_request
@@ -79,3 +80,34 @@ def listusers():
     except:
             print("Ошибка получения статей listusers")
     return render_template('admin/listusers.html', title="Список пользователей", menu=menu, list_users=list_users)
+
+@admin.route('/feedbacks')
+def listfeedbacks():
+    if not isLogged():
+        return redirect(url_for('.login'))
+    list_feedbacks = []
+    try:
+        list_feedbacks = dbase.admin_feedback()
+    except:
+        print("Ошибка получения статей listposts")
+    return render_template('admin/feedbacks.html', title="Фидбек", menu=menu, list_feedbacks=list_feedbacks)
+
+@admin.route("/feedback/<int:id>", methods=['POST', 'GET'])
+def feedbackanswer(id):
+    if not isLogged():
+        return redirect(url_for('.login'))
+    get_feedback = dbase.get_feedback(id)
+    print(id)
+    feedback_id = id
+    username = get_feedback['username']
+    email = get_feedback['email']
+    message = get_feedback['message']
+    get_feedback_list = [get_feedback]
+
+    if request.method == "POST":
+        try:
+            dbase.create_answer(feedback_id, username, email, message, request.form['username'], request.form['message'])
+            return(redirect(url_for('.listfeedbacks' )))
+        except:
+            print('Ошибка создания ответа на фидбек')
+    return render_template('admin/feedback.html', title="Фидбек", menu=menu, feedback=get_feedback_list, id=feedback_id)

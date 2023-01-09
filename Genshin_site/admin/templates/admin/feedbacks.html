@@ -1,0 +1,14 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block content %}
+{{ super() }}
+<h1>{{ title }}</h1>
+<ul class="list-feedbacks">
+{% for p in list_feedbacks %}
+<li>
+    <p class="title"><a href="{{ url_for( 'admin.feedbackanswer', id=p.id )}}">{{p.email}}</a></p>
+    <p class="annonce">{{ p.message[:50] | striptags }}</p>
+</li>
+{% endfor %}
+</ul>
+{% endblock %}
