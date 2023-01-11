@@ -70,6 +70,18 @@ def listposts():
         print("Ошибка получения статей listposts")
     return render_template('admin/listposts.html', title="Список постов", menu=menu, list_posts=list_posts)
 
+@admin.route('/postchangeactive/<alias>')
+def post_change_active(alias):
+    if not isLogged():
+        return redirect(url_for('.login'))
+    else:
+        try:
+            dbase.admin_post_change_active(alias)
+            return redirect(url_for('.listposts'))
+        except:
+            print("Ошибка изменения статуса postchangeactive")
+            return False
+
 @admin.route('/list-users')
 def listusers():
     if not isLogged():

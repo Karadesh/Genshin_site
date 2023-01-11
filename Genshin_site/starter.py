@@ -34,6 +34,7 @@ class Posts(db.Model):
     url = db.Column(db.String(200), nullable=False)
     userid = db.Column(db.Integer, db.ForeignKey('users.id'))
     time = db.Column(db.DateTime, default=datetime.utcnow)
+    isactive = db.Column(db.Boolean, default=True)
 
     def __repr__(self):
         return f"<posts {self.id}>"
@@ -44,6 +45,8 @@ class Comments(db.Model):
     postname = db.Column(db.String(200), db.ForeignKey('posts.url'))
     username = db.Column(db.String(50), db.ForeignKey('users.login'))
     time = db.Column(db.DateTime, default=datetime.utcnow)
+    isactive = db.Column(db.Boolean, default=True)
+    changer = db.Column(db.String(50), nullable=True)
 
     def __repr__(self):
         return f"<comments {self.id}>"

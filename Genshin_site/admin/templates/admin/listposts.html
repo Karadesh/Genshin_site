@@ -8,6 +8,8 @@
 <li>
     <p class="title"><a href="{{ url_for('all_posts.show_post', alias=p.url)}}">{{p.title}}</a></p>
     <p class="annonce">{{ p.text[:50] | striptags }}</p>
+    <p class="announce">Статус:</p>
+    <p><a href="{{ url_for('admin.post_change_active', alias=p.url)}}">{{p.isactive}}</a></p>
 </li>
 {% endfor %}
 </ul>

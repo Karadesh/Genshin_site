@@ -31,8 +31,8 @@ class FDataBase:
 
     def get_post(self, alias):
         try:
-            post_querry = Posts.query.filter(Posts.url==alias).first()
-            post_list = {'title': post_querry.title, 'text': post_querry.text, 'url': post_querry.url, 'userid': post_querry.userid}
+            post_query = Posts.query.filter(Posts.url==alias).first()
+            post_list = {'title': post_query.title, 'text': post_query.text, 'url': post_query.url, 'userid': post_query.userid, 'isactive' : post_query.isactive}
             return post_list
         except:
             print("Ошибка получения статьи из бд get_post")
@@ -40,10 +40,8 @@ class FDataBase:
     def delete_post(self, alias):
         try:
             delete_post = Posts.query.filter(Posts.url == alias).first()
-            delete_comments = Comments.query.filter(Comments.postname == alias).all()
-            db.session.delete(delete_post)
-            db.session.commit()
-            db.session.delete(delete_comments)
+            delete_post.isactive=False
+            db.session.add(delete_post)
             db.session.commit()
         except:
             print("Ошибка удаления из бд delete_post")
@@ -51,7 +49,7 @@ class FDataBase:
 
     def getPostsAnonce(self):
         try:
-            anonce = Posts.query.order_by(Posts.time.desc()).all()
+            anonce = Posts.query.filter(Posts.isactive==True).order_by(Posts.time.desc()).all()
             return anonce
         except:
             print("Ошибка получения постов getPostsAnonce")
@@ -59,7 +57,7 @@ class FDataBase:
     
     def getCommentsAnonce(self, url):
         try:
-            comments_anonce = Comments.query.filter(Comments.postname==url).order_by(Comments.time).all()
+            comments_anonce = Comments.query.filter(Comments.isactive==True, Comments.postname==url).order_by(Comments.time).all()
             return comments_anonce
         except:
             print("Ошибка получения постов getCommentsAnonce")
@@ -102,7 +100,9 @@ class FDataBase:
     def delete_comment(self, id):
         try:
             comm_to_delete = Comments.query.filter(Comments.id==id).first()
-            db.session.delete(comm_to_delete)
+            comm_to_delete.isactive = False
+            comm_to_delete.changer = current_user.getName()
+            db.session.add(comm_to_delete)
             db.session.commit()
         except:
             print("Ошибка удаления из бд delete_comment")
@@ -164,7 +164,7 @@ class FDataBase:
             posts_list=[]
             admin_posts = Posts.query.all()
             for i in admin_posts:
-                posts_list.append({'title' : i.title, 'text': i.text, 'url' : i.url})
+                posts_list.append({'title' : i.title, 'text': i.text, 'url' : i.url, 'isactive': i.isactive})
             return posts_list
         except:
              print("Ошибка выборки постов в БД: get_admin_posts")
@@ -226,5 +226,19 @@ class FDataBase:
              print("Ошибка добавления в БД: create_answer")
              return False
 
+    def admin_post_change_active(self, alias):
+        try:
+            status_changer = Posts.query.filter(Posts.url==alias).first()
+            if status_changer.isactive==True:
+                status_changer.isactive=False
+            else:
+                status_changer.isactive=True
+            db.session.add(status_changer)
+            db.session.commit()
+            return True
+        except:
+            print("Ошибка изменения статуса: admin_post_change_active")
+            return False
+        
             
 

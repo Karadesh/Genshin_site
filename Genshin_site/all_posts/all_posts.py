@@ -47,6 +47,7 @@ def show_post(alias):
     post = get_post['text']
     url = get_post['url']
     userid = get_post['userid']
+    isactive = get_post['isactive']
     if not title:
         abort(404)
     if request.method == "POST":
@@ -58,7 +59,7 @@ def show_post(alias):
                 return(redirect(url_for('.show_post', alias=url)))
         else:
             flash('Ошибка добавления комментария', category = 'error')
-    return render_template("all_posts/post.html", title = title, post=post, userid=str(userid), off_menu=dbase.getOffmenu(), comments=dbase.getCommentsAnonce(url), url=[url], avatars=get_avatars_dict(url))
+    return render_template("all_posts/post.html", title = title, post=post, isactive=isactive, userid=str(userid), off_menu=dbase.getOffmenu(), comments=dbase.getCommentsAnonce(url), url=[url], avatars=get_avatars_dict(url))
 
 @all_posts.route("/confirm_delete/<alias>")
 @login_required
