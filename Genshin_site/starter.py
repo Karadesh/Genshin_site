@@ -35,6 +35,9 @@ class Posts(db.Model):
     userid = db.Column(db.Integer, db.ForeignKey('users.id'))
     time = db.Column(db.DateTime, default=datetime.utcnow)
     isactive = db.Column(db.Boolean, default=True)
+    reason = db.Column(db.String, nullable=True)
+    changer = db.Column(db.String(50), nullable=True)
+    islocked = db.Column(db.Boolean, default=False)
 
     def __repr__(self):
         return f"<posts {self.id}>"
@@ -47,6 +50,7 @@ class Comments(db.Model):
     time = db.Column(db.DateTime, default=datetime.utcnow)
     isactive = db.Column(db.Boolean, default=True)
     changer = db.Column(db.String(50), nullable=True)
+    reason = db.Column(db.String, nullable=True)
 
     def __repr__(self):
         return f"<comments {self.id}>"

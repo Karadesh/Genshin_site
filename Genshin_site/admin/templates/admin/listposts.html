@@ -6,10 +6,14 @@
 <ul class="list-posts">
 {% for p in list_posts %}
 <li>
-    <p class="title"><a href="{{ url_for('all_posts.show_post', alias=p.url)}}">{{p.title}}</a></p>
+    <p class="title"><a href="{{ url_for('admin.admin_showpost', alias=p.url)}}">{{p.title}}</a></p>
     <p class="annonce">{{ p.text[:50] | striptags }}</p>
     <p class="announce">Статус:</p>
-    <p><a href="{{ url_for('admin.post_change_active', alias=p.url)}}">{{p.isactive}}</a></p>
+    {% if p.isactive==True %}
+    <p><a href="{{ url_for('admin.admin_changepoststatus', alias=p.url)}}">Удалить пост</a></p>
+    {% else %}
+    <p><a href="{{ url_for('admin.admin_changepoststatus', alias=p.url)}}">Восстановить пост</a></p>
+    {% endif %}
 </li>
 {% endfor %}
 </ul>

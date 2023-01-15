@@ -70,17 +70,50 @@ def listposts():
         print("Ошибка получения статей listposts")
     return render_template('admin/listposts.html', title="Список постов", menu=menu, list_posts=list_posts)
 
-@admin.route('/postchangeactive/<alias>')
-def post_change_active(alias):
+@admin.route('/post/<alias>')
+def admin_showpost(alias):
     if not isLogged():
         return redirect(url_for('.login'))
     else:
-        try:
-            dbase.admin_post_change_active(alias)
-            return redirect(url_for('.listposts'))
-        except:
-            print("Ошибка изменения статуса postchangeactive")
-            return False
+        get_post = dbase.get_post(alias)
+        title = get_post['title'] 
+        post = get_post['text']
+        url = get_post['url']
+        userid = get_post['userid']
+        isactive = get_post['isactive']
+        islocked = get_post['islocked']
+    return render_template("admin/post.html", title = title, post=post, isactive=isactive, userid=str(userid), url=url, comments=dbase.getAdminCommentsAnonce(url), islocked=islocked)
+
+@admin.route("/lock_post/<alias>")
+def lock_post(alias):
+    try:
+        dbase.lockpost(alias)
+    except:
+        print("Ошибка закрытия поста lock_post")
+    return(redirect(url_for('.admin_showpost', alias=alias)))
+
+@admin.route('/changepoststatus/<alias>', methods=['POST', 'GET'])
+def admin_changepoststatus(alias):
+    if not isLogged():
+        return redirect(url_for('.login'))
+    else:
+        get_post=dbase.get_post(alias)
+        if request.method == "POST":
+            try:
+                dbase.admin_post_change_active(alias, request.form['reason'])
+                return redirect(url_for('.listposts'))
+            except:
+                print("Ошибка изменения статуса postchangeactive")
+                return False
+    return render_template("admin/postdelete.html", post=get_post)
+
+@admin.route('/deletecomment/<id>?<postname>')
+def deletecomment(id, postname):
+    if not isLogged():
+        return redirect(url_for('.login'))
+    else:
+        dbase.delete_comment(id, 'deleted by admin')
+        return redirect(url_for('.admin_showpost', alias=postname))
 
 @admin.route('/list-users')
 def listusers():

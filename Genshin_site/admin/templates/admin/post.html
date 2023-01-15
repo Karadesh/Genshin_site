@@ -1,0 +1,35 @@
+{% extends 'admin/base_admin.html' %}
+{% block content %}
+{{ super() }}
+{% block title %}
+    <title>{{ title }}</title>
+{% endblock title %}
+<h1>{{ title }}</h1>
+{% if isactive==True %}
+<p><a href="{{ url_for('admin.admin_changepoststatus', alias=url)}}">Удалить пост</a></p>
+{% else %}
+<p><a href="{{ url_for('admin.admin_changepoststatus', alias=url)}}">Восстановить пост</a></p>
+{% endif %}
+{% if islocked==True %}
+<p><a href="{{url_for('admin.lock_post', alias=url)}}">Открыть пост</a></p>
+{% else %}
+<p><a href="{{url_for('admin.lock_post', alias=url)}}">Закрыть пост</a></p>
+{% endif %}
+{{ post | safe }}
+{% block comments %}
+{% for p in comments %}
+<h3 class="username">{{p.username}}</h3>
+<p class="annonce">{{ p.text}}</p>
+{% if p.isactive==False %}
+<p class="annonce">(Комментарий удален)</p>
+{% endif %}
+{% if p.isactive==True %}
+<p><a href="{{url_for('admin.deletecomment', id=p.id, postname=p.postname)}}">Удалить комментарий</a></p>
+{% endif %}
+{% endfor %}
+{% endblock comments %}
+{% for cat, msg in get_flashed_messages(True) %}
+<div class="flash {{cat}}">{{msg}}</div>
+{% endfor %}
+<p><a href="{{url_for('admin.listposts')}}">К постам</a></p>
+{% endblock content %}

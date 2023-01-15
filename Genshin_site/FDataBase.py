@@ -32,15 +32,29 @@ class FDataBase:
     def get_post(self, alias):
         try:
             post_query = Posts.query.filter(Posts.url==alias).first()
-            post_list = {'title': post_query.title, 'text': post_query.text, 'url': post_query.url, 'userid': post_query.userid, 'isactive' : post_query.isactive}
+            post_list = {'title': post_query.title, 'text': post_query.text, 'url': post_query.url, 'userid': post_query.userid, 'isactive' : post_query.isactive, 'islocked' : post_query.islocked}
             return post_list
         except:
             print("Ошибка получения статьи из бд get_post")
+
+    def lockpost(self, alias):
+        try:
+            lockingpost = Posts.query.filter(Posts.url==alias).first()
+            if lockingpost.islocked==True:
+                lockingpost.islocked=False
+            else:
+                lockingpost.islocked=True
+            db.session.add(lockingpost)
+            db.session.commit()
+        except:
+            print("Ошибка смены статуса поста lockpost")
 
     def delete_post(self, alias):
         try:
             delete_post = Posts.query.filter(Posts.url == alias).first()
             delete_post.isactive=False
+            delete_post.reason='deleted by user'
+            delete_post.changer=current_user.getName()
             db.session.add(delete_post)
             db.session.commit()
         except:
@@ -97,11 +111,18 @@ class FDataBase:
              return False
          return True
 
-    def delete_comment(self, id):
+    def delete_comment(self, id, reason='deleted by user'):
         try:
             comm_to_delete = Comments.query.filter(Comments.id==id).first()
             comm_to_delete.isactive = False
-            comm_to_delete.changer = current_user.getName()
+            if reason=='deleted by user':
+                try:
+                    comm_to_delete.changer = current_user.getName()
+                except:
+                    print('Ошибка при удалении комментария delete_comment')
+            else:
+                comm_to_delete.changer='admin'
+            comm_to_delete.reason = reason
             db.session.add(comm_to_delete)
             db.session.commit()
         except:
@@ -226,13 +247,15 @@ class FDataBase:
              print("Ошибка добавления в БД: create_answer")
              return False
 
-    def admin_post_change_active(self, alias):
+    def admin_post_change_active(self, alias, reason):
         try:
             status_changer = Posts.query.filter(Posts.url==alias).first()
             if status_changer.isactive==True:
                 status_changer.isactive=False
             else:
                 status_changer.isactive=True
+            status_changer.reason=reason
+            status_changer.changer='admin'
             db.session.add(status_changer)
             db.session.commit()
             return True
@@ -240,5 +263,12 @@ class FDataBase:
             print("Ошибка изменения статуса: admin_post_change_active")
             return False
         
+    def getAdminCommentsAnonce(self, url):
+        try:
+            comments_anonce = Comments.query.filter(Comments.postname==url).order_by(Comments.time).all()
+            return comments_anonce
+        except:
+            print("Ошибка получения постов getCommentsAnonce")
+        return []
             
 

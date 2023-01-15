@@ -1,0 +1,7 @@
+<h1>{{post.title}}</h1>
+<form action="{{ url_for('admin.admin_changepoststatus', alias=post.url)}}" method="post" class="form-feedback">
+    <p><label>Причина:</label>
+    <p><textarea name="reason" rows=7 cols=40></textarea>
+    <a href="{{ url_for('admin.admin_changepoststatus', alias=post.url)}}"><input type="submit", value="Сохранить"/>
+    <a href="{{ url_for('admin.admin_showpost', alias=post.url)}}">Назад</a>
+    </form>
