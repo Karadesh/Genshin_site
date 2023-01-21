@@ -32,6 +32,7 @@ class Posts(db.Model):
     title = db.Column(db.String(200), nullable=False)
     text = db.Column(db.String, nullable=False)
     url = db.Column(db.String(200), nullable=False)
+    character = db.Column(db.String(200), nullable=False)
     userid = db.Column(db.Integer, db.ForeignKey('users.id'))
     time = db.Column(db.DateTime, default=datetime.utcnow)
     isactive = db.Column(db.Boolean, default=True)

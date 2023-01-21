@@ -9,6 +9,11 @@
     <p class="title"><a href="{{ url_for('admin.admin_showpost', alias=p.url)}}">{{p.title}}</a></p>
     <p class="annonce">{{ p.text[:50] | striptags }}</p>
     <p class="announce">Статус:</p>
+    {% if p.islocked==True %}
+    <p><a href="{{url_for('admin.lock_post', alias=p.url)}}">Пост закрыт(Открыть)</a></p>
+    {% else %}
+    <p><a href="{{url_for('admin.lock_post', alias=p.url)}}">Пост открыт(Закрыть)</a></p>
+    {% endif %}
     {% if p.isactive==True %}
     <p><a href="{{ url_for('admin.admin_changepoststatus', alias=p.url)}}">Удалить пост</a></p>
     {% else %}

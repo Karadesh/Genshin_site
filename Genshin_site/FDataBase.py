@@ -12,7 +12,7 @@ class FDataBase:
         sql = Offmenu.query.all()
         return sql
     
-    def create_post(self, title, text, userid):
+    def create_post(self, title, text, userid, character):
         trans_name = translit(title, language_code='ru', reversed=True)
         url = trans_name.replace(" ","_") 
         try:
@@ -22,7 +22,12 @@ class FDataBase:
                 return False
             base = url_for('static', filename='images_html')
             text=re.sub(r"(?P<tag><img\s+[^>]*src=)(?P<quote>[\"'])(?P<url>.+?)(?P=quote)>", "\\g<tag>" + base + "/\\g<url>>", text)
-            new_post = Posts(title=title, text=text, url=url, userid=userid)
+            character = translit(character, language_code='ru', reversed=True)
+            character = character.replace("'", "")
+            character = character.replace("-", "")
+            character = character.replace(" ", "")
+            character = character.lower()
+            new_post = Posts(title=title, text=text, url=url, userid=userid, character=character)
             db.session.add(new_post)
             db.session.commit()
         except:
@@ -68,6 +73,24 @@ class FDataBase:
         except:
             print("Ошибка получения постов getPostsAnonce")
         return []
+    
+    def getPostsAnonceCharacter(self, alias):
+        try:
+            anonce = Posts.query.filter(Posts.isactive==True, Posts.character==alias).order_by(Posts.time.desc()).all()
+            return anonce
+        except:
+            print("Ошибка получения постов getPostsAnonceCharacter")
+        return []
+
+    def getPostcreatorAvatar(self, url):
+        try:
+            posts_query = Posts.query.filter(Posts.url==url).first()
+            users_query = Users.query.filter(Users.id==posts_query.userid).first()
+            userava = {'username': users_query.login, 'avatar': users_query.avatar}
+            return userava
+        except:
+            print("Ошибка получения аватаров getPostcreatorAvatar")
+            return False
     
     def getCommentsAnonce(self, url):
         try:

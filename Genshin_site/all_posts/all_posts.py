@@ -2,8 +2,19 @@ from flask import Blueprint, request,render_template,flash, url_for, redirect, g
 from flask_login import login_required, current_user
 from Genshin_site.FDataBase import FDataBase
 import base64
+from transliterate import translit
 
 all_posts = Blueprint('all_posts', __name__, template_folder='templates', static_folder='static')
+chars_list = ["Дехья", "Мика", "Аль-Хайтам", "Яо Яо", "Странник", "Фарузан", 
+            "Лайла", "Нахида", "Нилу", "Сайно", "Кандакия", "Дори", "Тигнари", 
+            "Коллеи", "Хэйдзо", "Куки Синобу", "Е Лань", "Камисато Аято", "Яэ Мико", 
+            "Шэнь Хэ", "Юнь Цзинь", "Аратаки Итто", "Горо", "Тома", "Кокоми", "Райдэн", 
+            "Элой", "Кудзё Сара", "Ёимия", "Саю", "Камисато Аяка", "Каэдэхара Кадзуха", 
+            "Эола", "Янь Фэй", "Розария", "Ху Тао", "Сяо", "Гань Юй", "Альбедо", "Чжун Ли", 
+            "Синь Янь", "Тарталья", "Диона", "Кли", "Венти", "Ци Ци", "Мона", "Кэ Цин", 
+            "Дилюк", "Джинн", "Эмбер", "Чун Юнь", "Фишль", "Сян Лин", "Син Цю", "Сахароза", 
+            "Рэйзор", "Ноэлль", "Нин Гуан", "Лиза", "Кэйа", "Бэй Доу", "Беннет", "Барбара", 
+            "Путешественник"]
 
 dbase = None
 @all_posts.before_request
@@ -18,6 +29,21 @@ def teardown_request(request):
     global db
     db =  None
     return request
+
+def image_maker(chars_list, app=all_posts):
+    chars_dict_list = []
+    for i in chars_list:
+        url = translit(i, language_code='ru', reversed=True)
+        url = url.replace("'", "")
+        url = url.replace("-", "")
+        url = url.replace(" ", "")
+        url = url.lower()
+        with app.open_resource(app.root_path + url_for('.static', filename= f'images/{url}.jpg'), "rb") as f:
+            base64_string=base64.b64encode(f.read()).decode('utf-8')
+            img=f'data:image/png;base64,{base64_string}'
+        chars_dict={'url': url, 'name': i, 'img': img}
+        chars_dict_list.append(chars_dict)
+    return chars_dict_list
 
 def get_avatars_dict(url, app=all_posts):
     try:
@@ -36,9 +62,30 @@ def get_avatars_dict(url, app=all_posts):
         pass
     return avas_dict
 
+def get_postcreator_avatar(url, app=all_posts):
+    try:
+        nameandavatar=dbase.getPostcreatorAvatar(url) #словарь формата { 'username': username, 'avatar: useravatar }
+        if nameandavatar['avatar'] == None:
+            with app.open_resource(app.root_path + url_for('.static', filename= 'images/default.jpeg'), "rb") as f:
+                        base64_string=base64.b64encode(f.read()).decode('utf-8')
+        else:
+            base64_string = base64.b64encode(nameandavatar['avatar']).decode('utf-8')
+        img_url=f'data:image/png;base64,{base64_string}'
+        nameandavatar['avatar']=img_url
+        return nameandavatar
+    except:
+        print(' Ошибка аватара get_postcreator_avatar')
+        return False
+
+
+
 @all_posts.route("/posts")
 def posts():
-    return render_template("all_posts/posts.html",title = "Список постов", off_menu=dbase.getOffmenu(), posts=dbase.getPostsAnonce())
+    return render_template("all_posts/posts.html",title = "Список постов", off_menu=dbase.getOffmenu(), posts=dbase.getPostsAnonce(), characters=image_maker(chars_list))
+
+@all_posts.route("/posts_character/<alias>")
+def posts_character(alias):
+    return render_template("all_posts/posts_character.html",title = "Список постов", off_menu=dbase.getOffmenu(), posts=dbase.getPostsAnonceCharacter(alias))
 
 @all_posts.route("/post/<alias>", methods=['POST', 'GET'])
 def show_post(alias):
@@ -60,7 +107,7 @@ def show_post(alias):
                 return(redirect(url_for('.show_post', alias=url)))
         else:
             flash('Ошибка добавления комментария', category = 'error')
-    return render_template("all_posts/post.html", title = title, post=post, isactive=isactive, userid=str(userid), off_menu=dbase.getOffmenu(), comments=dbase.getCommentsAnonce(url), url=[url], avatars=get_avatars_dict(url), islocked=islocked)
+    return render_template("all_posts/post.html", title = title, post=post, isactive=isactive, userid=str(userid), off_menu=dbase.getOffmenu(), comments=dbase.getCommentsAnonce(url), url=[url], avatars=get_avatars_dict(url), islocked=islocked, creator=get_postcreator_avatar(url))
 
 @all_posts.route("/confirm_delete/<alias>")
 @login_required
@@ -86,13 +133,13 @@ def create_post():
         if len(request.form['name']) > 4 and len(request.form['post'])>1: #проверку на свой вкус
             userid = int(current_user.get_id())
             try:
-                res = dbase.create_post(request.form['name'], request.form['post'], userid)
+                res = dbase.create_post(request.form['name'], request.form['post'], userid, request.form['character'])
                 return redirect(url_for('.posts'))
             except:
                 flash('Ошибка добавления статьи', category = 'error')
         else:
             flash('Ошибка добавления статьи', category = 'error')
-    return render_template("all_posts/create_post.html",title = "Create Post", off_menu=dbase.getOffmenu())
+    return render_template("all_posts/create_post.html",title = "Create Post", off_menu=dbase.getOffmenu(), characters=chars_list)
 
 @all_posts.route("/lock_post/<alias>")
 @login_required

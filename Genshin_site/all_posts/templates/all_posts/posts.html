@@ -13,6 +13,77 @@
 {% else %}
 <h1>Genshin Funzone</h1>
 {% endif %}
+<ul class="character-posts">
+    <li class="chars">
+    {% for i in characters %}
+    <a href="{{url_for('.posts_character', alias=i.url)}}"><img src="{{i.img}}" alt="{{i.name}}"></a>
+    {% endfor %}
+        <!-- <a href="{{url_for('.posts_character', alias='dekhya')}}">Дэхья</a>
+        <a href="{{url_for('.posts_character', alias='mika')}}">Мика</a>
+        <a href="{{url_for('.posts_character', alias='alkhaytam')}}">Аль-Хайтам</a>
+        <a href="{{url_for('.posts_character', alias='yaoyao')}}">Яо-Яо</a>
+        <a href="{{url_for('.posts_character', alias='strannik')}}">Странник</a>
+        <a href="{{url_for('.posts_character', alias='faruzan')}}">Фарузан</a>
+        <a href="{{url_for('.posts_character', alias='layla')}}">Лайла</a>
+        <a href="{{url_for('.posts_character', alias='nakhida')}}">Нахида</a>
+        <a href="{{url_for('.posts_character', alias='sayno')}}">Сайно</a>
+        <a href="{{url_for('.posts_character', alias='kandakiya')}}">Кандакия</a>
+        <a href="{{url_for('.posts_character', alias='dori')}}">Дори</a>
+        <a href="{{url_for('.posts_character', alias='tignari')}}">Тигнари</a>
+        <a href="{{url_for('.posts_character', alias='kollei')}}">Коллеи</a>
+        <a href="{{url_for('.posts_character', alias='kheydzo')}}">Хейдзо</a>
+        <a href="{{url_for('.posts_character', alias='kuki')}}">Куки Синобу</a>
+        <a href="{{url_for('.posts_character', alias='yelan')}}">Е-Лань</a>
+        <a href="{{url_for('.posts_character', alias='ayato')}}">Камисато Аято</a>
+        <a href="{{url_for('.posts_character', alias='yaemiko')}}">Яэ Мико</a>
+        <a href="{{url_for('.posts_character', alias='shenkhe')}}">Шэнь Хэ</a>
+        <a href="{{url_for('.posts_character', alias='yuntzin')}}">Юнь Цзинь</a>
+        <a href="{{url_for('.posts_character', alias='itto')}}">Аратаки Итто</a>
+        <a href="{{url_for('.posts_character', alias='goro')}}">Горо</a>
+        <a href="{{url_for('.posts_character', alias='toma')}}">Тома</a>
+        <a href="{{url_for('.posts_character', alias='kokomi')}}">Кокоми</a>
+        <a href="{{url_for('.posts_character', alias='rayden')}}">Райдэн</a>
+        <a href="{{url_for('.posts_character', alias='eloy')}}">Элой</a>
+        <a href="{{url_for('.posts_character', alias='sara')}}">Сара</a>
+        <a href="{{url_for('.posts_character', alias='yoimia')}}">Йоимия</a>
+        <a href="{{url_for('.posts_character', alias='sayu')}}">Саю</a>
+        <a href="{{url_for('.posts_character', alias='ayaka')}}">Камисато Аяка</a>
+        <a href="{{url_for('.posts_character', alias='kadzukha')}}">Каэдэхара Кадзуха</a>
+        <a href="{{url_for('.posts_character', alias='eula')}}">Эола</a>
+        <a href="{{url_for('.posts_character', alias='yanfei')}}">Янь Фэй</a>
+        <a href="{{url_for('.posts_character', alias='rozaria')}}">Розария</a>
+        <a href="{{url_for('.posts_character', alias='hutao')}}">Ху Тао</a>
+        <a href="{{url_for('.posts_character', alias='xiao')}}">Сяо</a>
+        <a href="{{url_for('.posts_character', alias='ganyu')}}">Гань Юй</a>
+        <a href="{{url_for('.posts_character', alias='albedo')}}">Альбедо</a>
+        <a href="{{url_for('.posts_character', alias='Zhongli')}}">Чжун Ли</a>
+        <a href="{{url_for('.posts_character', alias='xinyan')}}">Синь Янь</a>
+        <a href="{{url_for('.posts_character', alias='tartaglia')}}">Тарталья</a>
+        <a href="{{url_for('.posts_character', alias='diona')}}">Диона</a>
+        <a href="{{url_for('.posts_character', alias='klee')}}">Кли</a>
+        <a href="{{url_for('.posts_character', alias='venti')}}">Венти</a>
+        <a href="{{url_for('.posts_character', alias='qiqi')}}">Ци Ци</a>
+        <a href="{{url_for('.posts_character', alias='mona')}}">Мона</a>
+        <a href="{{url_for('.posts_character', alias='kequing')}}">Кэ Цин</a>
+        <a href="{{url_for('.posts_character', alias='diluc')}}">Дилюк</a>
+        <a href="{{url_for('.posts_character', alias='jean')}}">Джинн</a>
+        <a href="{{url_for('.posts_character', alias='ember')}}">Эмбер</a>
+        <a href="{{url_for('.posts_character', alias='chongyun')}}">Чун Юнь</a>
+        <a href="{{url_for('.posts_character', alias='fischl')}}">Фишль</a>
+        <a href="{{url_for('.posts_character', alias='xiangling')}}">Сян Лин</a>
+        <a href="{{url_for('.posts_character', alias='xingqiu')}}">Син Цю</a>
+        <a href="{{url_for('.posts_character', alias='sucrose')}}">Сахароза</a>
+        <a href="{{url_for('.posts_character', alias='razor')}}">Рейзор</a>
+        <a href="{{url_for('.posts_character', alias='noelle')}}">Ноэлль</a>
+        <a href="{{url_for('.posts_character', alias='ningguang')}}">Нин Гуан</a>
+        <a href="{{url_for('.posts_character', alias='liza')}}">Лиза</a>
+        <a href="{{url_for('.posts_character', alias='kaeya')}}">Кэйа</a>
+        <a href="{{url_for('.posts_character', alias='beidou')}}">Бэй Доу</a>
+        <a href="{{url_for('.posts_character', alias='bennett')}}">Беннет</a>
+        <a href="{{url_for('.posts_character', alias='barbara')}}">Барбара</a>
+        <a href="{{url_for('.posts_character', alias='traveler')}}">Путешественник</a> -->
+    </li>
+</ul>
 <ul class="list-posts">
 {% for p in posts %}
 <li>
