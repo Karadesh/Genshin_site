@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block content %}
+{{ super() }}
+{% block title %}
+    <title>{{ character.name }}</title>
+{% endblock title %}
+{% block off_menu %}
+    <ul class="off_menu">
+        {% for m in off_menu -%}
+    <li><a href="{{m.url}}">{{m.name}}</a></li>
+        {% endfor -%}
+    </ul>
+{% endblock off_menu %}
+<img src="{{character.image}}" alt="{{character.name}}">
+<p>{{character.story}}</p>
+<a class="links_character" href="{{url_for('all_posts.posts_character', alias=character.url)}}">Ветка персонажа на форуме</a>
+{% endblock content %}

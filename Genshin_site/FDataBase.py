@@ -2,7 +2,7 @@ from transliterate import translit
 import re
 from flask import url_for
 from flask_login import current_user
-from Genshin_site.starter import Comments, Users, Offmenu, Posts, Feedback, Feedback_answer, db
+from Genshin_site.starter import Comments, Users, Offmenu, Posts, Feedback, Feedback_answer, Characters, db
 
 class FDataBase:
     def __init__(self):
@@ -219,11 +219,25 @@ class FDataBase:
             users_list=[]
             admin_users = Users.query.all()
             for i in admin_users:
-                users_list.append({'login' : i.login, 'email': i.email})
+                users_list.append({'id': i.id, 'login' : i.login, 'email': i.email, 'isactive': i.isactive})
             return users_list
         except:
              print("Ошибка выборки постов в БД: get_admin_posts")
              return False
+
+    def admin_user_change_active(self, id):
+        try:
+            status_changer = Users.query.filter(Users.id==id).first()
+            if status_changer.isactive==True:
+                status_changer.isactive=False
+            else:
+                status_changer.isactive=True
+            db.session.add(status_changer)
+            db.session.commit()
+            return True
+        except:
+            print("Ошибка изменения статуса: admin_user_change_active")
+            return False
         
     def feedback_save(self, username, email, message):
         try:
@@ -293,5 +307,37 @@ class FDataBase:
         except:
             print("Ошибка получения постов getCommentsAnonce")
         return []
-            
+    
+    def add_character(self, chars_dict):
+        try:
+            same_character = Characters.query.filter(Characters.name==chars_dict['name']).first()
+            if same_character:
+                print('Такой персонаж уже есть')
+            else:
+                addchar = Characters(name=chars_dict['name'], image=chars_dict['img'], url=chars_dict['url'])
+                db.session.add(addchar)
+                db.session.commit()
+        except:
+            print("Ошибка добавления персонажа add_character")
+        return []
+
+    def get_chars(self):
+        chars_list = []
+        try:
+            chars = Characters.query.all()
+            for i in chars:
+                chars_list.append({'id': i.id, 'name': i.name, 'image': i.image, 'url': i.url, 'story': i.story})
+            return chars_list
+        except:
+            print("Ошибка поиска списка в бд get_chars")
+            return False
+    
+    def get_char(self, url):
+        try:
+            char = Characters.query.filter(Characters.url==url).first()
+            return char
+        except:
+            print("Ошибка поиска персонажа в бд get_char")
+            return False
+        
 

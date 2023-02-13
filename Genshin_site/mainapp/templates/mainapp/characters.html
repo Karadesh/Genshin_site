@@ -13,4 +13,11 @@
 {% else %}
 <h1>Genshin Funzone</h1>
 {% endif %}
+<ul class="characters-list">
+    <li class="chars">
+    {% for i in characters %}
+    <a href="{{url_for('.character', alias=i.url)}}"><img src="{{i.image}}" alt="{{i.name}}"></a>
+    {% endfor %}
+    </li>
+</ul>
 {% endblock content%}

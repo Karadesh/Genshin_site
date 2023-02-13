@@ -54,6 +54,7 @@
 {% endblock comments %}
 {% if islocked==False %}
 {% if current_user.is_authenticated %}
+{% if current_user.isActive() %}
 {% for cat, msg in get_flashed_messages(True) %}
 <div class="flash {{cat}}">{{msg}}</div>
 {% endfor %}
@@ -64,6 +65,9 @@
     <p><input type="submit" value="Добавить комментарий"/>
     </form>
 {% endfor %}
+{% else %}
+<h3>Возможность комментирования для вас ограничена</h3>
+{% endif %}
 {% endif %}
 {% else %}
 <h3>Пост закрыт</h3>

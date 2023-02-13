@@ -18,6 +18,7 @@ class Users(db.Model):
     email = db.Column(db.String(50), unique=True)
     avatar = db.Column(db.LargeBinary, nullable=True) ###поле для аватарок. Прикрутить позже
     time = db.Column(db.DateTime, default=datetime.utcnow)
+    isactive = db.Column(db.Boolean, default=True)
 
     def __repr__(self):
         return f"<users {self.id}>"
@@ -77,6 +78,16 @@ class Feedback_answer(db.Model):
 
     def __repr__(self):
         return f"<feedback_answer {self.id}>"
+
+class Characters(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), nullable=False)
+    image = db.Column(db.String, nullable=True)
+    url = db.Column(db.String(60), nullable=True)
+    story = db.Column(db.String,nullable=True)
+
+    def __repr__(self):
+        return f"<Charname: {self.name}>"
 
 @login_manager.user_loader
 def load_user(user_id):

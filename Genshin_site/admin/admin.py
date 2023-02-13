@@ -126,6 +126,16 @@ def listusers():
             print("Ошибка получения статей listusers")
     return render_template('admin/listusers.html', title="Список пользователей", menu=menu, list_users=list_users)
 
+@admin.route('/user_changestatus/<id>')
+def user_changestatus(id):
+    if not isLogged():
+        return redirect(url_for('.login'))
+    try:
+        dbase.admin_user_change_active(id)
+        return redirect(url_for('.listusers'))
+    except:
+        print("Ошибка Изменения статуса user_changestatus")
+
 @admin.route('/feedbacks')
 def listfeedbacks():
     if not isLogged():

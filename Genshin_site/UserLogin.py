@@ -17,6 +17,9 @@ class UserLogin(UserMixin):
     def getName(self):
         return self.__user.login if self.__user else "Без имени"
     
+    def isActive(self):
+        return self.__user.isactive if self.__user else "Не залогинен"
+    
     def getEmail(self):
         return self.__user.email if self.__user else "Без email"
 

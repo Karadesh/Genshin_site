@@ -29,7 +29,11 @@ def guides():
 
 @mainapp.route("/characters")
 def characters():
-    return render_template("mainapp/characters.html",title = "Characters", off_menu=dbase.getOffmenu())
+    return render_template("mainapp/characters.html",title = "Персонажи", off_menu=dbase.getOffmenu(), characters=dbase.get_chars())
+
+@mainapp.route("/characters/<alias>")
+def character(alias):
+    return render_template("mainapp/character.html", off_menu=dbase.getOffmenu(), character=dbase.get_char(alias))
 
 @mainapp.route("/feedback", methods=["POST", "GET"])
 def feedback():

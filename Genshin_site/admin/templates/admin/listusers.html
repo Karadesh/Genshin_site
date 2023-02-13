@@ -8,6 +8,12 @@
 <li>
     <p class="title">{{p.login}}</p>
     <p class="title">{{p.email}}</p>
+    <p>Изменить статус аккаунта:</p>
+    {% if p.isactive %}
+    <p class="title"><a href="{{url_for('.user_changestatus', id =p.id)}}">Активный</a></p>
+    {% else %}
+    <p class="title"><a href="{{url_for('.user_changestatus', id =p.id)}}">Заблокированный</a></p>
+    {% endif %}
 </li>
 {% endfor %}
 </ul>

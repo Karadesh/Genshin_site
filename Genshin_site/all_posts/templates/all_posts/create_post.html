@@ -11,15 +11,20 @@
         {% endfor -%}
     </ul>
 {% endblock off_menu %}
+{% if current_user.isActive() %}
 <form action="{{url_for('.create_post')}}" method="post" class="form-contact">
 <p><label>Название поста: </label><input type="text" name="name" value="" required />
 <p><select name="character">
     {% for i in characters %}
-    <option>{{i}}</option>
+    <option>{{i.name}}</option>
     {% endfor %}
 </select></p>
 <p><label>Текст поста: </label>
 <p><textarea name="post" rows="7" cols="40"></textarea>
 <p><input type="submit" value="Создать пост" />
 </form>
+{% else %}
+<h1>К сожалению, вы временно не можете создавать посты</h1>
+<h3>по причине блокировки аккаунта</h3>
+{% endif %}
 {% endblock %}
