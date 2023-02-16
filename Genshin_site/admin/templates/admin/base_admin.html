@@ -8,14 +8,21 @@
 <title>{{ title }}</title>
 </head>
 <body>
-{% if menu -%}
+    {% if current_user.is_authenticated %}
+    <p><a href="{{ url_for('users.profile', username=current_user.get_id()) }}">Профиль</a></p>
+    {% endif %}
     <ul class="mainmenu">
-    {% for p in menu %}
-    <li><a href="{{ url_for(p.url) }}">{{ p.title }}</a></li>
-    {% endfor %}
+    <li><a href="{{ url_for('.index') }}">Главная</a></li>
+    <li><a href="{{ url_for('users.logout') }}">Выйти</a></li>
+    {% if current_user.getAdmin() == "moderator" or current_user.getAdmin() == "god" %}
+    <li><a href="{{ url_for('.listposts') }}">Список постов</a></li>
+    <li><a href="{{ url_for('.listusers') }}">Список пользователей</a></li>
+    {% endif %}
+    {% if current_user.getAdmin() == "feedback" or current_user.getAdmin() == "god" %}
+    <li><a href="{{ url_for('.listfeedbacks') }}">Обратная связь</a></li>
+    {% endif %}
     </ul>
     <div class="clear"></div>
-{% endif -%}
 <div class="content">
 {% block content -%}
 {% endblock %}

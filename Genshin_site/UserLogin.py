@@ -35,6 +35,9 @@ class UserLogin(UserMixin):
             img = self.__user.avatar
         return img
 
+    def getAdmin(self):
+        return self.__user.admin if self.__user else "Без администраторства"
+
     def verifyExt(self, filename):
         ext = filename.rsplit('.', 1)[1]
         if ext.upper() == "PNG" or ext.upper() == "JPEG" or ext.upper() == "JPG":

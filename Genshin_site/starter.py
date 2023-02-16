@@ -19,6 +19,7 @@ class Users(db.Model):
     avatar = db.Column(db.LargeBinary, nullable=True) ###поле для аватарок. Прикрутить позже
     time = db.Column(db.DateTime, default=datetime.utcnow)
     isactive = db.Column(db.Boolean, default=True)
+    admin = db.Column(db.String(50), default="user")
 
     def __repr__(self):
         return f"<users {self.id}>"

