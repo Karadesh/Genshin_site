@@ -1,0 +1,11 @@
+{% block content %}
+{% for i in list_requests %}
+<h2>{{i.name}}</h2>
+<p>{{i.reason}}</p>
+<ul>
+<li><a href="{{ url_for('admin.aprove_admin', username = i.name, type=i.type) }}">Одобрить</a></li>
+<li><a href="{{ url_for('admin.cancel_admin', username = i.name) }}">Отклонить</a></li>
+</ul>
+{% endfor %}
+<p><a href="{{ url_for('admin.index') }}">Панель администратора</a></p>
+{% endblock content %}

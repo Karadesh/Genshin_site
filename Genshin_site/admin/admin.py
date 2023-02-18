@@ -159,3 +159,36 @@ def feedbackanswer(id):
     else:
         abort(401)
     return render_template('admin/feedback.html', title="Фидбек", feedback=get_feedback_list, id=feedback_id)
+
+@admin.route("/adminrequests")
+def admin_requests():
+    if not current_user.is_authenticated:
+        return redirect(url_for('users.authorisation'))
+    if current_user.getAdmin() == "feedback" or current_user.getAdmin() == "god":
+        try:
+            list_requests = dbase.admin_list_requests()
+        except:
+            print("Ошибка admin_requests")
+    return render_template('admin/requests.html', title="Запросы на администрирование", list_requests=list_requests)
+
+@admin.route("/aprove_request/<username>?<type>")
+def aprove_admin(username,type):
+    if not current_user.is_authenticated:
+        return redirect(url_for('users.authorisation'))
+    if current_user.getAdmin() == "feedback" or current_user.getAdmin() == "god":
+        try:
+            dbase.add_new_admin(username,type)
+        except:
+            print("ошибка добавления администратора")
+    return redirect(url_for('.admin_requests'))
+
+@admin.route("/cancel_request/<username>")
+def cancel_admin(username):
+    if not current_user.is_authenticated:
+        return redirect(url_for('users.authorisation'))
+    if current_user.getAdmin() == "feedback" or current_user.getAdmin() == "god":
+        try:
+            dbase.admin_delete_request(username)
+        except:
+            print("ошибка удаления реквеста cancel_admin")
+    return redirect(url_for('.admin_requests'))

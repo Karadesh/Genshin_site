@@ -19,6 +19,7 @@
     <li><a href="{{ url_for('.listusers') }}">Список пользователей</a></li>
     {% endif %}
     {% if current_user.getAdmin() == "feedback" or current_user.getAdmin() == "god" %}
+    <li><a href="{{ url_for('.admin_requests') }}">Запросы на администрирование</a></li>
     <li><a href="{{ url_for('.listfeedbacks') }}">Обратная связь</a></li>
     {% endif %}
     </ul>

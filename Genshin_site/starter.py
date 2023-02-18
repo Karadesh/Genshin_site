@@ -90,6 +90,15 @@ class Characters(db.Model):
     def __repr__(self):
         return f"<Charname: {self.name}>"
 
+class Admin_requests(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), nullable=False)
+    admin_type = db.Column(db.String(50), nullable=False)
+    reason = db.Column(db.String,nullable=False)
+
+    def __repr__(self):
+        return f"<Admin_requests: {self.name}>"
+
 @login_manager.user_loader
 def load_user(user_id):
     user = Users.query.filter(Users.id== user_id).first()

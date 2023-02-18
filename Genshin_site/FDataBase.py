@@ -2,7 +2,7 @@ from transliterate import translit
 import re
 from flask import url_for
 from flask_login import current_user
-from Genshin_site.starter import Comments, Users, Offmenu, Posts, Feedback, Feedback_answer, Characters, db
+from Genshin_site.starter import Comments, Users, Offmenu, Posts, Feedback, Feedback_answer, Characters, Admin_requests, db
 
 class FDataBase:
     def __init__(self):
@@ -205,6 +205,22 @@ class FDataBase:
              return False
         return True
     
+    def add_admin_request(self, name, admin_type, reason):
+        try:
+            same_request = Admin_requests.query.filter(Admin_requests.name==name).first()
+            if same_request:
+                return False
+            else:
+                try:
+                    adm_request=Admin_requests(name=name, admin_type=admin_type, reason=reason)
+                    db.session.add(adm_request)
+                    db.session.commit()
+                    return True
+                except:
+                    print('ошибка в добавлении реквеста add_admin_request')
+        except:
+            print('ошибка поиска реквеста add_admin_request')
+
     def get_admin_posts(self):
         try:
             posts_list=[]
@@ -302,6 +318,38 @@ class FDataBase:
             print("Ошибка изменения статуса: admin_post_change_active")
             return False
         
+    def admin_list_requests(self):
+        request_list=[]
+        try:
+            requests = Admin_requests.query.all()
+            for i in requests:
+                request_list.append({'name': i.name, 'type':i.admin_type, 'reason': i.reason})
+            return request_list
+        except:
+            print("Ошибка выборки admin_list_request")
+    
+    def admin_delete_request(self,name):
+        try:
+            request_to_delete = Admin_requests.query.filter(Admin_requests.name==name).first()
+            db.session.delete(request_to_delete)
+            db.session.commit()
+        except:
+            print("Ошибка удаления admin_delete_request")
+
+    def add_new_admin(self, username, type):
+        try:
+            new_admin=Users.query.filter(Users.login==username).first()
+            new_admin.admin=type
+            db.session.add(new_admin)
+            db.session.commit()
+            delete_request=Admin_requests.query.filter(Admin_requests.name==username).first()
+            db.session.delete(delete_request)
+            db.session.commit()
+            return True
+        except:
+            print("Ошибка добавления админа add_new_admin")
+            return False
+
     def getAdminCommentsAnonce(self, url):
         try:
             comments_anonce = Comments.query.filter(Comments.postname==url).order_by(Comments.time).all()

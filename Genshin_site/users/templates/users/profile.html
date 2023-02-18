@@ -23,6 +23,15 @@
     <li><a href="{{url_for('all_posts.posts')}}">Посты</a></li>
     <li><a href="{{url_for('all_posts.create_post')}}">Создать Пост</a></li>
     </ul>
+    {% block admin_pannel %}
+    {% if current_user.getAdmin() == 'user' %}
+    {% if current_user.isActive() == True %}
+    <p><a href="{{url_for('users.admin_request', username = current_user.getName())}}">Заявка на администратора</a></p>
+    {% endif %}
+    {% else %}
+    <p><a href="{{url_for('admin.index')}}">Панель администратора</a></p>
+    {% endif %}
+    {% endblock admin_pannel %}
     {% for cat, msg in get_flashed_messages(True)%}
     <div class="flash {{cat}}">{{msg}}</div>
     {% endfor %}

@@ -1,0 +1,10 @@
+<form action="/profile/admin_request/{{current_user.getName()}}" method="post" class="form-feedback">
+    <p>Тип администратора:</p>
+    <p><select name="admin_type">
+        <option>moderator</option>
+        <option>feedback</option>
+    </select></p>
+    <p>Причина:</p>        
+    <p><textarea name="reason" rows=7 cols=40></textarea>
+    <p><input type="submit", value="Отправить"/>
+    </form>

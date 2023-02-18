@@ -31,12 +31,20 @@ def logout():
     return redirect(url_for('mainapp.index'))
 
 
-@users.route("/profile/<username>")
+@users.route("/profile/<username>", methods=["POST", "GET"])
 @login_required
 def profile(username):
     if username != current_user.get_id():
         abort(401)
     return render_template("users/profile.html",title = "Profile")
+
+@users.route("/profile/admin_request/<username>", methods=["POST", "GET"])
+@login_required
+def admin_request(username):
+    if request.method=="POST":
+        dbase.add_admin_request(username, request.form['admin_type'], request.form['reason'])
+        return redirect(url_for('.profile', username=current_user.get_id()))
+    return render_template("users/admin_request.html", title="Admin request")
 
 @users.route("/my_posts")
 def my_posts():
