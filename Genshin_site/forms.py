@@ -31,5 +31,5 @@ class PostForm(FlaskForm):
     title = StringField("Название статьи:", validators=[DataRequired(), Length(min=1, max=100)])
     character = SelectField("Персонаж:", choices=chars_list)
     text = TextAreaField("Текст статьи:", validators=[DataRequired(), Length(min=10)])
-    image = MultipleFileField("Изображение (png, jpg, jpeg)")
+    image = MultipleFileField("Изображение (png, jpg, jpeg)", render_kw={'multiple':True})
     submit = SubmitField("Опубликовать")

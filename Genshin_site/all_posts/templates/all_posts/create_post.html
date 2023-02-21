@@ -13,6 +13,7 @@
 {% endblock off_menu %}
 {% if current_user.isActive() %}
 <form action="{{url_for('.create_post')}}" method="post" class="form-contact", enctype="multipart/form-data">
+    {{ form. csrf_token }}
     {{ form.hidden_tag() }}
     {{form.title.label}}
     {{ form.title(class='form-control') }}
@@ -20,7 +21,7 @@
     {{ form.character (class='form-control')}}
     {{form.text.label}}
     {{form.text(class='text-control')}}
-    {{form.image}}
+    {{form.image(multiple="True")}}
     {{ form.submit() }}
 </form>
 {% else %}

@@ -32,11 +32,13 @@
 <h1>Genshin Funzone</h1>
 {% endif %}
 {{ post | safe }}
+{% block images %}
 {% if post_image %}
 {% for i in post_image %}
 <div class="profile-ava"></div><img src="{{i}}" alt=""></div>
 {% endfor %}
 {% endif %}
+{% endblock %}
 <h3>{{creator.username}}</h3>
 <div class="profile-ava"><img src="{{creator.avatar}}"></div>
 {% block comments %}
