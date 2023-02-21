@@ -44,3 +44,16 @@ ul.mainmenu {
 .profile-ava img {max-width: 150px; height: auto;}
 
 .chars img {max-width: 150px; height: 150px;}
+
+.text-control{
+    width: 200px;
+}
+
+.text-control{
+    width: 50%;
+    padding:15px;
+    margin: 15px;
+    border-radius: 15px;
+    height:150px;
+    border:0;
+}

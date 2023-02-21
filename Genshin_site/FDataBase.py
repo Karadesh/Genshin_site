@@ -2,7 +2,7 @@ from transliterate import translit
 import re
 from flask import url_for
 from flask_login import current_user
-from Genshin_site.starter import Comments, Users, Offmenu, Posts, Feedback, Feedback_answer, Characters, Admin_requests, db
+from Genshin_site.starter import Comments, Users, Offmenu, Posts, Feedback, Feedback_answer, Characters, Admin_requests, db, PostsImages
 
 class FDataBase:
     def __init__(self):
@@ -37,10 +37,33 @@ class FDataBase:
     def get_post(self, alias):
         try:
             post_query = Posts.query.filter(Posts.url==alias).first()
-            post_list = {'title': post_query.title, 'text': post_query.text, 'url': post_query.url, 'userid': post_query.userid, 'isactive' : post_query.isactive, 'islocked' : post_query.islocked}
+            images=[]
+            try:
+                db_images = PostsImages.query.filter(PostsImages.Postsid==post_query.id).all()
+                for i in db_images:
+                    images.append(i.image)
+            except:
+                print("no images")
+            post_list = {'title': post_query.title, 'text': post_query.text, 'url': post_query.url, 'userid': post_query.userid, 'isactive' : post_query.isactive, 'islocked' : post_query.islocked, 'images': images}
             return post_list
         except:
             print("Ошибка получения статьи из бд get_post")
+
+    def get_post_id(self, alias):
+        try:
+            post_query = Posts.query.filter(Posts.title==alias).first()
+            post_id = post_query.id
+            return post_id
+        except:
+            print("Ошибка получения id из бд get_post_id")
+
+    def add_images(self, img_string, post_id):
+        try:
+            add_image = PostsImages(Postsid=post_id, image=img_string)
+            db.session.add(add_image)
+            db.session.commit()
+        except:
+            print("Ошибка добавления в бд add_images")
 
     def lockpost(self, alias):
         try:
@@ -380,6 +403,17 @@ class FDataBase:
             return chars_list
         except:
             print("Ошибка поиска списка в бд get_chars")
+            return False
+
+    def get_chars_names(self):
+        chars_list = []
+        try:
+            chars = Characters.query.all()
+            for i in chars:
+                chars_list.append(i.name)
+            return chars_list
+        except:
+            print("Ошибка поиска списка в бд get_chars_names")
             return False
     
     def get_char(self, url):

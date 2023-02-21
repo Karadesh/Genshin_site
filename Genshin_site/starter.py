@@ -45,6 +45,11 @@ class Posts(db.Model):
     def __repr__(self):
         return f"<posts {self.id}>"
 
+class PostsImages(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    Postsid = db.Column(db.Integer, nullable=False)
+    image = db.Column(db.String, nullable=True)
+
 class Comments(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     text = db.Column(db.String, nullable=False)

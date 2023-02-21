@@ -3,6 +3,9 @@ from flask_login import login_required, current_user
 from Genshin_site.FDataBase import FDataBase
 import base64
 from transliterate import translit
+from Genshin_site.forms import PostForm
+from PIL import Image
+from io import BytesIO
 
 all_posts = Blueprint('all_posts', __name__, template_folder='templates', static_folder='static')
 # chars_list = ["Дехья", "Мика", "Аль-Хайтам", "Яо Яо", "Странник", "Фарузан", 
@@ -100,6 +103,7 @@ def show_post(alias):
     userid = get_post['userid']
     isactive = get_post['isactive']
     islocked = get_post['islocked']
+    post_image=get_post['images']
     if not title:
         abort(404)
     if request.method == "POST":
@@ -111,7 +115,7 @@ def show_post(alias):
                 return(redirect(url_for('.show_post', alias=url)))
         else:
             flash('Ошибка добавления комментария', category = 'error')
-    return render_template("all_posts/post.html", title = title, post=post, isactive=isactive, userid=str(userid), off_menu=dbase.getOffmenu(), comments=dbase.getCommentsAnonce(url), url=[url], avatars=get_avatars_dict(url), islocked=islocked, creator=get_postcreator_avatar(url))
+    return render_template("all_posts/post.html", title = title, post=post, post_image=post_image, isactive=isactive, userid=str(userid), off_menu=dbase.getOffmenu(), comments=dbase.getCommentsAnonce(url), url=[url], avatars=get_avatars_dict(url), islocked=islocked, creator=get_postcreator_avatar(url))
 
 @all_posts.route("/confirm_delete/<alias>")
 @login_required
@@ -132,20 +136,33 @@ def delete_comment(alias, id):
 
 @all_posts.route("/create_post", methods=['POST', 'GET'])
 def create_post():
+    form = PostForm()
     if current_user.is_authenticated:
-        if request.method == "POST":
-            if len(request.form['name']) > 4 and len(request.form['post'])>1: #проверку на свой вкус
+        # if request.method == "POST":
+        #     if len(request.form['name']) > 4 and len(request.form['post'])>1: #проверку на свой вкус
+        if form.validate_on_submit():
                 userid = int(current_user.get_id())
                 try:
-                    res = dbase.create_post(request.form['name'], request.form['post'], userid, request.form['character'])
+                    dbase.create_post(form.title.data, form.text.data, userid, form.character.data)
+                    if form.image.data:
+                        post_id = dbase.get_post_id(form.title.data)
+                        for i in form.image.data:
+                            img=i.read()
+                    #img_size = (500,500)
+                    #pil_read = Image.open(img.read())
+                    #pil_read.thumbnail(img_size)
+                    # img_bytes=bytearray(img)
+                            base64_string=base64.b64encode(img).decode('utf-8')
+                            img_string=f'data:image/png;base64,{base64_string}'
+                #     dbase.create_post(form.title.data, form.text.data, userid, form.character.data, images_list)
+                # except:
+                            dbase.add_images(img_string, post_id)
                     return redirect(url_for('.posts'))
                 except:
-                    flash('Ошибка добавления статьи', category = 'error')
-            else:
-                flash('Ошибка добавления статьи', category = 'error')
+                     flash('Ошибка добавления статьи', category = 'error')
     else:
         return redirect(url_for('users.authorisation'))
-    return render_template("all_posts/create_post.html",title = "Create Post", off_menu=dbase.getOffmenu(), characters=dbase.get_chars())
+    return render_template("all_posts/create_post.html",title = "Create Post", off_menu=dbase.getOffmenu(), characters=dbase.get_chars(), form=form)
 
 @all_posts.route("/lock_post/<alias>")
 @login_required
