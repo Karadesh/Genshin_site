@@ -18,6 +18,7 @@
     <li>
     <p class="title"><a href="{{ url_for('.show_post', alias=p.url)}}">{{p.title}}</a></p>
     <p class="annonce">{{ p.text[:50] | striptags }}</p>
+    {{likes.get(p.id)}}
     </li>
     {% endfor %}
     </ul>

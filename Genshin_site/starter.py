@@ -104,6 +104,14 @@ class Admin_requests(db.Model):
     def __repr__(self):
         return f"<Admin_requests: {self.name}>"
 
+class Post_likes(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    postid = db.Column(db.Integer, nullable=False)
+    userid = db.Column(db.Integer, nullable=False)
+
+    def __repr__(self):
+        return f"<Post_likes: {self.postid}>"
+
 @login_manager.user_loader
 def load_user(user_id):
     user = Users.query.filter(Users.id== user_id).first()

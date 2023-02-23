@@ -36,6 +36,9 @@ def teardown_request(request):
     db =  None
     return request
 
+def how_likes(post_id):
+    return dbase.how_likes(post_id)
+
 def image_maker(chars_list, app=all_posts):
     chars_dict_list = []
     for i in chars_list:
@@ -88,11 +91,19 @@ def get_postcreator_avatar(url, app=all_posts):
 
 @all_posts.route("/posts")
 def posts():
-    return render_template("all_posts/posts.html",title = "Список постов", off_menu=dbase.getOffmenu(), posts=dbase.getPostsAnonce(), characters=dbase.get_chars())
+    likes={}
+    posts=dbase.getPostsAnonce()
+    for i in posts:
+        likes[i.id] = how_likes(i.id)
+    return render_template("all_posts/posts.html",title = "Список постов", off_menu=dbase.getOffmenu(), posts=posts, likes=likes, characters=dbase.get_chars())
 
 @all_posts.route("/posts_character/<alias>")
 def posts_character(alias):
-    return render_template("all_posts/posts_character.html",title = "Список постов", off_menu=dbase.getOffmenu(), posts=dbase.getPostsAnonceCharacter(alias))
+    likes={}
+    posts=dbase.getPostsAnonceCharacter(alias)
+    for i in posts:
+        likes[i.id] = how_likes(i.id)
+    return render_template("all_posts/posts_character.html",title = "Список постов", off_menu=dbase.getOffmenu(), posts=posts, likes=likes)
 
 @all_posts.route("/post/<alias>", methods=['POST', 'GET'])
 def show_post(alias):
@@ -104,6 +115,9 @@ def show_post(alias):
     isactive = get_post['isactive']
     islocked = get_post['islocked']
     post_image=get_post['images']
+    post_id = get_post['id']
+    islike = dbase.show_like(post_id, current_user.get_id())
+    likes = how_likes(post_id)
     if not title:
         abort(404)
     if request.method == "POST":
@@ -115,7 +129,12 @@ def show_post(alias):
                 return(redirect(url_for('.show_post', alias=url)))
         else:
             flash('Ошибка добавления комментария', category = 'error')
-    return render_template("all_posts/post.html", title = title, post=post, post_image=post_image, isactive=isactive, userid=str(userid), off_menu=dbase.getOffmenu(), comments=dbase.getCommentsAnonce(url), url=[url], avatars=get_avatars_dict(url), islocked=islocked, creator=get_postcreator_avatar(url))
+    return render_template("all_posts/post.html",likes=likes, islike=islike, post_id=post_id, title = title, post=post, post_image=post_image, isactive=isactive, userid=str(userid), off_menu=dbase.getOffmenu(), comments=dbase.getCommentsAnonce(url), url=[url], avatars=get_avatars_dict(url), islocked=islocked, creator=get_postcreator_avatar(url))
+
+@all_posts.route("/post_like/<post_id>?<userid>?<post_url>")
+def like_post_inside(post_id, userid, post_url):
+    dbase.like_post(post_id,userid)
+    return redirect(url_for('.show_post', alias=post_url))
 
 @all_posts.route("/confirm_delete/<alias>")
 @login_required

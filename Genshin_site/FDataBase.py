@@ -2,7 +2,7 @@ from transliterate import translit
 import re
 from flask import url_for
 from flask_login import current_user
-from Genshin_site.starter import Comments, Users, Offmenu, Posts, Feedback, Feedback_answer, Characters, Admin_requests, db, PostsImages
+from Genshin_site.starter import Comments, Users, Offmenu, Posts, Feedback, Feedback_answer, Characters, Admin_requests, db, PostsImages, Post_likes
 
 class FDataBase:
     def __init__(self):
@@ -44,7 +44,7 @@ class FDataBase:
                     images.append(i.image)
             except:
                 print("no images")
-            post_list = {'title': post_query.title, 'text': post_query.text, 'url': post_query.url, 'userid': post_query.userid, 'isactive' : post_query.isactive, 'islocked' : post_query.islocked, 'images': images}
+            post_list = {'id': post_query.id, 'title': post_query.title, 'text': post_query.text, 'url': post_query.url, 'userid': post_query.userid, 'isactive' : post_query.isactive, 'islocked' : post_query.islocked, 'images': images}
             return post_list
         except:
             print("Ошибка получения статьи из бд get_post")
@@ -56,6 +56,34 @@ class FDataBase:
             return post_id
         except:
             print("Ошибка получения id из бд get_post_id")
+
+    def like_post(self, postid,userid):
+        try:
+            searcher = Post_likes.query.filter(Post_likes.userid==userid and Post_likes.postid==postid).first()
+            db.session.delete(searcher)
+            db.session.commit()
+        except:
+            add_like = Post_likes(userid=userid, postid=postid)
+            db.session.add(add_like)
+            db.session.commit()
+        return True
+
+    def show_like(self, post_id, userid):
+        try:
+            searcher = Post_likes.query.filter(Post_likes.userid==userid and Post_likes.postid==post_id).first()
+            if searcher == None:
+                return False
+            else:
+                return True
+        except:
+            print('Ошибка выборки show_like')
+    
+    def how_likes(self, post_id):
+        like=0
+        searcher = Post_likes.query.filter(Post_likes.postid== post_id).all()
+        for i in searcher:
+            like+=1
+        return like
 
     def add_images(self, img_string, post_id):
         try:

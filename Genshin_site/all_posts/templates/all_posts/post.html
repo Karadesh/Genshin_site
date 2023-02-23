@@ -38,6 +38,12 @@
 <div class="profile-ava"></div><img src="{{i}}" alt=""></div>
 {% endfor %}
 {% endif %}
+{% if islike == True %}
+<div class="post_like"><a href="{{url_for('.like_post_inside', post_id=post_id, userid=current_user.get_id(), post_url=url[0])}}">Убрать лайк</a></div>
+{% else %}
+<div class="post_like"><a href="{{url_for('.like_post_inside', post_id=post_id, userid=current_user.get_id(), post_url=url[0])}}">Поставить лайк</a></div>
+{% endif %}
+{{ likes }}
 {% endblock %}
 <h3>{{creator.username}}</h3>
 <div class="profile-ava"><img src="{{creator.avatar}}"></div>
@@ -53,7 +59,7 @@
 <p class="annonce">{{ p.text}}</p>
 {% if current_user.is_authenticated %}
 {% if current_user.getName() == p.username %}
-<p><a href="{{url_for('all_posts.delete_comment', alias=url[0], id=p.id)}}" method="delete">Удалить комментарий</a></p>
+<p><a href="{{url_for('all_posts.delete_comment', alias=[url0], id=p.id)}}" method="delete">Удалить комментарий</a></p>
 {% endif %}
 {% endif %}
 </li>
