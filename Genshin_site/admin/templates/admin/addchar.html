@@ -1,0 +1,38 @@
+{% extends 'admin/base_admin.html' %}
+{% block content %}
+{{ super() }}
+{{title}}
+<form action="{{url_for('admin.add_character')}}" method="post" class="form-contact", enctype="multipart/form-data">
+<h1>Добавление нового персонажа</h1>
+{{ form_addchar.csrf_token }}
+{{ form_addchar.hidden_tag() }}
+<h3>Имя персонажа:</h3>
+{{ form_addchar.name }}
+<h3> Изображение персонажа:</h3>
+{{ form_addchar.image }}
+<h3> История персонажа:</h3>
+{{ form_addchar.story }}
+{{ form_addchar.submit() }}
+</form>
+<form action="{{url_for('admin.add_character')}}" method="post" class="form-contact", enctype="multipart/form-data">
+<h1>Добавление Изображения персонажа персонажа</h1>
+{{ form_addimage.csrf_token }}
+{{ form_addimage.hidden_tag() }}
+<h3>Имя персонажа:</h3>
+{{ form_addimage.name }}
+<h3> Изображение персонажа:</h3>
+{{ form_addimage.image }}
+{{ form_addimage.submit() }}
+</form>
+
+<form action="{{url_for('admin.add_character')}}" method="post" class="form-contact", enctype="multipart/form-data">
+<h1>Добавление Истории персонажа персонажа</h1>
+{{ form_addstory.csrf_token }}
+{{ form_addstory.hidden_tag() }}
+<h3>Имя персонажа:</h3>
+{{ form_addstory.name }}
+<h3>История персонажа</h3>
+{{ form_addstory.story }}
+{{ form_addstory.submit() }}
+</form>
+{% endblock %}

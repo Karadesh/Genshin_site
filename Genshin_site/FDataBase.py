@@ -353,6 +353,22 @@ class FDataBase:
              print("Ошибка добавления в БД: create_answer")
              return False
 
+    def admin_add_character(self, name, url, image=None, story=None):
+        try:
+            char_searcher = Characters.query.filter(Characters.name==name).first()
+            if char_searcher == None:
+                char_searcher = Characters(name=name, image=image, url=url, story=story)
+            else:
+                if image!=None:
+                    char_searcher.image=image
+                if story!=None:
+                    char_searcher.story=story
+            db.session.add(char_searcher)
+            db.session.commit()
+        except:
+            print("ошибка добавления персонажа admin_add_character")
+            
+    
     def admin_post_change_active(self, alias, reason):
         try:
             status_changer = Posts.query.filter(Posts.url==alias).first()

@@ -1,6 +1,9 @@
 from flask import Blueprint, request,render_template,flash, abort, url_for, redirect, g
 from Genshin_site.FDataBase import FDataBase
 from flask_login import login_required, current_user
+from Genshin_site.forms import AddCharForm, AddImageForm, AddStoryForm
+import base64
+from transliterate import translit
 
 admin = Blueprint('admin', __name__, template_folder='templates', static_folder='static')
 
@@ -192,3 +195,41 @@ def cancel_admin(username):
         except:
             print("ошибка удаления реквеста cancel_admin")
     return redirect(url_for('.admin_requests'))
+
+@admin.route("/add_character", methods=['POST', 'GET'])
+def add_character():
+    if not current_user.is_authenticated:
+        return redirect(url_for('users.authorisation'))
+    form_addchar = AddCharForm()
+    form_addimage = AddImageForm()
+    form_addstory = AddStoryForm()
+    if request.method == "POST" and form_addchar.validate_on_submit():
+        try:
+            image = form_addchar.image.data
+            img=image.read()
+            base64_string=base64.b64encode(img).decode('utf-8')
+            img_string=f'data:image/png;base64,{base64_string}'
+            url = translit(form_addchar.name.data, language_code='ru', reversed=True)
+            dbase.admin_add_character(form_addchar.name.data, url, img_string, form_addchar.story.data)
+            return redirect(url_for('.add_character'))
+        except:
+            print("Ошибка добавления полной формы add_character")
+    if request.method == "POST" and form_addimage.validate_on_submit():
+        try:
+            image = form_addimage.image.data
+            img=image.read()
+            base64_string=base64.b64encode(img).decode('utf-8')
+            img_string=f'data:image/png;base64,{base64_string}'
+            url = translit(form_addimage.name.data, language_code='ru', reversed=True)
+            dbase.admin_add_character(name = form_addimage.name.data, url = url, image=img_string)
+            return redirect(url_for('.add_character'))
+        except:
+            print("Ошибка добавления картинки add_character")
+    if request.method == "POST" and form_addstory.validate_on_submit():
+        try:
+            url = translit(form_addstory.name.data, language_code='ru', reversed=True)
+            dbase.admin_add_character(name = form_addstory.name.data, url = url, story = form_addstory.story.data)
+            return redirect(url_for('.add_character'))
+        except:
+            print("Ошибка добавления истории add_character")
+    return render_template('admin/addchar.html', title="Добавление/изменение персонажа", form_addchar=form_addchar, form_addimage=form_addimage, form_addstory=form_addstory)

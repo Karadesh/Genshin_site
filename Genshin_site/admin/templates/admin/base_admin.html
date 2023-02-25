@@ -21,6 +21,7 @@
     {% if current_user.getAdmin() == "feedback" or current_user.getAdmin() == "god" %}
     <li><a href="{{ url_for('.admin_requests') }}">Запросы на администрирование</a></li>
     <li><a href="{{ url_for('.listfeedbacks') }}">Обратная связь</a></li>
+    <li><a href="{{ url_for('.add_character') }}">Добавление персонажа</a></li>
     {% endif %}
     </ul>
     <div class="clear"></div>

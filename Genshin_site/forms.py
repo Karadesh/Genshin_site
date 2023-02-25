@@ -1,7 +1,7 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, BooleanField, PasswordField, SelectField, TextAreaField, MultipleFileField
 from wtforms.validators import DataRequired, Email, Length, EqualTo
-from flask_wtf.file import FileAllowed
+from flask_wtf.file import FileField, FileAllowed
 
 chars_list = [("Дехья", "Дехья"), ("Мика", "Мика"), ("Аль-Хайтам", "Аль-Хайтам"), ("Яо Яо","Яо Яо"), ("Странник", "Странник"), ("Фарузан","Фарузан"), 
               ("Лайла","Лайла"), ("Нахида", "Нахида"), ("Нилу","Нилу"), ("Сайно","Сайно"), ("Кандакия","Кандакия"), ("Дори","Дори"), ("Тигнари","Тигнари")] 
@@ -31,5 +31,21 @@ class PostForm(FlaskForm):
     title = StringField("Название статьи:", validators=[DataRequired(), Length(min=1, max=100)])
     character = SelectField("Персонаж:", choices=chars_list)
     text = TextAreaField("Текст статьи:", validators=[DataRequired(), Length(min=10)])
-    image = MultipleFileField("Изображение (png, jpg, jpeg)", render_kw={'multiple':True})
+    image = MultipleFileField("Изображение (png, jpg, jpeg)", render_kw={'multiple':True}, validators=[FileAllowed(['png', 'jpg', 'jpeg'])])
     submit = SubmitField("Опубликовать")
+
+class AddCharForm(FlaskForm):
+    name = StringField("Имя персонажа:", validators=[DataRequired(), Length(min=1, max=100)])
+    image = FileField("Изображение (png, jpg, jpeg)", validators=[FileAllowed(['png', 'jpg', 'jpeg'])])
+    story = TextAreaField("История персонажа:", validators=[DataRequired(), Length(min=10)])
+    submit = SubmitField("Добавить")
+
+class AddImageForm(FlaskForm):
+    name = SelectField("Персонаж:", choices=chars_list)
+    image = FileField("Изображение (png, jpg, jpeg)", validators=[FileAllowed(['png', 'jpg', 'jpeg'])])
+    submit = SubmitField("Добавить")
+
+class AddStoryForm(FlaskForm):
+    name = SelectField("Персонаж:", choices=chars_list)
+    story = TextAreaField("История персонажа:", validators=[DataRequired(), Length(min=10)])
+    submit = SubmitField("Добавить")
