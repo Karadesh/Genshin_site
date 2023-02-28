@@ -16,6 +16,8 @@
     </ul>
 {% endblock off_menu %}
 {% if isactive == True %}
+<h3>{{creator.username}}</h3>
+<div class="profile-ava"><img src="{{creator.avatar}}"></div>
 {%  if title %}
 <h1>{{ title }}</h1>
 {% if current_user.is_authenticated %}
@@ -45,8 +47,6 @@
 {% endif %}
 {{ likes }}
 {% endblock %}
-<h3>{{creator.username}}</h3>
-<div class="profile-ava"><img src="{{creator.avatar}}"></div>
 {% block comments %}
 {% for p in comments %}
 {% for j,k in avatars.items() %}

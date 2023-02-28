@@ -41,9 +41,22 @@ class Posts(db.Model):
     reason = db.Column(db.String, nullable=True)
     changer = db.Column(db.String(50), nullable=True)
     islocked = db.Column(db.Boolean, default=False)
+    postOfDay = db.Column(db.Boolean, default=False)
 
     def __repr__(self):
         return f"<posts {self.id}>"
+
+class PostOfDay(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(200), nullable=False)
+    text = db.Column(db.String, nullable=False)
+    url = db.Column(db.String(200), nullable=False)
+    character = db.Column(db.String(200), nullable=False)
+    userid = db.Column(db.Integer, db.ForeignKey('users.id'))
+    time = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f"<postofday {self.id}>"
 
 class PostsImages(db.Model):
     id = db.Column(db.Integer, primary_key=True)

@@ -167,14 +167,8 @@ def create_post():
                         post_id = dbase.get_post_id(form.title.data)
                         for i in form.image.data:
                             img=i.read()
-                    #img_size = (500,500)
-                    #pil_read = Image.open(img.read())
-                    #pil_read.thumbnail(img_size)
-                    # img_bytes=bytearray(img)
                             base64_string=base64.b64encode(img).decode('utf-8')
                             img_string=f'data:image/png;base64,{base64_string}'
-                #     dbase.create_post(form.title.data, form.text.data, userid, form.character.data, images_list)
-                # except:
                             dbase.add_images(img_string, post_id)
                     return redirect(url_for('.posts'))
                 except:

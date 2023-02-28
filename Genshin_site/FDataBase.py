@@ -44,7 +44,7 @@ class FDataBase:
                     images.append(i.image)
             except:
                 print("no images")
-            post_list = {'id': post_query.id, 'title': post_query.title, 'text': post_query.text, 'url': post_query.url, 'userid': post_query.userid, 'isactive' : post_query.isactive, 'islocked' : post_query.islocked, 'images': images}
+            post_list = {'id': post_query.id, 'title': post_query.title, 'text': post_query.text, 'url': post_query.url, 'userid': post_query.userid, 'isactive' : post_query.isactive, 'islocked' : post_query.islocked, 'images': images, 'postOfDay': post_query.postOfDay}
             return post_list
         except:
             print("Ошибка получения статьи из бд get_post")

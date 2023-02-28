@@ -1,0 +1,20 @@
+{% extends 'admin/base_admin.html' %}
+{% block content %}
+{{ super() }}
+{{title}}
+{% for cat, msg in get_flashed_messages(True) %}
+<div class="flash {{cat}}">{{msg}}</div>
+{% endfor %}
+<form action="{{url_for('.admin_make_post')}}" method="post" class="form-contact", enctype="multipart/form-data">
+    {{ form. csrf_token }}
+    {{ form.hidden_tag() }}
+    {{form.title.label}}
+    {{ form.title(class='form-control') }}
+    {{form.character.label}}
+    {{ form.character (class='form-control')}}
+    {{form.text.label}}
+    {{form.text(class='text-control')}}
+    {{form.image(multiple="True")}}
+    {{ form.submit() }}
+</form>
+{% endblock content %}
