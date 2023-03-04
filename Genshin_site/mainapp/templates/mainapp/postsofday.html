@@ -16,10 +16,10 @@
 <ul class="list-posts">
     {% for p in posts %}
     <li>
-    <img src="{{images.get(p.id)}}" alt="img">
-    <p class="title"><a href="{{ url_for('.show_post', alias=p.url)}}">{{p.title}}</a></p>
+    <img src="{{images.get(p.postid)}}" alt="img">
+    <p class="title"><a href="{{ url_for('all_posts.show_post', alias=p.url)}}">{{p.title}}</a></p>
     <p class="annonce">{{ p.text[:50] | striptags }}</p>
-    {{likes.get(p.id)}}
+    {{likes.get(p.postid)}}
     </li>
     {% endfor %}
     </ul>

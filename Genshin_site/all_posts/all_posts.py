@@ -100,10 +100,12 @@ def posts():
 @all_posts.route("/posts_character/<alias>")
 def posts_character(alias):
     likes={}
+    images={}
     posts=dbase.getPostsAnonceCharacter(alias)
     for i in posts:
         likes[i.id] = how_likes(i.id)
-    return render_template("all_posts/posts_character.html",title = "Список постов", off_menu=dbase.getOffmenu(), posts=posts, likes=likes)
+        images[i.id] = dbase.getPostPreview(i.id)
+    return render_template("all_posts/posts_character.html",title = "Список постов", off_menu=dbase.getOffmenu(), posts=posts, likes=likes, images=images)
 
 @all_posts.route("/post/<alias>", methods=['POST', 'GET'])
 def show_post(alias):

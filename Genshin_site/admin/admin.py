@@ -27,7 +27,7 @@ def index():
         return redirect(url_for('users.authorisation'))
     elif current_user.getAdmin() == "user":
         abort(401)
-    return render_template('admin/index.html', title='Admin pannel')
+    return render_template('admin/index.html', title='Admin pannel',posts =dbase.make_daypost())
 
 @admin.route('/list-posts')
 def listposts():
@@ -254,3 +254,11 @@ def admin_make_post():
                 except:
                      flash('Ошибка добавления статьи', category = 'error')
     return render_template('admin/makepost.html', title="Создать пост", characters=dbase.get_chars(), form=form)
+
+@admin.route("/makepostofday/<id>")
+def make_post_of_day(id):
+    try:
+        dbase.choose_daypost(id)
+        return redirect(url_for(".index"))
+    except:
+        print("Не получилось выбрать пост дня")

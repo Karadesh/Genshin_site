@@ -1,4 +1,14 @@
 {% extends 'admin/base_admin.html' %}
 {% block content %}
 {{ super() }}
+{% block postofday %}
+{% if current_user.getAdmin() == "feedback" or current_user.getAdmin() == "god" %}
+{% for p in posts %}
+<p>{{p.title}}</p>
+<p>{{p.text}}</p>
+<a href="{{url_for('.make_post_of_day', id=p.id)}}">Сделать постом дня</a>
+{% endfor %}
+<a href="{{url_for('.index')}}">Показать другие посты</a>
+{% endif %}
+{% endblock postofday %}
 {% endblock %}

@@ -1,15 +1,13 @@
 from flask import Flask
 from Genshin_site.config import Config
 from Genshin_site.db import db
-import datetime
 from flask_login import LoginManager
 from Genshin_site.UserLogin import UserLogin
+from datetime import datetime, date
 
 
 db = db
 login_manager = LoginManager()
-
-from datetime import datetime
 
 class Users(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -53,7 +51,8 @@ class PostOfDay(db.Model):
     url = db.Column(db.String(200), nullable=False)
     character = db.Column(db.String(200), nullable=False)
     userid = db.Column(db.Integer, db.ForeignKey('users.id'))
-    time = db.Column(db.DateTime, default=datetime.utcnow)
+    time = db.Column(db.String(50), default=str(date.today()))
+    postid = db.Column(db.Integer,nullable=False)
 
     def __repr__(self):
         return f"<postofday {self.id}>"
@@ -124,7 +123,13 @@ class Post_likes(db.Model):
 
     def __repr__(self):
         return f"<Post_likes: {self.postid}>"
-
+    
+# def post_of_day_make():
+#     schedule.every().day.at("13:20").do(db.post_of_day)
+#     while True:
+#         schedule.run_pending()
+#         sleep(1)
+    
 @login_manager.user_loader
 def load_user(user_id):
     user = Users.query.filter(Users.id== user_id).first()

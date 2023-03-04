@@ -2,7 +2,11 @@ from transliterate import translit
 import re
 from flask import url_for
 from flask_login import current_user
-from Genshin_site.starter import Comments, Users, Offmenu, Posts, Feedback, Feedback_answer, Characters, Admin_requests, db, PostsImages, Post_likes
+from Genshin_site.starter import Comments, Users, Offmenu, Posts, Feedback, Feedback_answer, Characters, Admin_requests, db, PostsImages, Post_likes, PostOfDay
+import random
+from datetime import date
+from sqlalchemy import func
+
 
 class FDataBase:
     def __init__(self):
@@ -124,6 +128,14 @@ class FDataBase:
         except:
             print("Ошибка получения постов getPostsAnonce")
         return []
+    
+    def getPostPreview(self, postid):
+        try:
+            image = PostsImages.query.filter(PostsImages.Postsid==postid).first()
+            return image.image
+        except:
+            print("Не удалось найти изображение getPostPreview")
+            return []
     
     def getPostsAnonceCharacter(self, alias):
         try:
@@ -468,4 +480,96 @@ class FDataBase:
             print("Ошибка поиска персонажа в бд get_char")
             return False
         
+    def post_of_day(self):
+        try:
+            active_posts = Posts.query.filter(Posts.isactive==True, Posts.postOfDay==False).all()
+            randint = random.randint(0, len(active_posts)-1)
+            todays_post = active_posts[randint]
+            post_adding = PostOfDay(title=todays_post.title, text=todays_post.text, url=todays_post.url, character=todays_post.character, userid=todays_post.userid,time=todays_post.time)
+            db.session.add(post_adding)
+            db.session.commit()
+            return True
+        except:
+            print("Ошибка в добавлении поста дня")
+            return False
+        
+    def make_daypost(self):
+        current_date=str(date.today())
+        todays_post =  PostOfDay.query.filter(PostOfDay.time==current_date).first()
+        if todays_post==None:
+            lucky_posts_list = []
+            all_posts = Posts.query.filter(Posts.isactive==True, Posts.postOfDay==False).all()
+            if (len(all_posts)+1)>5:
+                counter=5
+            else:
+                counter=len(all_posts)+1
+            for i in range(counter):
+                randint = random.randint(0, len(all_posts)-1)
+                lucky_post = all_posts[randint]
+                lucky_posts_list.append(lucky_post)
+            lucky_posts_list = set(lucky_posts_list)
+            lucky_posts_list = list(lucky_posts_list)
+            return lucky_posts_list
+        else:
+            return []
 
+    def choose_daypost(self, id):
+        current_date = str(date.today())
+        same_post_of_day = PostOfDay.query.filter(PostOfDay.time == current_date).first()
+        if same_post_of_day == None:
+            try:
+                post_searcher = Posts.query.filter(Posts.id==id).first()
+                post_searcher.postOfDay=True
+                db.session.add(post_searcher)
+                db.session.commit()
+                print(post_searcher)
+                post_of_day = PostOfDay(title=post_searcher.title, text=post_searcher.text, url=post_searcher.url, character=post_searcher.character, userid=post_searcher.userid, postid=post_searcher.id, time=current_date)
+                db.session.add(post_of_day)
+                db.session.commit()
+                return True
+            except:
+                print("Ошибка добавления поста дня choose_daypost")
+                return False
+        else:
+            print("Пост дня уже существует")
+            return False
+    
+    def show_post_of_day(self):
+        current_date = str(date.today())
+        images = []
+        try:
+            daypost = PostOfDay.query.filter(PostOfDay.time==current_date).first()
+            image = PostsImages.query.filter(PostsImages.Postsid==daypost.postid).all()
+            for i in image:
+                images.append(i.image)
+            post_of_day={'title': daypost.title, 'text': daypost.text, 'url': daypost.url, 'character': daypost.character, 'userid': daypost.userid, 'time': daypost.time, 'postid': daypost.postid, 'images': images}
+            return post_of_day
+        except:
+            return []
+    
+    def dayposts_show(self):
+        current_date = str(date.today())
+        dayposts = []
+        try:
+            max_daypost= PostOfDay.query.filter(PostOfDay.time==current_date).first()
+            if (max_daypost.id - 1) <3:
+                counter=max_daypost.id
+            else:
+                counter = 3
+            for i in range(counter-1):
+                max_daypost = PostOfDay.query.filter(PostOfDay.id==(max_daypost.id-1)).first()
+                image = PostsImages.query.filter(PostsImages.Postsid== max_daypost.postid).first()
+                daypost={'title': max_daypost.title, 'url': max_daypost.url, 'image': image.image, 'time': max_daypost.time}
+                dayposts.append(daypost)
+            return dayposts
+        except:
+            print("Ошибка поиска постов дня dayposts_show")
+            return []
+        
+    def dayposts_list(self):
+        try:
+            dayposts = PostOfDay.query.all()
+            return dayposts
+        except:
+            print("Ошибка поиска постов дня dayposts_list")
+            return []

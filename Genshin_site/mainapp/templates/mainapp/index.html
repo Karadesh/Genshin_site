@@ -13,4 +13,19 @@
 {% else %}
 <h1>Genshin Funzone</h1>
 {% endif %}
+{% block daypost %}
+<h3><a href="{{ url_for('all_posts.show_post', alias=postofday.url)}}">{{postofday.title}}</a></h3>
+<p>{{postofday.text[:40]}}</p>
+<p>{{likes}}</p>
+{% for i in postofday.images %}
+<a href="{{ url_for('all_posts.show_post', alias=postofday.url)}}"><img src="{{i}}" alt="pic"></a>
+{% endfor %}
+{% endblock daypost %}
+{% block dayposts %}
+{% for p in dayposts %}
+{{p['time']}}
+<a href="{{url_for('all_posts.show_post', alias=p.url)}}"><img src="{{p['image']}}" alt="{{p['time']}}"></a>
+{% endfor %}
+<a href="{{url_for('.all_postsofday')}}">Смотреть все -><img src="{{postofday.images[0]}}" alt="pic"></a>
+{% endblock dayposts %}
 {% endblock content%}
