@@ -6,8 +6,26 @@ import base64
 from transliterate import translit
 
 admin = Blueprint('admin', __name__, template_folder='templates', static_folder='static')
-
 dbase = None
+
+def user_checker():
+    if current_user.getAdmin() == "user":
+       return True
+
+def authentificator():
+    if not current_user.is_authenticated:
+        return False
+    else:
+        return True
+    
+def moderator_checker():
+    if current_user.getAdmin() == "moderator" or current_user.getAdmin() == "god":
+        return True
+    
+def feedback_checker():
+    if current_user.getAdmin() == "feedback" or current_user.getAdmin() == "god":
+        return True
+
 @admin.before_request
 def before_request():
     """соединение с бд перед выполнением запроса"""
@@ -23,17 +41,19 @@ def teardown_request(request):
 
 @admin.route('/')
 def index():
-    if not current_user.is_authenticated:
+    if not authentificator():
         return redirect(url_for('users.authorisation'))
-    elif current_user.getAdmin() == "user":
-        abort(401)
+    if user_checker():
+       return abort(401)
     return render_template('admin/index.html', title='Admin pannel',posts =dbase.make_daypost())
 
 @admin.route('/list-posts')
 def listposts():
-    if not current_user.is_authenticated:
+    if not authentificator():
         return redirect(url_for('users.authorisation'))
-    if current_user.getAdmin() == "moderator" or current_user.getAdmin() == "god":
+    if user_checker():
+       return abort(401)
+    if moderator_checker():
         list_posts = []
         try:
             list_posts = dbase.get_admin_posts()
@@ -45,9 +65,11 @@ def listposts():
 
 @admin.route('/post/<alias>')
 def admin_showpost(alias):
-    if not current_user.is_authenticated:
+    if not authentificator():
         return redirect(url_for('users.authorisation'))
-    if current_user.getAdmin() == "moderator" or current_user.getAdmin() == "god":
+    if user_checker():
+       return abort(401)
+    if moderator_checker():
         get_post = dbase.get_post(alias)
         title = get_post['title'] 
         post = get_post['text']
@@ -61,9 +83,11 @@ def admin_showpost(alias):
 
 @admin.route("/lock_post/<alias>")
 def lock_post(alias):
-    if not current_user.is_authenticated:
+    if not authentificator():
         return redirect(url_for('users.authorisation'))
-    if current_user.getAdmin() == "moderator" or current_user.getAdmin() == "god":
+    if user_checker():
+       return abort(401)
+    if moderator_checker():
         try:
             dbase.lockpost(alias)
         except:
@@ -74,9 +98,11 @@ def lock_post(alias):
 
 @admin.route('/changepoststatus/<alias>', methods=['POST', 'GET'])
 def admin_changepoststatus(alias):
-    if not current_user.is_authenticated:
+    if not authentificator():
         return redirect(url_for('users.authorisation'))
-    if current_user.getAdmin() == "moderator" or current_user.getAdmin() == "god":
+    if user_checker():
+       return abort(401)
+    if moderator_checker():
         get_post=dbase.get_post(alias)
         if request.method == "POST":
             try:
@@ -91,10 +117,12 @@ def admin_changepoststatus(alias):
 
 @admin.route('/deletecomment/<id>?<postname>')
 def deletecomment(id, postname):
-    if not current_user.is_authenticated:
+    if not authentificator():
         return redirect(url_for('users.authorisation'))
+    if user_checker():
+       return abort(401)
     else:
-        if current_user.getAdmin() == "moderator" or current_user.getAdmin() == "god":
+        if moderator_checker():
             dbase.delete_comment(id, 'deleted by admin')
         else:
             abort(401)
@@ -102,9 +130,11 @@ def deletecomment(id, postname):
 
 @admin.route('/list-users')
 def listusers():
-    if not current_user.is_authenticated:
+    if not authentificator():
         return redirect(url_for('users.authorisation'))
-    if current_user.getAdmin() == "moderator" or current_user.getAdmin() == "god":
+    if user_checker():
+       return abort(401)
+    if moderator_checker():
         list_users = []
         try:
             list_users = dbase.admin_users()
@@ -116,9 +146,11 @@ def listusers():
 
 @admin.route('/user_changestatus/<id>')
 def user_changestatus(id):
-    if not current_user.is_authenticated:
+    if not authentificator():
         return redirect(url_for('users.authorisation'))
-    if current_user.getAdmin() == "moderator" or current_user.getAdmin() == "god":
+    if user_checker():
+       return abort(401)
+    if moderator_checker():
         try:
             dbase.admin_user_change_active(id)
             return redirect(url_for('.listusers'))
@@ -128,9 +160,11 @@ def user_changestatus(id):
         abort(401)
 @admin.route('/feedbacks')
 def listfeedbacks():
-    if not current_user.is_authenticated:
+    if not authentificator():
         return redirect(url_for('users.authorisation'))
-    if current_user.getAdmin() == "feedback" or current_user.getAdmin() == "god":
+    if user_checker():
+       return abort(401)
+    if feedback_checker():
         list_feedbacks = []
         try:
             list_feedbacks = dbase.admin_feedback()
@@ -142,9 +176,11 @@ def listfeedbacks():
 
 @admin.route("/feedback/<int:id>", methods=['POST', 'GET'])
 def feedbackanswer(id):
-    if not current_user.is_authenticated:
+    if not authentificator():
         return redirect(url_for('users.authorisation'))
-    if current_user.getAdmin() == "feedback" or current_user.getAdmin() == "god":
+    if user_checker():
+       return abort(401)
+    if feedback_checker():
         get_feedback = dbase.get_feedback(id)
         print(id)
         feedback_id = id
@@ -165,9 +201,11 @@ def feedbackanswer(id):
 
 @admin.route("/adminrequests")
 def admin_requests():
-    if not current_user.is_authenticated:
+    if not authentificator():
         return redirect(url_for('users.authorisation'))
-    if current_user.getAdmin() == "feedback" or current_user.getAdmin() == "god":
+    if user_checker():
+       return abort(401)
+    if feedback_checker():
         try:
             list_requests = dbase.admin_list_requests()
         except:
@@ -176,9 +214,11 @@ def admin_requests():
 
 @admin.route("/aprove_request/<username>?<type>")
 def aprove_admin(username,type):
-    if not current_user.is_authenticated:
+    if not authentificator():
         return redirect(url_for('users.authorisation'))
-    if current_user.getAdmin() == "feedback" or current_user.getAdmin() == "god":
+    if user_checker():
+       return abort(401)
+    if feedback_checker():
         try:
             dbase.add_new_admin(username,type)
         except:
@@ -187,9 +227,11 @@ def aprove_admin(username,type):
 
 @admin.route("/cancel_request/<username>")
 def cancel_admin(username):
-    if not current_user.is_authenticated:
+    if not authentificator():
         return redirect(url_for('users.authorisation'))
-    if current_user.getAdmin() == "feedback" or current_user.getAdmin() == "god":
+    if user_checker():
+       return abort(401)
+    if feedback_checker():
         try:
             dbase.admin_delete_request(username)
         except:
@@ -198,67 +240,78 @@ def cancel_admin(username):
 
 @admin.route("/add_character", methods=['POST', 'GET'])
 def add_character():
-    if not current_user.is_authenticated:
+    if not authentificator():
         return redirect(url_for('users.authorisation'))
-    form_addchar = AddCharForm()
-    form_addimage = AddImageForm()
-    form_addstory = AddStoryForm()
-    if request.method == "POST" and form_addchar.validate_on_submit():
-        try:
-            image = form_addchar.image.data
-            img=image.read()
-            base64_string=base64.b64encode(img).decode('utf-8')
-            img_string=f'data:image/png;base64,{base64_string}'
-            url = translit(form_addchar.name.data, language_code='ru', reversed=True)
-            dbase.admin_add_character(form_addchar.name.data, url, img_string, form_addchar.story.data)
-            return redirect(url_for('.add_character'))
-        except:
-            print("Ошибка добавления полной формы add_character")
-    if request.method == "POST" and form_addimage.validate_on_submit():
-        try:
-            image = form_addimage.image.data
-            img=image.read()
-            base64_string=base64.b64encode(img).decode('utf-8')
-            img_string=f'data:image/png;base64,{base64_string}'
-            url = translit(form_addimage.name.data, language_code='ru', reversed=True)
-            dbase.admin_add_character(name = form_addimage.name.data, url = url, image=img_string)
-            return redirect(url_for('.add_character'))
-        except:
-            print("Ошибка добавления картинки add_character")
-    if request.method == "POST" and form_addstory.validate_on_submit():
-        try:
-            url = translit(form_addstory.name.data, language_code='ru', reversed=True)
-            dbase.admin_add_character(name = form_addstory.name.data, url = url, story = form_addstory.story.data)
-            return redirect(url_for('.add_character'))
-        except:
-            print("Ошибка добавления истории add_character")
+    if user_checker():
+       return abort(401)
+    if feedback_checker():
+        form_addchar = AddCharForm()
+        form_addimage = AddImageForm()
+        form_addstory = AddStoryForm()
+        if request.method == "POST" and form_addchar.validate_on_submit():
+            try:
+                image = form_addchar.image.data
+                img=image.read()
+                base64_string=base64.b64encode(img).decode('utf-8')
+                img_string=f'data:image/png;base64,{base64_string}'
+                url = translit(form_addchar.name.data, language_code='ru', reversed=True)
+                dbase.admin_add_character(form_addchar.name.data, url, img_string, form_addchar.story.data)
+                return redirect(url_for('.add_character'))
+            except:
+                print("Ошибка добавления полной формы add_character")
+        if request.method == "POST" and form_addimage.validate_on_submit():
+            try:
+                image = form_addimage.image.data
+                img=image.read()
+                base64_string=base64.b64encode(img).decode('utf-8')
+                img_string=f'data:image/png;base64,{base64_string}'
+                url = translit(form_addimage.name.data, language_code='ru', reversed=True)
+                dbase.admin_add_character(name = form_addimage.name.data, url = url, image=img_string)
+                return redirect(url_for('.add_character'))
+            except:
+                print("Ошибка добавления картинки add_character")
+        if request.method == "POST" and form_addstory.validate_on_submit():
+            try:
+                url = translit(form_addstory.name.data, language_code='ru', reversed=True)
+                dbase.admin_add_character(name = form_addstory.name.data, url = url, story = form_addstory.story.data)
+                return redirect(url_for('.add_character'))
+            except:
+                print("Ошибка добавления истории add_character")
     return render_template('admin/addchar.html', title="Добавление/изменение персонажа", form_addchar=form_addchar, form_addimage=form_addimage, form_addstory=form_addstory)
 
 @admin.route("/make_post", methods=["POST", "GET"])
 def admin_make_post():
-    if not current_user.is_authenticated:
+    if not authentificator():
         return redirect(url_for('users.authorisation'))
-    form = PostForm()
-    if form.validate_on_submit():
-                userid = int(current_user.get_id())
-                try:
-                    dbase.create_post(form.title.data, form.text.data, userid, form.character.data)
-                    if form.image.data:
-                        post_id = dbase.get_post_id(form.title.data)
-                        for i in form.image.data:
-                            img=i.read()
-                            base64_string=base64.b64encode(img).decode('utf-8')
-                            img_string=f'data:image/png;base64,{base64_string}'
-                            dbase.add_images(img_string, post_id)
-                    return redirect(url_for('.admin_make_post'))
-                except:
-                     flash('Ошибка добавления статьи', category = 'error')
+    if user_checker():
+       return abort(401)
+    if feedback_checker():
+        form = PostForm()
+        if form.validate_on_submit():
+            userid = int(current_user.get_id())
+            try:
+                dbase.create_post(form.title.data, form.text.data, userid, form.character.data)
+                if form.image.data:
+                    post_id = dbase.get_post_id(form.title.data)
+                    for i in form.image.data:
+                        img=i.read()
+                        base64_string=base64.b64encode(img).decode('utf-8')
+                        img_string=f'data:image/png;base64,{base64_string}'
+                        dbase.add_images(img_string, post_id)
+                return redirect(url_for('.admin_make_post'))
+            except:
+                flash('Ошибка добавления статьи', category = 'error')
     return render_template('admin/makepost.html', title="Создать пост", characters=dbase.get_chars(), form=form)
 
 @admin.route("/makepostofday/<id>")
 def make_post_of_day(id):
-    try:
-        dbase.choose_daypost(id)
-        return redirect(url_for(".index"))
-    except:
-        print("Не получилось выбрать пост дня")
+    if not authentificator():
+        return redirect(url_for('users.authorisation'))
+    if user_checker():
+       return abort(401)
+    if feedback_checker():
+        try:
+            dbase.choose_daypost(id)
+            return redirect(url_for(".index"))
+        except:
+            print("Не получилось выбрать пост дня")
