@@ -4,8 +4,9 @@ from Genshin_site.db import db
 from flask_login import LoginManager
 from Genshin_site.UserLogin import UserLogin
 from datetime import datetime, date
+from flask_mail import Mail
 
-
+mail = Mail()
 db = db
 login_manager = LoginManager()
 
@@ -146,12 +147,14 @@ def create_app():
     from Genshin_site.users.users import users
     from Genshin_site.mainapp.mainapp import mainapp
     from Genshin_site.apperrors.apperrors import apperrors
+
     
     app.register_blueprint(admin, url_prefix='/admin')
     app.register_blueprint(all_posts)
     app.register_blueprint(users)
     app.register_blueprint(mainapp)
     app.register_blueprint(apperrors)
+    mail.init_app(app)
 
     app.app_context().push()
     db.create_all()

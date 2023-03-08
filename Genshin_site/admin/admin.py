@@ -4,9 +4,13 @@ from flask_login import login_required, current_user
 from Genshin_site.forms import AddCharForm, AddImageForm, AddStoryForm, PostForm
 import base64
 from transliterate import translit
+from Genshin_site.admin.utils import send_feedback_answer
+
 
 admin = Blueprint('admin', __name__, template_folder='templates', static_folder='static')
 dbase = None
+
+
 
 def user_checker():
     if current_user.getAdmin() == "user":
@@ -182,7 +186,6 @@ def feedbackanswer(id):
        return abort(401)
     if feedback_checker():
         get_feedback = dbase.get_feedback(id)
-        print(id)
         feedback_id = id
         username = get_feedback['username']
         email = get_feedback['email']
@@ -192,6 +195,8 @@ def feedbackanswer(id):
         if request.method == "POST":
             try:
                 dbase.create_answer(feedback_id, username, email, message, request.form['username'], request.form['message'])
+                feedback=dbase.find_answer(feedback_id)
+                send_feedback_answer(feedback)
                 return(redirect(url_for('.listfeedbacks' )))
             except:
                 print('Ошибка создания ответа на фидбек')

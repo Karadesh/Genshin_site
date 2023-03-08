@@ -23,6 +23,13 @@ all_posts = Blueprint('all_posts', __name__, template_folder='templates', static
 # Не забудьте вернуть обратно!
 
 dbase = None
+
+def authentificator():
+    if not current_user.is_authenticated:
+        return False
+    else:
+        return True
+
 @all_posts.before_request
 def before_request():
     """соединение с бд перед выполнением запроса"""
@@ -134,6 +141,7 @@ def show_post(alias):
     return render_template("all_posts/post.html",likes=likes, islike=islike, post_id=post_id, title = title, post=post, post_image=post_image, isactive=isactive, userid=str(userid), off_menu=dbase.getOffmenu(), comments=dbase.getCommentsAnonce(url), url=[url], avatars=get_avatars_dict(url), islocked=islocked, creator=get_postcreator_avatar(url))
 
 @all_posts.route("/post_like/<post_id>?<userid>?<post_url>")
+@login_required
 def like_post_inside(post_id, userid, post_url):
     dbase.like_post(post_id,userid)
     return redirect(url_for('.show_post', alias=post_url))
@@ -158,7 +166,7 @@ def delete_comment(alias, id):
 @all_posts.route("/create_post", methods=['POST', 'GET'])
 def create_post():
     form = PostForm()
-    if current_user.is_authenticated:
+    if authentificator():
         # if request.method == "POST":
         #     if len(request.form['name']) > 4 and len(request.form['post'])>1: #проверку на свой вкус
         if form.validate_on_submit():

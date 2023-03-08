@@ -365,6 +365,14 @@ class FDataBase:
              print("Ошибка добавления в БД: create_answer")
              return False
 
+    def find_answer(self, feedback_id):
+        try:
+            answer = Feedback_answer.query.filter(Feedback_answer.feedbackid==feedback_id).first()
+            return {'username': answer.username, 'email': answer.email, 'answer': answer.answer, 'admin_username': answer.admin_username}
+        except:
+            print('No answers find_answer')
+            return ''
+
     def admin_add_character(self, name, url, image=None, story=None):
         try:
             char_searcher = Characters.query.filter(Characters.name==name).first()
