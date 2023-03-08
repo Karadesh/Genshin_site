@@ -36,7 +36,8 @@ def logout():
 def profile(username):
     if username != current_user.get_id():
         abort(401)
-    return render_template("users/profile.html",title = "Profile")
+    likes = dbase.user_likes(current_user.get_id())
+    return render_template("users/profile.html",title = "Profile", likes=likes)
 
 @users.route("/profile/admin_request/<username>", methods=["POST", "GET"])
 @login_required

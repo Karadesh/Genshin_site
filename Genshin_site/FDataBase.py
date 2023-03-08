@@ -67,7 +67,9 @@ class FDataBase:
             db.session.delete(searcher)
             db.session.commit()
         except:
-            add_like = Post_likes(userid=userid, postid=postid)
+            post_finder = Posts.query.filter(Posts.id==postid).first()
+            creatorid = post_finder.userid
+            add_like = Post_likes(userid=userid, postid=postid, creatorid=creatorid)
             db.session.add(add_like)
             db.session.commit()
         return True
@@ -268,6 +270,13 @@ class FDataBase:
              return False
         return True
     
+    def user_likes(self, userid):
+        likes = 0
+        posts = Post_likes.query.filter(Post_likes.creatorid==userid).all()
+        for i in posts:
+            likes = likes+1
+        return likes
+
     def add_admin_request(self, name, admin_type, reason):
         try:
             same_request = Admin_requests.query.filter(Admin_requests.name==name).first()
@@ -556,15 +565,26 @@ class FDataBase:
             return []
     
     def dayposts_show(self):
-        current_date = str(date.today())
         dayposts = []
         try:
-            max_daypost= PostOfDay.query.filter(PostOfDay.time==current_date).first()
-            if (max_daypost.id - 1) <3:
-                counter=max_daypost.id
+            max_daypost= PostOfDay.query.all()
+            max_daypost = max_daypost[-1]
+            image = PostsImages.query.filter(PostsImages.Postsid == max_daypost.postid).first()
+            likes = Post_likes.query.filter(Post_likes.postid==max_daypost.id).all()
+            like = 0
+            if likes == None:
+                like = 0
             else:
-                counter = 3
-            for i in range(counter-1):
+                for i in likes:
+                    like = like+1
+            daypost={'title': max_daypost.title, 'text': max_daypost.text, 'url': max_daypost.url, 'character': max_daypost.character, 'userid': max_daypost.userid, 'time': max_daypost.time, 'postid': max_daypost.postid, 'images': image.image, 'likes': like}
+            dayposts.append(daypost)
+            d = max_daypost.id - 1
+            if d <= 3:
+                counter=d
+            else:
+                counter = 6
+            for i in range(counter):
                 max_daypost = PostOfDay.query.filter(PostOfDay.id==(max_daypost.id-1)).first()
                 image = PostsImages.query.filter(PostsImages.Postsid== max_daypost.postid).first()
                 daypost={'title': max_daypost.title, 'url': max_daypost.url, 'image': image.image, 'time': max_daypost.time}

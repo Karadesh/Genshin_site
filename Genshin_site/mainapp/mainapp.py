@@ -24,8 +24,7 @@ def teardown_request(request):
 @mainapp.route("/index")
 @mainapp.route("/")
 def index():
-    postofday=dbase.show_post_of_day()
-    return render_template("mainapp/index.html", off_menu=dbase.getOffmenu(), postofday=postofday, dayposts=dbase.dayposts_show(), likes=dbase.how_likes(postofday['postid']))
+    return render_template("mainapp/index.html", off_menu=dbase.getOffmenu(), dayposts=dbase.dayposts_show())
 
 @mainapp.route("/guides")
 def guides():

@@ -121,6 +121,7 @@ class Post_likes(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     postid = db.Column(db.Integer, nullable=False)
     userid = db.Column(db.Integer, nullable=False)
+    creatorid = db.Column(db.Integer, nullable=False)
 
     def __repr__(self):
         return f"<Post_likes: {self.postid}>"
