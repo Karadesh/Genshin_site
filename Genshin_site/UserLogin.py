@@ -22,6 +22,9 @@ class UserLogin(UserMixin):
     
     def getEmail(self):
         return self.__user.email if self.__user else "Без email"
+    
+    def getCharacter(self):
+        return self.__user.character if self.__user else "Без персонажа"
 
     def getAvatar(self,app):
         img=None

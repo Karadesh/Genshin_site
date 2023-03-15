@@ -52,6 +52,16 @@
             <li>Имя: {{ current_user.getName() }}</li>
             <li>Email: {{ current_user.getEmail() }}</li>
             <li>Количество лайков: {{likes}}</li>
+            <li><img src="{{image}}"></li>
+            <li><form action="{{url_for('.profile', username=current_user.get_id())}}" method="POST" enctype="multipart/form-data">
+            {{ form.hidden_tag() }}
+            {% for field in form if field.name not in ['csrf_token', 'submit'] -%}
+            {{ field.label() }}
+            {{ field() }}
+            {% endfor %}
+            {{ form.submit() }}
+            </form>
+            </li>
             </ul>
         </td>
         </tr>

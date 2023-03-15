@@ -20,8 +20,8 @@
         {% block mainmenu -%}
     <ul class="mainmenu">
     <li><a href="{{url_for('mainapp.index')}}">Главная</a></li>
-    <li><a href="{{url_for('all_posts.posts')}}">Посты</a></li>
-    <li><a href="{{url_for('all_posts.create_post')}}">Создать Пост</a></li>
+    <li><a href="{{url_for('all_posts.posts')}}">Гайды</a></li>
+    <li><a href="{{url_for('all_posts.create_post')}}">Создать Гайд</a></li>
     {% if current_user.is_authenticated %}
     <li><a href="{{url_for('users.profile', username=current_user.get_id())}}">Профиль</a></li>
     <li><a href="{{url_for('users.logout')}}">Выйти</a></li>

@@ -26,10 +26,6 @@ def teardown_request(request):
 def index():
     return render_template("mainapp/index.html", off_menu=dbase.getOffmenu(), dayposts=dbase.dayposts_show())
 
-@mainapp.route("/guides")
-def guides():
-    return render_template("mainapp/guides.html",title = "Guides", off_menu=dbase.getOffmenu())
-
 @mainapp.route("/characters")
 def characters():
     return render_template("mainapp/characters.html",title = "Персонажи", off_menu=dbase.getOffmenu(), characters=dbase.get_chars())

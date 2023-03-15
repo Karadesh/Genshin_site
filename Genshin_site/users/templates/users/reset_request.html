@@ -1,0 +1,13 @@
+{% block content %}
+<form action="" method="post" class="form-reset_request">
+    <div class="content">
+        {% for cat, msg in get_flashed_messages(True) %}
+        <div class="flash {{cat}}">{{msg}}</div>
+        {% endfor %}
+    {{ form.hidden_tag() }}
+        {% for field in form if field.name not in ['csrf_token', 'remember', 'submit'] -%}
+        <p>{{ field.label() }}
+        <p>{{ field() }}
+        {% endfor %}
+        <p>{{ form.submit() }}
+{% endblock content %}

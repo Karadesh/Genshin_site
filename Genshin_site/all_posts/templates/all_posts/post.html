@@ -59,7 +59,7 @@
 <p class="annonce">{{ p.text}}</p>
 {% if current_user.is_authenticated %}
 {% if current_user.getName() == p.username %}
-<p><a href="{{url_for('all_posts.delete_comment', alias=[url0], id=p.id)}}" method="delete">Удалить комментарий</a></p>
+<p><a href="{{url_for('all_posts.delete_comment', alias=url[0], id=p.id)}}" method="delete">Удалить комментарий</a></p>
 {% endif %}
 {% endif %}
 </li>

@@ -2,8 +2,9 @@ from flask import Blueprint, g, redirect, url_for, abort, render_template, make_
 from Genshin_site.FDataBase import FDataBase
 from flask_login import LoginManager, login_required, login_user, logout_user, current_user
 from Genshin_site.UserLogin import UserLogin
-from Genshin_site.forms import AuthorisationForm, RegistrationForm
+from Genshin_site.forms import AuthorisationForm, RegistrationForm, ChooseCharacterForm, RequestResetForm, ResetPasswordForm
 from werkzeug.security import generate_password_hash, check_password_hash
+from Genshin_site.users.utils import send_reset_email 
 
 users = Blueprint('users', __name__, template_folder='templates', static_folder='static')
 login_manager = LoginManager(users)
@@ -37,7 +38,11 @@ def profile(username):
     if username != current_user.get_id():
         abort(401)
     likes = dbase.user_likes(current_user.get_id())
-    return render_template("users/profile.html",title = "Profile", likes=likes)
+    form = ChooseCharacterForm()
+    if form.validate_on_submit():
+        dbase.choose_character(form.name.data, current_user.get_id())
+    image = dbase.search_character_image()
+    return render_template("users/profile.html",title = "Profile", likes=likes, form=form, image=image)
 
 @users.route("/profile/admin_request/<username>", methods=["POST", "GET"])
 @login_required
@@ -109,3 +114,31 @@ def register():
     else:
         flash("Проверьте поле 'e-mail'. Также пароль должен быть не менее одного символа", "error")
     return render_template("users/register.html", title="Registration", form=form)
+
+@users.route("/reset_password", methods=['GET', 'POST'])
+def reset_request():
+    if current_user.is_authenticated:
+        return redirect(url_for('mainapp.index'))
+    form = RequestResetForm()
+    if form.validate_on_submit():
+        user = dbase.search_user_by_email(form.email.data)
+        send_reset_email(user)
+        flash('На почту отправлено письмо с''инструкциями по сбросу пароля', 'success')
+        return redirect(url_for('.authorisation'))
+    return render_template('users/reset_request.html', title='Сброс пароля', form=form)
+
+@users.route("/reset_password/<token>", methods=['GET', 'POST'])
+def reset_token(token):
+    if current_user.is_authenticated:
+        return redirect(url_for('mainapp.index'))
+    user = dbase.verify_reset_tokens(token)
+    if user is None:
+        flash('Это недействительный или просроченный токен', 'error')
+        return redirect(url_for('.reset_request'))
+    form = ResetPasswordForm()
+    if form.validate_on_submit():
+        hash = generate_password_hash(form.password.data)
+        dbase.change_password(user, hash)
+        flash('Ваш пароль был обновлен!''Теперь вы можете авторизоваться', 'success')
+        return redirect(url_for('.authorisation'))
+    return render_template('users/reset_token.html', title='Сброс пароля', form=form)

@@ -2,11 +2,9 @@ from transliterate import translit
 import re
 from flask import url_for
 from flask_login import current_user
-from Genshin_site.starter import Comments, Users, Offmenu, Posts, Feedback, Feedback_answer, Characters, Admin_requests, db, PostsImages, Post_likes, PostOfDay
+from Genshin_site.models import Comments, Users, Offmenu, Posts, Feedback, Feedback_answer, Characters, Admin_requests, db, PostsImages, Post_likes, PostOfDay
 import random
 from datetime import date
-from sqlalchemy import func
-
 
 class FDataBase:
     def __init__(self):
@@ -112,16 +110,19 @@ class FDataBase:
             print("Ошибка смены статуса поста lockpost")
 
     def delete_post(self, alias):
-        try:
-            delete_post = Posts.query.filter(Posts.url == alias).first()
-            delete_post.isactive=False
-            delete_post.reason='deleted by user'
-            delete_post.changer=current_user.getName()
-            db.session.add(delete_post)
-            db.session.commit()
-        except:
-            print("Ошибка удаления из бд delete_post")
-        return (False, False)
+        delete_post = Posts.query.filter(Posts.url == alias).first()
+        user_checker = current_user.get_id()
+        if delete_post.userid==user_checker:
+            try:
+                delete_post.isactive=False
+                delete_post.reason='deleted by user'
+                delete_post.changer=current_user.getName()
+                db.session.add(delete_post)
+                db.session.commit()
+                return True
+            except:
+                print("Ошибка удаления из бд delete_post")
+                return (False, False)
 
     def getPostsAnonce(self):
         try:
@@ -201,15 +202,21 @@ class FDataBase:
 
     def delete_comment(self, id, reason='deleted by user'):
         try:
+            creator_checker = current_user.getName()
             comm_to_delete = Comments.query.filter(Comments.id==id).first()
-            comm_to_delete.isactive = False
             if reason=='deleted by user':
                 try:
-                    comm_to_delete.changer = current_user.getName()
+                    if comm_to_delete.username == creator_checker:
+                        comm_to_delete.isactive = False
+                        comm_to_delete.changer = current_user.getName()
+                    
                 except:
                     print('Ошибка при удалении комментария delete_comment')
             else:
-                comm_to_delete.changer='admin'
+                admin_checker = Users.query.filter(Users.login==creator_checker).first()
+                if admin_checker.admin == 'moderator' or admin_checker.admin == 'god': 
+                    comm_to_delete.changer=creator_checker
+                    comm_to_delete.isactive = False
             comm_to_delete.reason = reason
             db.session.add(comm_to_delete)
             db.session.commit()
@@ -399,20 +406,22 @@ class FDataBase:
             
     
     def admin_post_change_active(self, alias, reason):
-        try:
-            status_changer = Posts.query.filter(Posts.url==alias).first()
-            if status_changer.isactive==True:
-                status_changer.isactive=False
-            else:
-                status_changer.isactive=True
-            status_changer.reason=reason
-            status_changer.changer='admin'
-            db.session.add(status_changer)
-            db.session.commit()
-            return True
-        except:
-            print("Ошибка изменения статуса: admin_post_change_active")
-            return False
+        admin_checker = current_user.getAdmin()
+        if admin_checker == 'moderator' or admin_checker == 'god':
+            try:
+                status_changer = Posts.query.filter(Posts.url==alias).first()
+                if status_changer.isactive==True:
+                    status_changer.isactive=False
+                else:
+                    status_changer.isactive=True
+                status_changer.reason=reason
+                status_changer.changer=current_user.getName()
+                db.session.add(status_changer)
+                db.session.commit()
+                return True
+            except:
+                print("Ошибка изменения статуса: admin_post_change_active")
+                return False
         
     def admin_list_requests(self):
         request_list=[]
@@ -521,9 +530,12 @@ class FDataBase:
             else:
                 counter=len(all_posts)+1
             for i in range(counter):
-                randint = random.randint(0, len(all_posts)-1)
-                lucky_post = all_posts[randint]
-                lucky_posts_list.append(lucky_post)
+                try:
+                    randint = random.randint(0, len(all_posts)-1)
+                    lucky_post = all_posts[randint]
+                    lucky_posts_list.append(lucky_post)
+                except:
+                    print("Постов, подходящих под критерии, нет")
             lucky_posts_list = set(lucky_posts_list)
             lucky_posts_list = list(lucky_posts_list)
             return lucky_posts_list
@@ -601,3 +613,45 @@ class FDataBase:
         except:
             print("Ошибка поиска постов дня dayposts_list")
             return []
+        
+    def choose_character(self, character_name, userid):
+        try:
+            user = Users.query.filter(Users.id==userid).first()
+            user.character = character_name
+            db.session.add(user)
+            db.session.commit()
+            return True
+        except:
+            print("Пользователь не найден choose_character")
+            return False
+    
+    def search_character_image(self):
+        try:
+            character = current_user.getCharacter()
+            searcher = Characters.query.filter(Characters.name==character).first()
+            return searcher.image
+        except:
+            print("Персонаж не найден search_character_image")
+            return False
+        
+    def search_user(id):
+        try:
+            user = Users.query.filter(Users.id== id).first()
+            return user
+        except:
+            print("не вышло search_user")
+
+    def search_user_by_email(self, email):
+        user = Users.query.filter(Users.email==email).first()
+        return user
+
+    def verify_reset_tokens(self, token):
+        same_token=token
+        user = Users.verify_reset_token(same_token)
+        return user
+    
+    def change_password(self, user, password):
+        user.password = password
+        db.session.add(user)
+        db.session.commit()
+        return True

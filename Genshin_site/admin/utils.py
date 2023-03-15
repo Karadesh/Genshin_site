@@ -9,7 +9,7 @@ def send_feedback_answer(feedback_answer):
     admin_user = find_request['admin_username']
     username = find_request['username']
     msg = Message('Ответ на обратную связь Genshin Guides',
-                  sender='sender', #yandex лучше. Почта на яндексе
+                  sender='', #yandex лучше. Почта на яндексе
                   recipients=[email])
     msg.body = f'''Здравствуйте, {username}! {answer} Спасибо за обратную связь! {admin_user}'''
     mail.send(msg)
