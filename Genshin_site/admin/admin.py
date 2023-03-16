@@ -292,21 +292,23 @@ def admin_make_post():
        return abort(401)
     if feedback_checker():
         form = PostForm()
-        if form.validate_on_submit():
-            userid = int(current_user.get_id())
-            try:
-                dbase.create_post(form.title.data, form.text.data, userid, form.character.data)
-                if form.image.data:
-                    post_id = dbase.get_post_id(form.title.data)
-                    for i in form.image.data:
-                        img=i.read()
-                        base64_string=base64.b64encode(img).decode('utf-8')
-                        img_string=f'data:image/png;base64,{base64_string}'
-                        dbase.add_images(img_string, post_id)
-                return redirect(url_for('.admin_make_post'))
-            except:
-                flash('Ошибка добавления статьи', category = 'error')
-    return render_template('admin/makepost.html', title="Создать пост", characters=dbase.get_chars(), form=form)
+        select_chars = dbase.character_searcher()
+        if request.method=="POST":
+            if form.validate_on_submit():
+                userid = int(current_user.get_id())
+                try:
+                    dbase.create_post(form.title.data, form.text.data, userid, request.form['character'])
+                    if form.image.data:
+                        post_id = dbase.get_post_id(form.title.data)
+                        for i in form.image.data:
+                            img=i.read()
+                            base64_string=base64.b64encode(img).decode('utf-8')
+                            img_string=f'data:image/png;base64,{base64_string}'
+                            dbase.add_images(img_string, post_id)
+                    return redirect(url_for('.admin_make_post'))
+                except:
+                    flash('Ошибка добавления статьи', category = 'error')
+    return render_template('admin/makepost.html', title="Создать пост", form=form, select_chars=select_chars)
 
 @admin.route("/makepostofday/<id>")
 def make_post_of_day(id):

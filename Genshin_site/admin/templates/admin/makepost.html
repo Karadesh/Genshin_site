@@ -10,8 +10,11 @@
     {{ form.hidden_tag() }}
     {{form.title.label}}
     {{ form.title(class='form-control') }}
-    {{form.character.label}}
-    {{ form.character (class='form-control')}}
+    <select name="character" class="form-control">
+        {% for i in select_chars %}
+        <option value="{{i}}">{{i}}</option>
+        {% endfor %}
+    </select>
     {{form.text.label}}
     {{form.text(class='text-control')}}
     {{form.image(multiple="True")}}

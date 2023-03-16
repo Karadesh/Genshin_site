@@ -16,7 +16,9 @@
 <ul class="list-posts">
     {% for p in posts %}
     <li>
+    {% if images.get(p.id) != None %}
     <img src="{{images.get(p.id)}}" alt="img">
+    {% endif %}
     <p class="title"><a href="{{ url_for('.show_post', alias=p.url)}}">{{p.title}}</a></p>
     <p class="annonce">{{ p.text[:50] | striptags }}</p>
     {{likes.get(p.id)}}

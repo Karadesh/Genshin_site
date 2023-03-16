@@ -169,23 +169,27 @@ def create_post():
     if authentificator():
         # if request.method == "POST":
         #     if len(request.form['name']) > 4 and len(request.form['post'])>1: #проверку на свой вкус
-        if form.validate_on_submit():
+        select_chars = dbase.character_searcher()
+        if request.method == "POST":
+            if form.validate_on_submit():
                 userid = int(current_user.get_id())
                 try:
-                    dbase.create_post(form.title.data, form.text.data, userid, form.character.data)
-                    if form.image.data:
+                    dbase.create_post(form.title.data, form.text.data, userid, request.form['character'])
+                    if form.image.data != '':
                         post_id = dbase.get_post_id(form.title.data)
                         for i in form.image.data:
                             img=i.read()
                             base64_string=base64.b64encode(img).decode('utf-8')
                             img_string=f'data:image/png;base64,{base64_string}'
+                            if img_string == 'data:image/png;base64,':
+                                img_string = None
                             dbase.add_images(img_string, post_id)
                     return redirect(url_for('.posts'))
                 except:
                      flash('Ошибка добавления статьи', category = 'error')
     else:
         return redirect(url_for('users.authorisation'))
-    return render_template("all_posts/create_post.html",title = "Create Post", off_menu=dbase.getOffmenu(), characters=dbase.get_chars(), form=form)
+    return render_template("all_posts/create_post.html",title = "Create Post", off_menu=dbase.getOffmenu(), characters=dbase.get_chars(), form=form, select_chars=select_chars)
 
 @all_posts.route("/lock_post/<alias>")
 @login_required

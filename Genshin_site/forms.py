@@ -3,8 +3,8 @@ from wtforms import StringField, SubmitField, BooleanField, PasswordField, Selec
 from wtforms.validators import DataRequired, Email, Length, EqualTo
 from flask_wtf.file import FileField, FileAllowed
 from Genshin_site.FDataBase import FDataBase as dbase
-from Genshin_site.models import Users
-
+from Genshin_site.models import Users, Characters
+from flask import current_app
 
 chars_list = [("Дехья", "Дехья"), ("Мика", "Мика"), ("Аль-Хайтам", "Аль-Хайтам"), ("Яо Яо","Яо Яо"), ("Странник", "Странник"), ("Фарузан","Фарузан"), 
               ("Лайла","Лайла"), ("Нахида", "Нахида"), ("Нилу","Нилу"), ("Сайно","Сайно"), ("Кандакия","Кандакия"), ("Дори","Дори"), ("Тигнари","Тигнари")] 
@@ -32,7 +32,6 @@ class RegistrationForm(FlaskForm):
 
 class PostForm(FlaskForm):
     title = StringField("Название статьи:", validators=[DataRequired(), Length(min=1, max=100)])
-    character = SelectField("Персонаж:", choices=chars_list)
     text = TextAreaField("Текст статьи:", validators=[DataRequired(), Length(min=10)])
     image = MultipleFileField("Изображение (png, jpg, jpeg)", render_kw={'multiple':True}, validators=[FileAllowed(['png', 'jpg', 'jpeg'])])
     submit = SubmitField("Опубликовать")

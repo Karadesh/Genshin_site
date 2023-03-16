@@ -43,9 +43,12 @@ class FDataBase:
             try:
                 db_images = PostsImages.query.filter(PostsImages.Postsid==post_query.id).all()
                 for i in db_images:
-                    images.append(i.image)
+                    if i.image==None:
+                        images=None
+                    else:
+                        images.append(i.image)
             except:
-                print("no images")
+                ("не получилось получить изображения get_post")
             post_list = {'id': post_query.id, 'title': post_query.title, 'text': post_query.text, 'url': post_query.url, 'userid': post_query.userid, 'isactive' : post_query.isactive, 'islocked' : post_query.islocked, 'images': images, 'postOfDay': post_query.postOfDay}
             return post_list
         except:
@@ -138,7 +141,7 @@ class FDataBase:
             return image.image
         except:
             print("Не удалось найти изображение getPostPreview")
-            return []
+            return None
     
     def getPostsAnonceCharacter(self, alias):
         try:
@@ -655,3 +658,10 @@ class FDataBase:
         db.session.add(user)
         db.session.commit()
         return True
+    
+    def character_searcher(self):
+        chars=Characters.query.all()
+        chars_list = []
+        for i in chars:
+            chars_list.append(i.name)
+        return chars_list
