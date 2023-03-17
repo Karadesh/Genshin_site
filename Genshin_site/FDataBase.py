@@ -611,7 +611,7 @@ class FDataBase:
         
     def dayposts_list(self):
         try:
-            dayposts = PostOfDay.query.all()
+            dayposts = PostOfDay.query.order_by(PostOfDay.id.desc()).all()
             return dayposts
         except:
             print("Ошибка поиска постов дня dayposts_list")

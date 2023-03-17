@@ -1,11 +1,17 @@
 from flask import Blueprint, render_template, g, request, flash, redirect, url_for
 from Genshin_site.FDataBase import FDataBase
 from Genshin_site.db import db
-from time import sleep
-import schedule
+import base64
+
 
 
 mainapp = Blueprint('mainapp', __name__, template_folder='templates', static_folder='static')
+
+def standart_image(app=mainapp):
+    with app.open_resource(app.root_path + url_for('.static', filename= 'images/watch_all.png'), "rb") as f:
+        base64_string=base64.b64encode(f.read()).decode('utf-8')
+        based_string = f'data:image/png;base64,{base64_string}'
+    return based_string
 
 dbase = None
 @mainapp.before_request
@@ -24,7 +30,7 @@ def teardown_request(request):
 @mainapp.route("/index")
 @mainapp.route("/")
 def index():
-    return render_template("mainapp/index.html", off_menu=dbase.getOffmenu(), dayposts=dbase.dayposts_show())
+    return render_template("mainapp/index.html", off_menu=dbase.getOffmenu(), dayposts=dbase.dayposts_show(), standart_image=standart_image())
 
 @mainapp.route("/characters")
 def characters():

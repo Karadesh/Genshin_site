@@ -304,6 +304,8 @@ def admin_make_post():
                             img=i.read()
                             base64_string=base64.b64encode(img).decode('utf-8')
                             img_string=f'data:image/png;base64,{base64_string}'
+                            if img_string=='data:image/png;base64,':
+                                img_string=None
                             dbase.add_images(img_string, post_id)
                     return redirect(url_for('.admin_make_post'))
                 except:
