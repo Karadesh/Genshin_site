@@ -5,10 +5,12 @@ from flask_login import LoginManager
 from Genshin_site.UserLogin import UserLogin
 from flask_mail import Mail
 from Genshin_site.FDataBase import FDataBase as dbase
+from flask_ckeditor import CKEditor
 
 mail = Mail()
 db = db
 login_manager = LoginManager()
+ckeditor = CKEditor()
     
 @login_manager.user_loader
 def load_user(user_id):
@@ -20,6 +22,7 @@ def create_app():
     app.config.from_object(Config)
     db.init_app(app)
     login_manager.init_app(app)
+    ckeditor.init_app(app)
 
     from Genshin_site.admin.admin import admin
     from Genshin_site.all_posts.all_posts import all_posts

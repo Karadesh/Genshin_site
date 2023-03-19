@@ -20,7 +20,7 @@
     <img src="{{images.get(p.id)}}" alt="img">
     {% endif %}
     <p class="title"><a href="{{ url_for('.show_post', alias=p.url)}}">{{p.title}}</a></p>
-    <p class="annonce">{{ p.text[:50] | striptags }}</p>
+    <p class="annonce">{{ p.text[:200] | safe }}</p>
     {{likes.get(p.id)}}
     </li>
     {% endfor %}

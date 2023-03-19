@@ -253,6 +253,7 @@ def add_character():
         form_addchar = AddCharForm()
         form_addimage = AddImageForm()
         form_addstory = AddStoryForm()
+        select_chars = dbase.character_searcher()
         if request.method == "POST" and form_addchar.validate_on_submit():
             try:
                 image = form_addchar.image.data
@@ -270,19 +271,19 @@ def add_character():
                 img=image.read()
                 base64_string=base64.b64encode(img).decode('utf-8')
                 img_string=f'data:image/png;base64,{base64_string}'
-                url = translit(form_addimage.name.data, language_code='ru', reversed=True)
-                dbase.admin_add_character(name = form_addimage.name.data, url = url, image=img_string)
+                url = translit(request.form['character'], language_code='ru', reversed=True)
+                dbase.admin_add_character(name = request.form['character'], url = url, image=img_string)
                 return redirect(url_for('.add_character'))
             except:
                 print("Ошибка добавления картинки add_character")
         if request.method == "POST" and form_addstory.validate_on_submit():
             try:
-                url = translit(form_addstory.name.data, language_code='ru', reversed=True)
-                dbase.admin_add_character(name = form_addstory.name.data, url = url, story = form_addstory.story.data)
+                url = translit(request.form['character'], language_code='ru', reversed=True)
+                dbase.admin_add_character(name = request.form['character'], url = url, story = form_addstory.story.data)
                 return redirect(url_for('.add_character'))
             except:
                 print("Ошибка добавления истории add_character")
-    return render_template('admin/addchar.html', title="Добавление/изменение персонажа", form_addchar=form_addchar, form_addimage=form_addimage, form_addstory=form_addstory)
+    return render_template('admin/addchar.html', title="Добавление/изменение персонажа", form_addchar=form_addchar, form_addimage=form_addimage, form_addstory=form_addstory, select_chars=select_chars)
 
 @admin.route("/make_post", methods=["POST", "GET"])
 def admin_make_post():

@@ -595,7 +595,7 @@ class FDataBase:
             daypost={'title': max_daypost.title, 'text': max_daypost.text, 'url': max_daypost.url, 'character': max_daypost.character, 'userid': max_daypost.userid, 'time': max_daypost.time, 'postid': max_daypost.postid, 'images': image.image, 'likes': like}
             dayposts.append(daypost)
             d = max_daypost.id - 1
-            if d <= 3:
+            if d <= 6:
                 counter=d
             else:
                 counter = 6

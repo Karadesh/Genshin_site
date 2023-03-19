@@ -7,7 +7,7 @@
 {% for p in list_posts %}
 <li>
     <p class="title"><a href="{{ url_for('admin.admin_showpost', alias=p.url)}}">{{p.title}}</a></p>
-    <p class="annonce">{{ p.text[:50] | striptags }}</p>
+    <p class="annonce">{{ p.text[:200] | safe }}</p>
     <p class="announce">Статус:</p>
     {% if p.islocked==True %}
     <p><a href="{{url_for('admin.lock_post', alias=p.url)}}">Пост закрыт(Открыть)</a></p>

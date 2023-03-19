@@ -54,12 +54,12 @@
             <li>Количество лайков: {{likes}}</li>
             <li><img src="{{image}}"></li>
             <li><form action="{{url_for('.profile', username=current_user.get_id())}}" method="POST" enctype="multipart/form-data">
-            {{ form.hidden_tag() }}
-            {% for field in form if field.name not in ['csrf_token', 'submit'] -%}
-            {{ field.label() }}
-            {{ field() }}
-            {% endfor %}
-            {{ form.submit() }}
+                <select name="character" class="form-control">
+                    {% for i in select_chars %}
+                    <option value="{{i}}">{{i}}</option>
+                    {% endfor %}
+                </select>
+            <input type="submit" value="Выбрать персонажа">
             </form>
             </li>
             </ul>

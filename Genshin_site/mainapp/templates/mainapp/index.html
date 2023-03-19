@@ -17,7 +17,7 @@
 {% for p in dayposts %}
 {% if p == dayposts[0] %}
 <h3><a href="{{ url_for('all_posts.show_post', alias=p.url)}}">{{p.title}}</a></h3>
-<p>{{p.text[:40]}}</p>
+<p>{{p.text[:110]| safe}}</p>
 {% if p.images != None %}
 <a href="{{ url_for('all_posts.show_post', alias=p.url)}}"><img src="{{p.images}}" alt="pic"></a>
 {% else %}

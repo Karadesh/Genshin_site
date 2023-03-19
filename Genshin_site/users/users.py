@@ -2,7 +2,7 @@ from flask import Blueprint, g, redirect, url_for, abort, render_template, make_
 from Genshin_site.FDataBase import FDataBase
 from flask_login import LoginManager, login_required, login_user, logout_user, current_user
 from Genshin_site.UserLogin import UserLogin
-from Genshin_site.forms import AuthorisationForm, RegistrationForm, ChooseCharacterForm, RequestResetForm, ResetPasswordForm
+from Genshin_site.forms import AuthorisationForm, RegistrationForm, RequestResetForm, ResetPasswordForm
 from werkzeug.security import generate_password_hash, check_password_hash
 from Genshin_site.users.utils import send_reset_email 
 
@@ -38,11 +38,11 @@ def profile(username):
     if username != current_user.get_id():
         abort(401)
     likes = dbase.user_likes(current_user.get_id())
-    form = ChooseCharacterForm()
-    if form.validate_on_submit():
-        dbase.choose_character(form.name.data, current_user.get_id())
+    select_chars = dbase.character_searcher()
+    if request.method=="POST":
+        dbase.choose_character(request.form["character"], current_user.get_id())
     image = dbase.search_character_image()
-    return render_template("users/profile.html",title = "Profile", likes=likes, form=form, image=image)
+    return render_template("users/profile.html",title = "Profile", likes=likes, select_chars=select_chars, image=image)
 
 @users.route("/profile/admin_request/<username>", methods=["POST", "GET"])
 @login_required

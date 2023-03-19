@@ -19,7 +19,11 @@
 {{ form_addimage.csrf_token }}
 {{ form_addimage.hidden_tag() }}
 <h3>Имя персонажа:</h3>
-{{ form_addimage.name }}
+<select name="character" class="form-control">
+    {% for i in select_chars %}
+    <option value="{{i}}">{{i}}</option>
+    {% endfor %}
+</select>
 <h3> Изображение персонажа:</h3>
 {{ form_addimage.image }}
 {{ form_addimage.submit() }}
@@ -30,7 +34,11 @@
 {{ form_addstory.csrf_token }}
 {{ form_addstory.hidden_tag() }}
 <h3>Имя персонажа:</h3>
-{{ form_addstory.name }}
+<select name="character" class="form-control">
+    {% for i in select_chars %}
+    <option value="{{i}}">{{i}}</option>
+    {% endfor %}
+</select>
 <h3>История персонажа</h3>
 {{ form_addstory.story }}
 {{ form_addstory.submit() }}
