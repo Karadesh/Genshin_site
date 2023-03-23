@@ -23,6 +23,8 @@
     <li><a href="{{url_for('all_posts.posts')}}">Гайды</a></li>
     <li><a href="{{url_for('all_posts.create_post')}}">Создать Гайд</a></li>
     {% if current_user.is_authenticated %}
+    <img src="{{current_user.getProfileAvatar()}}" alt="">
+    {{current_user.getName()}}
     <li><a href="{{url_for('users.profile', username=current_user.get_id())}}">Профиль</a></li>
     <li><a href="{{url_for('users.logout')}}">Выйти</a></li>
     {% else -%}
@@ -31,9 +33,6 @@
     </ul>
         {% endif %}
         {% endblock mainmenu %}
-    <div class = "content">
-
     {% endblock content %}
-    </div>
 </body>
 </html>

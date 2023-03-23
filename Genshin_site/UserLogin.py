@@ -1,6 +1,7 @@
 from fileinput import filename
 from flask_login import UserMixin
-from flask import  url_for
+from flask import  url_for, current_app
+import base64
 
 class UserLogin(UserMixin):
     def fromDB(self, username):
@@ -26,7 +27,7 @@ class UserLogin(UserMixin):
     def getCharacter(self):
         return self.__user.character if self.__user else "Без персонажа"
 
-    def getAvatar(self,app):
+    def getAvatar(self,app=current_app):
         img=None
         if not self.__user.avatar:
             try:
@@ -46,4 +47,19 @@ class UserLogin(UserMixin):
         if ext.upper() == "PNG" or ext.upper() == "JPEG" or ext.upper() == "JPG":
             return True
         return False
+    
+    def getProfileAvatar(self,app=current_app):
+        img=None
+        if not self.__user.avatar:
+            try:
+                with app.open_resource(app.root_path + url_for('static', filename= 'images/default.jpeg'), "rb") as f:
+                    base64_string=base64.b64encode(f.read()).decode('utf-8')
+                    img=f'data:image/png;base64,{base64_string}'  
+            except FileNotFoundError as e:
+                print("Не найден аватар по умолчанию" +str(e))
+        else:
+            img_ava = self.__user.avatar
+            base64_string = base64.b64encode(img_ava).decode('utf-8')
+            img=f'data:image/png;base64,{base64_string}'
+        return img
         
