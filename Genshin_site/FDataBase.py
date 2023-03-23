@@ -665,3 +665,11 @@ class FDataBase:
         for i in chars:
             chars_list.append(i.name)
         return chars_list
+    
+    def my_guides(self, id):
+        try:
+            anonce = Posts.query.filter(Posts.isactive==True, Posts.userid==id).order_by(Posts.time.desc()).all()
+            return anonce
+        except:
+            print("Ошибка получения постов my_guides")
+        return []

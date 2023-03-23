@@ -4,8 +4,6 @@ from Genshin_site.FDataBase import FDataBase
 import base64
 from transliterate import translit
 from Genshin_site.forms import PostForm
-from PIL import Image
-from io import BytesIO
 
 all_posts = Blueprint('all_posts', __name__, template_folder='templates', static_folder='static')
 # chars_list = ["Дехья", "Мика", "Аль-Хайтам", "Яо Яо", "Странник", "Фарузан", 

@@ -142,3 +142,13 @@ def reset_token(token):
         flash('Ваш пароль был обновлен!''Теперь вы можете авторизоваться', 'success')
         return redirect(url_for('.authorisation'))
     return render_template('users/reset_token.html', title='Сброс пароля', form=form)
+
+@users.route("/myguides/<id>")
+def my_guides(id):
+    guides=dbase.my_guides(id)
+    likes={}
+    images={}
+    for i in guides:
+        likes[i.id] = dbase.how_likes(i.id)
+        images[i.id] = dbase.getPostPreview(i.id)
+    return render_template('users/my_guides.html', title='Мои Гайды', guides=guides, likes=likes, images=images, off_menu=dbase.getOffmenu())
