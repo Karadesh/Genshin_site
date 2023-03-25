@@ -84,6 +84,7 @@ class Comments(db.Model):
     text = db.Column(db.String, nullable=False)
     postname = db.Column(db.String(200), db.ForeignKey('posts.url'))
     username = db.Column(db.String(50), db.ForeignKey('users.login'))
+    userid = db.Column(db.Integer, db.ForeignKey('users.id'))
     time = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     isactive = db.Column(db.Boolean, default=True)
     changer = db.Column(db.String(50), nullable=True)

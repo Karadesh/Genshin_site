@@ -14,6 +14,9 @@
 <h1>Genshin Funzone</h1>
 {% endif %}
 <ul class="list-posts">
+    {% if guides == None %}
+    <h3>Здесь будут гайды пользователя. Пока ничего нет</h3>
+    {% else %}
     {% for p in guides %}
     <li>
     {% if images.get(p.id) != None %}
@@ -25,4 +28,5 @@
     </li>
     {% endfor %}
     </ul>
+    {% endif %}
     {% endblock %}

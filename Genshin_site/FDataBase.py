@@ -1,10 +1,11 @@
 from transliterate import translit
 import re
-from flask import url_for
+from flask import url_for, current_app
 from flask_login import current_user
 from Genshin_site.models import Comments, Users, Offmenu, Posts, Feedback, Feedback_answer, Characters, Admin_requests, db, PostsImages, Post_likes, PostOfDay
 import random
 from datetime import date
+import base64
 
 class FDataBase:
     def __init__(self):
@@ -155,7 +156,7 @@ class FDataBase:
         try:
             posts_query = Posts.query.filter(Posts.url==url).first()
             users_query = Users.query.filter(Users.id==posts_query.userid).first()
-            userava = {'username': users_query.login, 'avatar': users_query.avatar}
+            userava = {'username': users_query.login, 'avatar': users_query.avatar, 'userid': users_query.id}
             return userava
         except:
             print("Ошибка получения аватаров getPostcreatorAvatar")
@@ -195,7 +196,7 @@ class FDataBase:
     def create_comment(self, text, postname):
          try:
              username = current_user.getName()
-             c = Comments(text=text, postname=postname, username=username)
+             c = Comments(text=text, postname=postname, username=username, userid=current_user.get_id())
              db.session.add(c)
              db.session.commit()
          except:
@@ -628,9 +629,10 @@ class FDataBase:
             print("Пользователь не найден choose_character")
             return False
     
-    def search_character_image(self):
+    def search_character_image(self, userid):
         try:
-            character = current_user.getCharacter()
+            user_searcher = Users.query.filter(Users.id==userid).first()
+            character = user_searcher.character
             searcher = Characters.query.filter(Characters.name==character).first()
             return searcher.image
         except:
@@ -673,3 +675,23 @@ class FDataBase:
         except:
             print("Ошибка получения постов my_guides")
         return []
+
+    def user_data(self, id, app=current_app):
+        try:
+            udata = Users.query.filter(Users.id==id).first()
+            if udata.avatar==None:
+                try:
+                    with app.open_resource(app.root_path + url_for('static', filename= 'images/default.jpeg'), "rb") as f:
+                        base64_string=base64.b64encode(f.read()).decode('utf-8')
+                        img=f'data:image/png;base64,{base64_string}'  
+                except FileNotFoundError as e:
+                    print("Не найден аватар по умолчанию" +str(e))
+            else:
+                img_ava = udata.avatar
+                base64_string = base64.b64encode(img_ava).decode('utf-8')
+                img=f'data:image/png;base64,{base64_string}'
+            str_time = str(udata.time)
+            sorted_data = {"id":udata.id, "login":udata.login, "time":str_time, "character":udata.character, "avatar":img}
+            return sorted_data
+        except Exception:
+            print("Ошибка поиска профиля user_data")

@@ -21,8 +21,11 @@
     <ul>
         <li><a href="{{url_for('mainapp.index')}}">Главная</a></li>
     <li><a href="{{url_for('all_posts.posts')}}">Посты</a></li>
+    {% if current_user.is_authenticated %}
     <li><a href="{{url_for('all_posts.create_post')}}">Создать Пост</a></li>
+    {% endif %}
     </ul>
+    {% if current_user_checker == True %}
     {% block admin_pannel %}
     {% if current_user.getAdmin() == 'user' %}
     {% if current_user.isActive() == True %}
@@ -68,6 +71,27 @@
         </tr>
     </table>
     {% endblock userdata %}
+    {% else %}
+    {% block otheruserdata %}
+    <table border="0" class="profile-table">
+        <tr><td valign="top">
+            <div class="profile-ava"><img src="{{user_data.avatar}}"></div>
+            </form>
+            </div>
+        </td>
+        <td valign="top" class="profile-panel">
+            <li><a href="{{url_for('users.my_guides', id=user_data.id)}}">Гайды пользователя {{user_data.login}}</a></li>
+            <ul class="profile-info">
+            <li>Имя: {{ user_data.login }}</li>
+            <li>Пользователь с {{ user_data.time[:19]}}</li>
+            <li>Количество лайков: {{likes}}</li>
+            <li><img src="{{image}}"></li>
+            </ul>
+        </td>
+        </tr>
+    </table>
+    {% endblock otheruserdata %}
+    {% endif %}
     {% endblock content %}
 
 </body>

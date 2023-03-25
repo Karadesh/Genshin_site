@@ -16,76 +16,78 @@
     </ul>
 {% endblock off_menu %}
 {% if isactive == True %}
-<h3>{{creator.username}}</h3>
-<div class="profile-ava"><img src="{{creator.avatar}}"></div>
-{%  if title %}
-<h1>{{ title }}</h1>
-{% if current_user.is_authenticated %}
-{% if current_user.get_id() == userid %}
-<p><a href="{{url_for('all_posts.confirm_delete', alias=url[0])}}">Удалить пост</a></p>
-{% if islocked==True %}
-<p><a href="{{url_for('all_posts.lock_post', alias=url[0])}}">Открыть пост</a></p>
+    <li><h3><a href="{{url_for('users.profile', username=creator.userid)}}">{{creator.username}}</a></h3></li>
+    <div class="profile-ava"><img src="{{creator.avatar}}"></div>
+    {%  if title %}
+        <h1>{{ title }}</h1>
+        {% if current_user.is_authenticated %}
+            {% if current_user.get_id() == userid %}
+                <p><a href="{{url_for('all_posts.confirm_delete', alias=url[0])}}">Удалить пост</a></p>
+                {% if islocked==True %}
+                    <p><a href="{{url_for('all_posts.lock_post', alias=url[0])}}">Открыть пост</a></p>
+                {% else %}
+                    <p><a href="{{url_for('all_posts.lock_post', alias=url[0])}}">Закрыть пост</a></p>
+                {% endif %}
+            {% endif %}
+        {% endif %}
+    {% else %}
+    <h1>Genshin Funzone</h1>
+    {% endif %}
+    {{ post | safe }}
+    {% block images %}
+    {% if post_image != None %}
+        {% for i in post_image %}
+            <div class="profile-ava"></div><img src="{{i}}" alt=""></div>
+        {% endfor %}
+    {% endif %}
+    {% if current_user.is_authenticated %}
+    {% if islike == True %}
+        <div class="post_like"><a href="{{url_for('.like_post_inside', post_id=post_id, userid=current_user.get_id(), post_url=url[0])}}">Убрать лайк</a></div>
+    {% else %}
+        <div class="post_like"><a href="{{url_for('.like_post_inside', post_id=post_id, userid=current_user.get_id(), post_url=url[0])}}">Поставить лайк</a></div>
+    {% endif %}
+    {% endif %}
+    {{ likes }}
+    {% endblock %}
+    {% block comments %}
+    {% for p in comments %}
+        <p class="username"><a href="{{url_for('users.profile', username=p.userid)}}">{{p.username}}</a></p>
+        {% for j,k in avatars.items() %}
+            {% if j == p.username %}
+                <li>
+                <div class="profile-ava"><img src="{{avatars[j]}}"></div>
+            {% endif %}
+        {% endfor %}
+        <p class="annonce">{{ p.text}}</p>
+        {% if current_user.is_authenticated %}
+            {% if current_user.getName() == p.username %}
+                <p><a href="{{url_for('all_posts.delete_comment', alias=url[0], id=p.id)}}" method="delete">Удалить комментарий</a></p>
+            {% endif %}
+        {% endif %}
+                </li>
+    {% endfor %}
+    {% endblock comments %}
+    {% if islocked==False %}
+        {% if current_user.is_authenticated %}
+            {% if current_user.isActive() %}
+                {% for cat, msg in get_flashed_messages(True) %}
+                    <div class="flash {{cat}}">{{msg}}</div>
+                {% endfor %}
+                {% for p in url %}
+                    <form action="{{url_for('.show_post', alias=p)}}" method="post" class="form-contact">
+                    <p><label>Текст комментария: </label>
+                    <p><textarea name="comment" rows="5" cols="60"></textarea>
+                    <p><input type="submit" value="Добавить комментарий"/>
+                    </form>
+                {% endfor %}
+            {% else %}
+                <h3>Возможность комментирования для вас ограничена</h3>
+            {% endif %}
+        {% endif %}
+    {% else %}
+        <h3>Пост закрыт</h3>
+    {% endif %}
 {% else %}
-<p><a href="{{url_for('all_posts.lock_post', alias=url[0])}}">Закрыть пост</a></p>
-{% endif %}
-{% endif %}
-{% endif %}
-{% else %}
-<h1>Genshin Funzone</h1>
-{% endif %}
-{{ post | safe }}
-{% block images %}
-{% if post_image != None %}
-{% for i in post_image %}
-<div class="profile-ava"></div><img src="{{i}}" alt=""></div>
-{% endfor %}
-{% endif %}
-{% if islike == True %}
-<div class="post_like"><a href="{{url_for('.like_post_inside', post_id=post_id, userid=current_user.get_id(), post_url=url[0])}}">Убрать лайк</a></div>
-{% else %}
-<div class="post_like"><a href="{{url_for('.like_post_inside', post_id=post_id, userid=current_user.get_id(), post_url=url[0])}}">Поставить лайк</a></div>
-{% endif %}
-{{ likes }}
-{% endblock %}
-{% block comments %}
-{% for p in comments %}
-{% for j,k in avatars.items() %}
-{% if j == p.username %}
-<li>
-<div class="profile-ava"><img src="{{avatars[j]}}"></div>
-{% endif %}
-{% endfor %}
-<p class="username">{{p.username}}</p>
-<p class="annonce">{{ p.text}}</p>
-{% if current_user.is_authenticated %}
-{% if current_user.getName() == p.username %}
-<p><a href="{{url_for('all_posts.delete_comment', alias=url[0], id=p.id)}}" method="delete">Удалить комментарий</a></p>
-{% endif %}
-{% endif %}
-</li>
-{% endfor %}
-{% endblock comments %}
-{% if islocked==False %}
-{% if current_user.is_authenticated %}
-{% if current_user.isActive() %}
-{% for cat, msg in get_flashed_messages(True) %}
-<div class="flash {{cat}}">{{msg}}</div>
-{% endfor %}
-{% for p in url %}
-<form action="{{url_for('.show_post', alias=p)}}" method="post" class="form-contact">
-    <p><label>Текст комментария: </label>
-    <p><textarea name="comment" rows="5" cols="60"></textarea>
-    <p><input type="submit" value="Добавить комментарий"/>
-    </form>
-{% endfor %}
-{% else %}
-<h3>Возможность комментирования для вас ограничена</h3>
-{% endif %}
-{% endif %}
-{% else %}
-<h3>Пост закрыт</h3>
-{% endif %}
-{% else %}
-<h1> Пост был удалён </h1>
+    <h1> Пост был удалён </h1>
 {% endif %}
 {% endblock content%}

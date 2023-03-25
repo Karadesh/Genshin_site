@@ -33,16 +33,20 @@ def logout():
 
 
 @users.route("/profile/<username>", methods=["POST", "GET"])
-@login_required
 def profile(username):
-    if username != current_user.get_id():
-        abort(401)
-    likes = dbase.user_likes(current_user.get_id())
+    user_data = dbase.user_data(username)
+    try:
+        current_user_checker = (user_data['id'] == int(current_user.get_id()))
+    except Exception:
+        current_user_checker = False
+    #if username != current_user.get_id():
+    #    abort(401)
+    likes = dbase.user_likes(username)
     select_chars = dbase.character_searcher()
     if request.method=="POST":
         dbase.choose_character(request.form["character"], current_user.get_id())
-    image = dbase.search_character_image()
-    return render_template("users/profile.html",title = "Profile", likes=likes, select_chars=select_chars, image=image)
+    image = dbase.search_character_image(username)
+    return render_template("users/profile.html",title = "Profile", likes=likes, select_chars=select_chars, image=image, user_data=user_data, current_user_checker = current_user_checker)
 
 @users.route("/profile/admin_request/<username>", methods=["POST", "GET"])
 @login_required
@@ -143,12 +147,19 @@ def reset_token(token):
         return redirect(url_for('.authorisation'))
     return render_template('users/reset_token.html', title='Сброс пароля', form=form)
 
-@users.route("/myguides/<id>")
+@users.route("/userguides/<id>")
 def my_guides(id):
-    guides=dbase.my_guides(id)
-    likes={}
-    images={}
-    for i in guides:
-        likes[i.id] = dbase.how_likes(i.id)
-        images[i.id] = dbase.getPostPreview(i.id)
-    return render_template('users/my_guides.html', title='Мои Гайды', guides=guides, likes=likes, images=images, off_menu=dbase.getOffmenu())
+    try:
+        user_data = dbase.user_data(id)
+        guides=dbase.my_guides(id)
+        likes={}
+        images={}
+        for i in guides:
+            likes[i.id] = dbase.how_likes(i.id)
+            images[i.id] = dbase.getPostPreview(i.id)
+    except Exception:
+        guides = None
+        user_data = []
+        likes = []
+        images = []
+    return render_template('users/my_guides.html', title=f'Гайды пользователя {user_data["login"]}', guides=guides, likes=likes, images=images, off_menu=dbase.getOffmenu())
