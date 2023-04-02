@@ -147,11 +147,11 @@ def reset_token(token):
         return redirect(url_for('.authorisation'))
     return render_template('users/reset_token.html', title='Сброс пароля', form=form)
 
-@users.route("/userguides/<id>")
-def my_guides(id):
+@users.route("/userguides/<id>?<int:page_num>")
+def my_guides(id, page_num):
     try:
         user_data = dbase.user_data(id)
-        guides=dbase.my_guides(id)
+        guides=dbase.my_guides(id, page_num)
         likes={}
         images={}
         for i in guides:
@@ -162,4 +162,4 @@ def my_guides(id):
         user_data = []
         likes = []
         images = []
-    return render_template('users/my_guides.html', title=f'Гайды пользователя {user_data["login"]}', guides=guides, likes=likes, images=images, off_menu=dbase.getOffmenu())
+    return render_template('users/my_guides.html', title=f'Гайды пользователя {user_data["login"]}', guides=guides, likes=likes, images=images, off_menu=dbase.getOffmenu(), userid=user_data["id"])

@@ -28,5 +28,24 @@
     </li>
     {% endfor %}
     </ul>
+    <ul>
+        {% if guides.has_prev %}
+            <li><a href="{{ url_for('.my_guides', id=userid, page_num=guides.prev_num)}}"><</a></li>
+        {% else %}
+            <li><span><</span></li>
+        {% endif %}
+        {% for page in guides.iter_pages(left_edge=3, right_edge=3) %}
+        {% if page %}
+            <li><a href="{{ url_for('.my_guides', id=userid, page_num=page)}}">{{page}}</a></li>
+        {% else %}
+            <li><a href="#">...</a></li>
+        {% endif %}
+        {% endfor %}
+        {% if guides.has_next %}
+            <li><a href="{{ url_for('.my_guides', id=userid, page_num=guides.next_num)}}">></a></li>
+        {% else %}
+            <li><span>></span></li>
+        {% endif %}
+    </ul>
     {% endif %}
     {% endblock %}

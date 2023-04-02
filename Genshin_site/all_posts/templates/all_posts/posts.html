@@ -13,13 +13,13 @@
 {% else %}
 <h1>Genshin Funzone</h1>
 {% endif %}
-<ul class="character-posts">
+<!--<ul class="character-posts">
     <li class="chars">
     {% for i in characters %}
     <a href="{{url_for('.posts_character', alias=i.url)}}"><img src="{{i.image}}" alt="{{i.name}}"></a>
     {% endfor %}
     </li>
-</ul>
+</ul>-->
 <ul class="list-posts">
 {% for p in posts %}
 <li>
@@ -28,5 +28,24 @@
 {{likes.get(p.id)}}
 </li>
 {% endfor %}
+</ul>
+<ul>
+    {% if posts.has_prev %}
+        <li><a href="{{ url_for('.posts', page_num=posts.prev_num)}}"><</a></li>
+    {% else %}
+        <li><span><</span></li>
+    {% endif %}
+    {% for page in posts.iter_pages(left_edge=3, right_edge=3) %}
+    {% if page %}
+        <li><a href="{{ url_for('.posts', page_num=page)}}">{{page}}</a></li>
+    {% else %}
+        <li><a href="#">...</a></li>
+    {% endif %}
+    {% endfor %}
+    {% if posts.has_next %}
+        <li><a href="{{ url_for('.posts', page_num=posts.next_num)}}">></a></li>
+    {% else %}
+        <li><span>></span></li>
+    {% endif %}
 </ul>
 {% endblock %}

@@ -51,11 +51,11 @@ def feedback():
             #print(request.form['message'])
     return render_template("mainapp/feedback.html",title = "Feedback", off_menu=dbase.getOffmenu())
 
-@mainapp.route("/all_postofdays")
-def all_postsofday():
+@mainapp.route("/all_postofdays/<int:page_num>")
+def all_postsofday(page_num):
     likes={}
     images={}
-    posts = dbase.dayposts_list()
+    posts = dbase.dayposts_list(page_num)
     for i in posts:
         likes[i.id] = dbase.how_likes(i.postid)
         images[i.id] = dbase.getPostPreview(i.postid)

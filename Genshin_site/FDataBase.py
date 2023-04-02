@@ -128,9 +128,9 @@ class FDataBase:
                 print("Ошибка удаления из бд delete_post")
                 return (False, False)
 
-    def getPostsAnonce(self):
+    def getPostsAnonce(self, page_num):
         try:
-            anonce = Posts.query.filter(Posts.isactive==True).order_by(Posts.time.desc()).all()
+            anonce = Posts.query.filter(Posts.isactive==True).order_by(Posts.time.desc()).paginate(per_page=5, page=page_num, error_out=True)
             return anonce
         except:
             print("Ошибка получения постов getPostsAnonce")
@@ -144,9 +144,9 @@ class FDataBase:
             print("Не удалось найти изображение getPostPreview")
             return None
     
-    def getPostsAnonceCharacter(self, alias):
+    def getPostsAnonceCharacter(self, alias, page_num):
         try:
-            anonce = Posts.query.filter(Posts.isactive==True, Posts.character==alias).order_by(Posts.time.desc()).all()
+            anonce = Posts.query.filter(Posts.isactive==True, Posts.character==alias).order_by(Posts.time.desc()).paginate(per_page=5, page=page_num, error_out=True)
             return anonce
         except:
             print("Ошибка получения постов getPostsAnonceCharacter")
@@ -610,9 +610,9 @@ class FDataBase:
             print("Ошибка поиска постов дня dayposts_show")
             return []
         
-    def dayposts_list(self):
+    def dayposts_list(self, page_num):
         try:
-            dayposts = PostOfDay.query.order_by(PostOfDay.id.desc()).all()
+            dayposts = PostOfDay.query.order_by(PostOfDay.id.desc()).paginate(per_page=5, page=page_num, error_out=True)
             return dayposts
         except:
             print("Ошибка поиска постов дня dayposts_list")
@@ -668,9 +668,9 @@ class FDataBase:
             chars_list.append(i.name)
         return chars_list
     
-    def my_guides(self, id):
+    def my_guides(self, id, page_num):
         try:
-            anonce = Posts.query.filter(Posts.isactive==True, Posts.userid==id).order_by(Posts.time.desc()).all()
+            anonce = Posts.query.filter(Posts.isactive==True, Posts.userid==id).order_by(Posts.time.desc()).paginate(per_page=5, page=page_num, error_out=True)
             return anonce
         except:
             print("Ошибка получения постов my_guides")

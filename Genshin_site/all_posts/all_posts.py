@@ -94,23 +94,23 @@ def get_postcreator_avatar(url, app=all_posts):
 
 
 
-@all_posts.route("/posts")
-def posts():
+@all_posts.route("/posts/<int:page_num>")
+def posts(page_num):
     likes={}
-    posts=dbase.getPostsAnonce()
+    posts=dbase.getPostsAnonce(page_num)
     for i in posts:
         likes[i.id] = how_likes(i.id)
-    return render_template("all_posts/posts.html",title = "Список Гайдов", off_menu=dbase.getOffmenu(), posts=posts, likes=likes, characters=dbase.get_chars())
+    return render_template("all_posts/posts.html",title = "Список Гайдов", off_menu=dbase.getOffmenu(), posts=posts, likes=likes)
 
-@all_posts.route("/posts_character/<alias>")
-def posts_character(alias):
+@all_posts.route("/posts_character/<alias>?<int:page_num>")
+def posts_character(alias, page_num):
     likes={}
     images={}
-    posts=dbase.getPostsAnonceCharacter(alias)
+    posts=dbase.getPostsAnonceCharacter(alias, page_num)
     for i in posts:
         likes[i.id] = how_likes(i.id)
         images[i.id] = dbase.getPostPreview(i.id)
-    return render_template("all_posts/posts_character.html",title = "Список гайдов", off_menu=dbase.getOffmenu(), posts=posts, likes=likes, images=images)
+    return render_template("all_posts/posts_character.html",title = "Список гайдов", off_menu=dbase.getOffmenu(), posts=posts, likes=likes, images=images, character=alias)
 
 @all_posts.route("/post/<alias>", methods=['POST', 'GET'])
 def show_post(alias):
@@ -153,7 +153,7 @@ def confirm_delete(alias):
 @login_required
 def delete_post(alias):
         dbase.delete_post(alias)
-        return(redirect(url_for('.posts')))
+        return(redirect(url_for('.posts', page_num=1)))
 
 @all_posts.route("/delete_comment/<alias>?<id>", methods=['GET', 'DELETE'])
 @login_required
@@ -182,7 +182,7 @@ def create_post():
                             if img_string == 'data:image/png;base64,':
                                 img_string = None
                             dbase.add_images(img_string, post_id)
-                    return redirect(url_for('.posts'))
+                    return redirect(url_for('.posts', page_num=1))
                 except:
                      flash('Ошибка добавления статьи', category = 'error')
     else:

@@ -13,5 +13,5 @@
 {% endblock off_menu %}
 <img src="{{character.image}}" alt="{{character.name}}">
 <p>{{character.story}}</p>
-<a class="links_character" href="{{url_for('all_posts.posts_character', alias=character.url)}}">Ветка персонажа на форуме</a>
+<a class="links_character" href="{{url_for('all_posts.posts_character', alias=character.url , page_num=1)}}">Ветка персонажа на форуме</a>
 {% endblock content %}

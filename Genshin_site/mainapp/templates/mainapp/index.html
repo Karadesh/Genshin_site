@@ -29,6 +29,6 @@
 <a href="{{url_for('all_posts.show_post', alias=p['url'])}}"><img src="{{p['image']}}" alt="{{p['time']}}"></a>
 {% endif %}
 {% endfor %}
-<a href="{{url_for('.all_postsofday')}}">Смотреть все -><img src="{{standart_image}}" alt="Смотреть все ->"></a>
+<a href="{{url_for('.all_postsofday', page_num=1)}}">Смотреть все -><img src="{{standart_image}}" alt="Смотреть все ->"></a>
 {% endblock dayposts %}
 {% endblock content%}
