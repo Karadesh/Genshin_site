@@ -20,7 +20,7 @@
     <h1>{{ title }}</h1>
     <ul>
         <li><a href="{{url_for('mainapp.index')}}">Главная</a></li>
-    <li><a href="{{url_for('all_posts.posts')}}">Посты</a></li>
+    <li><a href="{{url_for('all_posts.posts', page_num=1)}}">Посты</a></li>
     {% if current_user.is_authenticated %}
     <li><a href="{{url_for('all_posts.create_post')}}">Создать Пост</a></li>
     {% endif %}
@@ -50,7 +50,7 @@
             </div>
         </td>
         <td valign="top" class="profile-panel">
-            <li><a href="{{url_for('users.my_guides', id=current_user.get_id())}}">Мои Гайды</a></li>
+            <li><a href="{{url_for('users.my_guides', id=current_user.get_id(), page_num=1)}}">Мои Гайды</a></li>
             <p><a href="{{url_for('.logout')}}">Выйти</a>
             <ul class="profile-info">
             <li>Имя: {{ current_user.getName() }}</li>
@@ -80,7 +80,7 @@
             </div>
         </td>
         <td valign="top" class="profile-panel">
-            <li><a href="{{url_for('users.my_guides', id=user_data.id)}}">Гайды пользователя {{user_data.login}}</a></li>
+            <li><a href="{{url_for('users.my_guides', id=user_data.id, page_num=1)}}">Гайды пользователя {{user_data.login}}</a></li>
             <ul class="profile-info">
             <li>Имя: {{ user_data.login }}</li>
             <li>Пользователь с {{ user_data.time[:19]}}</li>
