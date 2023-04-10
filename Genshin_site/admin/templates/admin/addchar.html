@@ -43,4 +43,18 @@
 {{ form_addstory.story }}
 {{ form_addstory.submit() }}
 </form>
+<form action="{{url_for('admin.add_character')}}" method="post" class="form-contact", enctype="multipart/form-data">
+    <h1>Добавление Истории элемента персонажа</h1>
+    {{ form_addelement.csrf_token }}
+    {{ form_addelement.hidden_tag() }}
+    <h3>Имя персонажа:</h3>
+    <select name="character" class="form-control">
+        {% for i in select_chars %}
+        <option value="{{i}}">{{i}}</option>
+        {% endfor %}
+    </select>
+    <h3>Элемент персонажа</h3>
+    {{ form_addelement.element }}
+    {{ form_addelement.submit() }}
+    </form>
 {% endblock %}

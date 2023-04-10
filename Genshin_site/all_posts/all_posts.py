@@ -4,18 +4,19 @@ from Genshin_site.FDataBase import FDataBase
 import base64
 from transliterate import translit
 from Genshin_site.forms import PostForm
+from datetime import datetime
 
 all_posts = Blueprint('all_posts', __name__, template_folder='templates', static_folder='static')
-# chars_list = ["Дехья", "Мика", "Аль-Хайтам", "Яо Яо", "Странник", "Фарузан", 
-#             "Лайла", "Нахида", "Нилу", "Сайно", "Кандакия", "Дори", "Тигнари", 
-#             "Коллеи", "Хэйдзо", "Куки Синобу", "Е Лань", "Камисато Аято", "Яэ Мико", 
-#             "Шэнь Хэ", "Юнь Цзинь", "Аратаки Итто", "Горо", "Тома", "Кокоми", "Райдэн", 
-#             "Элой", "Кудзё Сара", "Ёимия", "Саю", "Камисато Аяка", "Каэдэхара Кадзуха", 
-#             "Эола", "Янь Фэй", "Розария", "Ху Тао", "Сяо", "Гань Юй", "Альбедо", "Чжун Ли", 
-#             "Синь Янь", "Тарталья", "Диона", "Кли", "Венти", "Ци Ци", "Мона", "Кэ Цин", 
-#             "Дилюк", "Джинн", "Эмбер", "Чун Юнь", "Фишль", "Сян Лин", "Син Цю", "Сахароза", 
-#             "Рэйзор", "Ноэлль", "Нин Гуан", "Лиза", "Кэйа", "Бэй Доу", "Беннет", "Барбара", 
-#             "Путешественник"]
+chars_list = ["Дехья", "Мика", "Аль-Хайтам", "Яо Яо", "Странник", "Фарузан", 
+             "Лайла", "Нахида", "Нилу", "Сайно", "Кандакия", "Дори", "Тигнари", 
+             "Коллеи", "Хэйдзо", "Куки Синобу", "Е Лань", "Камисато Аято", "Яэ Мико", 
+             "Шэнь Хэ", "Юнь Цзинь", "Аратаки Итто", "Горо", "Тома", "Кокоми", "Райдэн", 
+             "Элой", "Кудзё Сара", "Ёимия", "Саю", "Камисато Аяка", "Каэдэхара Кадзуха", 
+             "Эола", "Янь Фэй", "Розария", "Ху Тао", "Сяо", "Гань Юй", "Альбедо", "Чжун Ли", 
+             "Синь Янь", "Тарталья", "Диона", "Кли", "Венти", "Ци Ци", "Мона", "Кэ Цин", 
+             "Дилюк", "Джинн", "Эмбер", "Чун Юнь", "Фишль", "Сян Лин", "Син Цю", "Сахароза", 
+             "Рэйзор", "Ноэлль", "Нин Гуан", "Лиза", "Кэйа", "Бэй Доу", "Беннет", "Барбара", 
+             "Путешественник"]
 # Для добавления нового персонажа, в этот список нужно добавить имя персонажа, затем добавить картинку с его транслитным именем в all_posts/images
 # и заменить в обработчике characters=dbase.get_chars() на characters=image_maker(chars_list) и просто открыть страницу с постами по персонажам. 
 # Не забудьте вернуть обратно!
@@ -57,7 +58,7 @@ def image_maker(chars_list, app=all_posts):
             img=f'data:image/png;base64,{base64_string}'
         chars_dict={'url': url, 'name': i, 'img': img}
         chars_dict_list.append(chars_dict)
-        #dbase.add_character(chars_dict) для добавления нового персонажа в бд
+        dbase.add_character(chars_dict) #для добавления нового персонажа в бд
     return chars_dict_list
 
 def get_avatars_dict(url, app=all_posts):
@@ -96,6 +97,7 @@ def get_postcreator_avatar(url, app=all_posts):
 
 @all_posts.route("/posts/<int:page_num>")
 def posts(page_num):
+    #characters=image_maker(chars_list) Для добавления персонажей в бд
     likes={}
     posts=dbase.getPostsAnonce(page_num)
     for i in posts:
@@ -110,7 +112,7 @@ def posts_character(alias, page_num):
     for i in posts:
         likes[i.id] = how_likes(i.id)
         images[i.id] = dbase.getPostPreview(i.id)
-    return render_template("all_posts/posts_character.html",title = "Список гайдов", off_menu=dbase.getOffmenu(), posts=posts, likes=likes, images=images, character=alias)
+    return render_template("all_posts/posts_character.html",title = "Список гайдов", off_menu=dbase.getOffmenu(), posts=posts, likes=likes, images=images, character=dbase.get_char(alias))
 
 @all_posts.route("/post/<alias>", methods=['POST', 'GET'])
 def show_post(alias):
@@ -125,6 +127,11 @@ def show_post(alias):
     post_id = get_post['id']
     islike = dbase.show_like(post_id, current_user.get_id())
     likes = how_likes(post_id)
+    date_list=[]
+    comments=dbase.getCommentsAnonce(url)
+    for i in comments:
+        t=datetime.strftime(i.time, "%d/%m/%Y %H:%M")
+        date_list.append(t)
     if not title:
         abort(404)
     if request.method == "POST":
@@ -136,7 +143,7 @@ def show_post(alias):
                 return(redirect(url_for('.show_post', alias=url)))
         else:
             flash('Ошибка добавления комментария', category = 'error')
-    return render_template("all_posts/post.html",likes=likes, islike=islike, post_id=post_id, title = title, post=post, post_image=post_image, isactive=isactive, userid=str(userid), off_menu=dbase.getOffmenu(), comments=dbase.getCommentsAnonce(url), url=[url], avatars=get_avatars_dict(url), islocked=islocked, creator=get_postcreator_avatar(url))
+    return render_template("all_posts/post.html",date_list=date_list,likes=likes, islike=islike, post_id=post_id, title = title, post=post, post_image=post_image, isactive=isactive, userid=str(userid), off_menu=dbase.getOffmenu(), comments=comments, url=[url], avatars=get_avatars_dict(url), islocked=islocked, creator=get_postcreator_avatar(url))
 
 @all_posts.route("/post_like/<post_id>?<userid>?<post_url>")
 @login_required

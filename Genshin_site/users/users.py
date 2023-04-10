@@ -5,6 +5,7 @@ from Genshin_site.UserLogin import UserLogin
 from Genshin_site.forms import AuthorisationForm, RegistrationForm, RequestResetForm, ResetPasswordForm
 from werkzeug.security import generate_password_hash, check_password_hash
 from Genshin_site.users.utils import send_reset_email 
+from datetime import datetime
 
 users = Blueprint('users', __name__, template_folder='templates', static_folder='static')
 login_manager = LoginManager(users)
@@ -55,10 +56,6 @@ def admin_request(username):
         dbase.add_admin_request(username, request.form['admin_type'], request.form['reason'])
         return redirect(url_for('.profile', username=current_user.get_id()))
     return render_template("users/admin_request.html", title="Admin request")
-
-@users.route("/my_posts")
-def my_posts():
-    return render_template("users/my_posts.html",title = "My Posts", off_menu=dbase.getOffmenu())
 
 @users.route('/userava')
 @login_required
@@ -162,4 +159,4 @@ def my_guides(id, page_num):
         user_data = []
         likes = []
         images = []
-    return render_template('users/my_guides.html', title=f'Гайды пользователя {user_data["login"]}', guides=guides, likes=likes, images=images, off_menu=dbase.getOffmenu(), userid=user_data["id"])
+    return render_template('users/my_guides.html', title=f'Гайды пользователя {user_data["login"]}', guides=guides, likes=likes, images=images, off_menu=dbase.getOffmenu(), userid=user_data["id"], username=user_data["login"])

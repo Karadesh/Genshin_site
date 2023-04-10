@@ -121,6 +121,7 @@ class Characters(db.Model):
     image = db.Column(db.String, nullable=True)
     url = db.Column(db.String(60), nullable=True)
     story = db.Column(db.String,nullable=True)
+    element = db.Column(db.String(50), nullable=True)
 
     def __repr__(self):
         return f"<Charname: {self.name}>"

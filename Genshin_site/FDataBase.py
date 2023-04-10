@@ -4,7 +4,7 @@ from flask import url_for, current_app
 from flask_login import current_user
 from Genshin_site.models import Comments, Users, Offmenu, Posts, Feedback, Feedback_answer, Characters, Admin_requests, db, PostsImages, Post_likes, PostOfDay
 import random
-from datetime import date
+from datetime import date, datetime
 import base64
 
 class FDataBase:
@@ -271,7 +271,6 @@ class FDataBase:
             return False
         try:
             binary = bytearray(avatar)
-            print(binary)
             user_table = Users.query.filter(Users.id==user_id).first()
             user_table.avatar = binary
             db.session.add(user_table)
@@ -393,7 +392,7 @@ class FDataBase:
             print('No answers find_answer')
             return ''
 
-    def admin_add_character(self, name, url, image=None, story=None):
+    def admin_add_character(self, name, url, image=None, story=None, element=None):
         try:
             char_searcher = Characters.query.filter(Characters.name==name).first()
             if char_searcher == None:
@@ -403,6 +402,8 @@ class FDataBase:
                     char_searcher.image=image
                 if story!=None:
                     char_searcher.story=story
+                if element!=None:
+                    char_searcher.element=element
             db.session.add(char_searcher)
             db.session.commit()
         except:
@@ -555,7 +556,6 @@ class FDataBase:
                 post_searcher.postOfDay=True
                 db.session.add(post_searcher)
                 db.session.commit()
-                print(post_searcher)
                 post_of_day = PostOfDay(title=post_searcher.title, text=post_searcher.text, url=post_searcher.url, character=post_searcher.character, userid=post_searcher.userid, postid=post_searcher.id, time=current_date)
                 db.session.add(post_of_day)
                 db.session.commit()
@@ -690,7 +690,7 @@ class FDataBase:
                 img_ava = udata.avatar
                 base64_string = base64.b64encode(img_ava).decode('utf-8')
                 img=f'data:image/png;base64,{base64_string}'
-            str_time = str(udata.time)
+            str_time = datetime.strftime(udata.time, "%d/%m/%Y %H:%M")
             sorted_data = {"id":udata.id, "login":udata.login, "time":str_time, "character":udata.character, "avatar":img}
             return sorted_data
         except Exception:

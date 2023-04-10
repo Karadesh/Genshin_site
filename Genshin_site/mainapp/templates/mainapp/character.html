@@ -11,6 +11,10 @@
         {% endfor -%}
     </ul>
 {% endblock off_menu %}
+<ul>
+    <li><a href="{{ url_for('mainapp.index')}}">Главная</a></li>
+    <li><a href="{{ url_for('mainapp.characters')}}">Персонажи</a></li>
+    <li><span>{{character.name}}</span></li>
 <img src="{{character.image}}" alt="{{character.name}}">
 <p>{{character.story}}</p>
 <a class="links_character" href="{{url_for('all_posts.posts_character', alias=character.url , page_num=1)}}">Ветка персонажа на форуме</a>

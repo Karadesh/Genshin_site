@@ -6,6 +6,8 @@ from Genshin_site.FDataBase import FDataBase as dbase
 from Genshin_site.models import Users
 from flask_ckeditor import CKEditorField
 
+elements = [('Пиро', 'Пиро'), ('Дендро', 'Дендро'),('Гидро', 'Гидро'),('Анемо', 'Анемо'),('Крио','Крио'), ('Гео', 'Гео'), ('Электро', 'Электро')]
+
 class AuthorisationForm(FlaskForm):
     name = StringField("Логин: ", validators=[DataRequired(), Length(min=1, max=50)])
     password = PasswordField("Пароль: ", validators=[DataRequired()])
@@ -37,6 +39,10 @@ class AddImageForm(FlaskForm):
 
 class AddStoryForm(FlaskForm):
     story = TextAreaField("История персонажа:", validators=[DataRequired(), Length(min=10)])
+    submit = SubmitField("Добавить")
+
+class AddElementForm(FlaskForm):
+    element = SelectField("Элемент персонажа:", choices=elements)
     submit = SubmitField("Добавить")
 
 class RequestResetForm(FlaskForm):

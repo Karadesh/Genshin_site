@@ -15,6 +15,11 @@
         {% endfor -%}
     </ul>
 {% endblock off_menu %}
+<ul>
+    <li><a href="{{ url_for('mainapp.index')}}">Главная</a></li>
+    <li><a href="{{ url_for('.posts', page_num=1)}}">Гайды</a></li>
+    <li><span>{{title}}</span></li>
+</ul>
 {% if isactive == True %}
     <li><h3><a href="{{url_for('users.profile', username=creator.userid)}}">{{creator.username}}</a></h3></li>
     <div class="profile-ava"><img src="{{creator.avatar}}"></div>
@@ -51,13 +56,14 @@
     {% endblock %}
     {% block comments %}
     {% for p in comments %}
-        <p class="username"><a href="{{url_for('users.profile', username=p.userid)}}">{{p.username}}</a></p>
         {% for j,k in avatars.items() %}
             {% if j == p.username %}
                 <li>
-                <div class="profile-ava"><img src="{{avatars[j]}}"></div>
+                    <div class="profile-ava"><img src="{{avatars[j]}}"></div>
             {% endif %}
         {% endfor %}
+        <p class="username"><a href="{{url_for('users.profile', username=p.userid)}}">{{p.username}}</a></p>
+        {{date_list[comments.index(p)]}}
         <p class="annonce">{{ p.text}}</p>
         {% if current_user.is_authenticated %}
             {% if current_user.getName() == p.username %}

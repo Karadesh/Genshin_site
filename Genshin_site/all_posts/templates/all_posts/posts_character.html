@@ -8,6 +8,12 @@
         {% endfor -%}
     </ul>
 {% endblock off_menu %}
+<ul>
+    <li><a href="{{ url_for('mainapp.index')}}">Главная</a></li>
+    <li><a href="{{ url_for('mainapp.characters')}}">Персонажи</a></li>
+    <li><a href="{{url_for('mainapp.character', alias=character.url)}}">{{character.name}}</a></li>
+    <li><span>Гайды с персонажем {{character.name}}</span></li>
+</ul>
 {%  if title %}
 <h1>{{ title }}</h1>
 {% else %}
@@ -27,19 +33,19 @@
     </ul>
     <ul>
         {% if posts.has_prev %}
-            <li><a href="{{ url_for('.posts_character', alias=character, page_num=posts.prev_num)}}"><</a></li>
+            <li><a href="{{ url_for('.posts_character', alias=character.url, page_num=posts.prev_num)}}"><</a></li>
         {% else %}
             <li><span><</span></li>
         {% endif %}
         {% for page in posts.iter_pages(left_edge=3, right_edge=3) %}
         {% if page %}
-            <li><a href="{{ url_for('.posts_character', alias=character, page_num=page)}}">{{page}}</a></li>
+            <li><a href="{{ url_for('.posts_character', alias=character.url, page_num=page)}}">{{page}}</a></li>
         {% else %}
             <li><a href="#">...</a></li>
         {% endif %}
         {% endfor %}
         {% if posts.has_next %}
-            <li><a href="{{ url_for('.posts_character', alias=character, page_num=posts.next_num)}}">></a></li>
+            <li><a href="{{ url_for('.posts_character', alias=character.url, page_num=posts.next_num)}}">></a></li>
         {% else %}
             <li><span>></span></li>
         {% endif %}

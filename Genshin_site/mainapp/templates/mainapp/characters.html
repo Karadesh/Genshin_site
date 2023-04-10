@@ -8,6 +8,10 @@
         {% endfor -%}
     </ul>
 {% endblock off_menu %}
+<ul>
+    <li><a href="{{ url_for('mainapp.index')}}">Главная</a></li>
+    <li><span>Персонажи</span></li>
+</ul>
 {%  if title %}
 <h1>{{ title }}</h1>
 {% else %}

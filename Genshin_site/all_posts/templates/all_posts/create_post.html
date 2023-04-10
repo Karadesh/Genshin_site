@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% block content %}
-{{ckeditor.load(pkg_type="basic")}}
+{{ckeditor.load(pkg_type="standard")}}
 {{ super() }}
 {% for cat, msg in get_flashed_messages(True) %}
 <div class="flash {{cat}}">{{msg}}</div>
@@ -28,7 +28,6 @@
     {{form.image(multiple="True")}}
     {{ form.submit() }}
 </form>
-{{ ckeditor.load(pkg_type="basic") }}
 {{ ckeditor.config(name='text') }}
 {% else %}
 <h1>К сожалению, вы временно не можете создавать посты</h1>

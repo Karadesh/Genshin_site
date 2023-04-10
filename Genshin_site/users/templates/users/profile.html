@@ -83,7 +83,7 @@
             <li><a href="{{url_for('users.my_guides', id=user_data.id, page_num=1)}}">Гайды пользователя {{user_data.login}}</a></li>
             <ul class="profile-info">
             <li>Имя: {{ user_data.login }}</li>
-            <li>Пользователь с {{ user_data.time[:19]}}</li>
+            <li>Пользователь с {{ user_data.time}}</li>
             <li>Количество лайков: {{likes}}</li>
             <li><img src="{{image}}"></li>
             </ul>

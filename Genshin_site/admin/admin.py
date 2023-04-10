@@ -1,7 +1,7 @@
 from flask import Blueprint, request,render_template,flash, abort, url_for, redirect, g
 from Genshin_site.FDataBase import FDataBase
 from flask_login import login_required, current_user
-from Genshin_site.forms import AddCharForm, AddImageForm, AddStoryForm, PostForm
+from Genshin_site.forms import AddCharForm, AddImageForm, AddStoryForm, PostForm, AddElementForm
 import base64
 from transliterate import translit
 from Genshin_site.admin.utils import send_feedback_answer
@@ -253,6 +253,7 @@ def add_character():
         form_addchar = AddCharForm()
         form_addimage = AddImageForm()
         form_addstory = AddStoryForm()
+        form_addelement = AddElementForm()
         select_chars = dbase.character_searcher()
         if request.method == "POST" and form_addchar.validate_on_submit():
             try:
@@ -283,7 +284,13 @@ def add_character():
                 return redirect(url_for('.add_character'))
             except:
                 print("Ошибка добавления истории add_character")
-    return render_template('admin/addchar.html', title="Добавление/изменение персонажа", form_addchar=form_addchar, form_addimage=form_addimage, form_addstory=form_addstory, select_chars=select_chars)
+        if request.method == "POST" and form_addelement.validate_on_submit():
+            try:
+                url = translit(request.form['character'], language_code='ru', reversed=True)
+                dbase.admin_add_character(name = request.form['character'], url = url, element = form_addelement.element.data)
+            except:
+                print("Ошибка добавления элемента add_character")
+    return render_template('admin/addchar.html', title="Добавление/изменение персонажа", form_addchar=form_addchar, form_addimage=form_addimage, form_addstory=form_addstory, select_chars=select_chars, form_addelement=form_addelement)
 
 @admin.route("/make_post", methods=["POST", "GET"])
 def admin_make_post():
