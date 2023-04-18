@@ -1,22 +1,13 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link type="text/css" href="{{ url_for('.static', filename='css/styles.css')}}" rel="stylesheet" />
-    {% block title %}
-    {% if title %}
-    <title>Genshin Funzone - {{ title }}</title>
-    {% else %}
-    <title>Genshin Funzone</title>
-    {% endif %}
-    {% endblock title %}
-</head>
-</html>
-
-<body>
-    {% block content %}
+{% extends 'base.html' %}
+{% block content %}
+{{ super() }}
+{% block off_menu %}
+    <ul class="off_menu">
+        {% for m in off_menu -%}
+    <li><a href="{{m.url}}">{{m.name}}</a></li>
+        {% endfor -%}
+    </ul>
+{% endblock off_menu %}
     <h1>{{ title }}</h1>
     <ul>
         <li><a href="{{url_for('mainapp.index')}}">Главная</a></li>
@@ -26,46 +17,23 @@
     {% endif %}
     </ul>
     {% if current_user_checker == True %}
-    {% block admin_pannel %}
-    {% if current_user.getAdmin() == 'user' %}
-    {% if current_user.isActive() == True %}
-    <p><a href="{{url_for('users.admin_request', username = current_user.getName())}}">Заявка на администратора</a></p>
-    {% endif %}
-    {% else %}
-    <p><a href="{{url_for('admin.index')}}">Панель администратора</a></p>
-    {% endif %}
-    {% endblock admin_pannel %}
     {% for cat, msg in get_flashed_messages(True)%}
     <div class="flash {{cat}}">{{msg}}</div>
     {% endfor %}
     {% block userdata %}
+    <a href="{{url_for('.profile_settings', id=current_user.get_id())}}">Настройки</a>
     <table border="0" class="profile-table">
         <tr><td valign="top">
             <div class="profile-ava"><img src="{{url_for('.userava')}}"></div>
-            <div class="profile-load">
-            <form action="{{url_for('.upload')}}" method="POST" enctype="multipart/form-data">
-                <p><input type="file" name="file">
-                <p><input type="submit" value="Загрузить">
-            </form>
-            </div>
+            <img src="{{image}}">
         </td>
         <td valign="top" class="profile-panel">
             <li><a href="{{url_for('users.my_guides', id=current_user.get_id(), page_num=1)}}">Мои Гайды</a></li>
             <p><a href="{{url_for('.logout')}}">Выйти</a>
             <ul class="profile-info">
-            <li>Имя: {{ current_user.getName() }}</li>
-            <li>Email: {{ current_user.getEmail() }}</li>
+            <li>{{ user_data.login }}</li>
             <li>Количество лайков: {{likes}}</li>
-            <li><img src="{{image}}"></li>
-            <li><form action="{{url_for('.profile', username=current_user.get_id())}}" method="POST" enctype="multipart/form-data">
-                <select name="character" class="form-control">
-                    {% for i in select_chars %}
-                    <option value="{{i}}">{{i}}</option>
-                    {% endfor %}
-                </select>
-            <input type="submit" value="Выбрать персонажа">
-            </form>
-            </li>
+            <li><a href="{{url_for('.achievments', id=user_data.id)}}">Достижения</a></li>
             </ul>
         </td>
         </tr>
@@ -86,13 +54,45 @@
             <li>Пользователь с {{ user_data.time}}</li>
             <li>Количество лайков: {{likes}}</li>
             <li><img src="{{image}}"></li>
+            <li><a href="{{url_for('.achievments', id=user_data.id)}}">Достижения</a></li>
             </ul>
         </td>
         </tr>
     </table>
     {% endblock otheruserdata %}
     {% endif %}
+    {% if guides == None %}
+    <h3>Здесь будут гайды пользователя. Пока ничего нет</h3>
+    {% else %}
+    {% for p in guides %}
+    <li>
+    {% if posts_images.get(p.id) != None %}
+    <img src="{{posts_images.get(p.id)}}" alt="img">
+    {% endif %}
+    <p class="title"><a href="{{ url_for('all_posts.show_post', alias=p.url)}}">{{p.title}}</a></p>
+    <p class="annonce">{{ p.text[:200] | safe }}</p>
+    {{posts_likes.get(p.id)}}
+    </li>
+    {% endfor %}
+    </ul>
+    <ul>
+        {% if guides.has_prev %}
+            <li><a href="{{ url_for('.profile', username=userid, page_num=guides.prev_num)}}"><</a></li>
+        {% else %}
+            <li><span><</span></li>
+        {% endif %}
+        {% for page in guides.iter_pages(left_edge=3, right_edge=3) %}
+        {% if page %}
+            <li><a href="{{ url_for('.profile', username=userid, page_num=page)}}">{{page}}</a></li>
+        {% else %}
+            <li><a href="#">...</a></li>
+        {% endif %}
+        {% endfor %}
+        {% if guides.has_next %}
+            <li><a href="{{ url_for('.profile', username=userid, page_num=guides.next_num)}}">></a></li>
+        {% else %}
+            <li><span>></span></li>
+        {% endif %}
+    </ul>
+    {% endif %}
     {% endblock content %}
-
-</body>
-</html>

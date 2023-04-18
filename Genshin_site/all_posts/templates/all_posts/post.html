@@ -21,7 +21,7 @@
     <li><span>{{title}}</span></li>
 </ul>
 {% if isactive == True %}
-    <li><h3><a href="{{url_for('users.profile', username=creator.userid)}}">{{creator.username}}</a></h3></li>
+    <li><h3><a href="{{url_for('users.profile', username=creator.userid, page_num=1)}}">{{creator.username}}</a></h3></li>
     <div class="profile-ava"><img src="{{creator.avatar}}"></div>
     {%  if title %}
         <h1>{{ title }}</h1>
@@ -62,7 +62,7 @@
                     <div class="profile-ava"><img src="{{avatars[j]}}"></div>
             {% endif %}
         {% endfor %}
-        <p class="username"><a href="{{url_for('users.profile', username=p.userid)}}">{{p.username}}</a></p>
+        <p class="username"><a href="{{url_for('users.profile', username=p.userid, page_num=1)}}">{{p.username}}</a></p>
         {{date_list[comments.index(p)]}}
         <p class="annonce">{{ p.text}}</p>
         {% if current_user.is_authenticated %}

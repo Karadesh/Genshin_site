@@ -35,7 +35,7 @@
         {% endif %}
         {% endfor %}
         <p>{{ form.remember.label() }} {{ form.remember() }}
-        <p>{{ form.submit() }}
+        {{ form.submit() }}
         <hr align=left width="300px">
         <p><a href="{{url_for('.register')}}">Регистрация</a>
         <p><a href="{{url_for('.reset_request')}}">Забыли пароль?</a> 

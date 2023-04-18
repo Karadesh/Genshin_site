@@ -10,7 +10,7 @@
 {% endblock off_menu %}
 <ul>
     <li><a href="{{ url_for('mainapp.index')}}">Главная</a></li>
-    <li><a href="{{url_for('users.profile', username=userid)}}">Профиль пользователя {{username}}</a></li>
+    <li><a href="{{url_for('users.profile', username=userid, page_num=1)}}">Профиль пользователя {{username}}</a></li>
     <li><span>Гайды пользователя {{username}}</span></li>
 </ul>
 {%  if title %}

@@ -33,8 +33,8 @@ def logout():
     return redirect(url_for('mainapp.index'))
 
 
-@users.route("/profile/<username>", methods=["POST", "GET"])
-def profile(username):
+@users.route("/profile/<username>?<int:page_num>", methods=["POST", "GET"])
+def profile(username, page_num=1):
     user_data = dbase.user_data(username)
     try:
         current_user_checker = (user_data['id'] == int(current_user.get_id()))
@@ -43,11 +43,32 @@ def profile(username):
     #if username != current_user.get_id():
     #    abort(401)
     likes = dbase.user_likes(username)
-    select_chars = dbase.character_searcher()
-    if request.method=="POST":
-        dbase.choose_character(request.form["character"], current_user.get_id())
+    try:
+        guides=dbase.my_guides(username, page_num)
+        posts_likes={}
+        posts_images={}
+        for i in guides:
+            posts_likes[i.id] = dbase.how_likes(i.id)
+            posts_images[i.id] = dbase.getPostPreview(i.id)
+    except Exception:
+        guides = None
+        user_data = []
+        posts_likes = []
+        posts_images = []
     image = dbase.search_character_image(username)
-    return render_template("users/profile.html",title = "Profile", likes=likes, select_chars=select_chars, image=image, user_data=user_data, current_user_checker = current_user_checker)
+    return render_template("users/profile.html",title = "Profile", likes=likes, image=image, user_data=user_data, current_user_checker = current_user_checker,guides=guides, posts_likes=posts_likes, posts_images=posts_images, off_menu=dbase.getOffmenu(), userid=user_data["id"], username=user_data["login"])
+
+@users.route("/profile/profile_settings/<id>", methods=["POST", "GET"])
+def profile_settings(id):
+    if int(current_user.get_id())!=int(id):
+        abort(401)
+    else:
+        user_data = dbase.user_data(id)
+        select_chars = dbase.character_searcher()
+        if request.method=="POST":
+            dbase.choose_character(request.form["character"], current_user.get_id())
+    image = dbase.search_character_image(id)
+    return render_template("users/profile_settings.html", title="Настройки", select_chars=select_chars, image=image, user_data=user_data, off_menu=dbase.getOffmenu())
 
 @users.route("/profile/admin_request/<username>", methods=["POST", "GET"])
 @login_required
@@ -83,7 +104,7 @@ def upload():
                 flash("Ошибка чтения файла", "error")
         else:
             flash("Ошибка обновления аватара", "error")
-    return redirect(url_for('.profile', username=current_user.get_id()))
+    return redirect(url_for('.profile_settings', id=current_user.get_id()))
 
 @users.route("/authorisation", methods=['POST', 'GET'])
 def authorisation():
@@ -160,3 +181,11 @@ def my_guides(id, page_num):
         likes = []
         images = []
     return render_template('users/my_guides.html', title=f'Гайды пользователя {user_data["login"]}', guides=guides, likes=likes, images=images, off_menu=dbase.getOffmenu(), userid=user_data["id"], username=user_data["login"])
+
+
+@users.route("/achievments/<id>")
+def achievments(id):
+    try: user_data = dbase.user_data(id)
+    except Exception:
+        print("achievments error")
+    return render_template('users/achievments.html', title=f'Достижения пользователя {user_data["login"]}', off_menu=dbase.getOffmenu())

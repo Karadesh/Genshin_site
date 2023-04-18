@@ -9,7 +9,7 @@
 </head>
 <body>
     {% if current_user.is_authenticated %}
-    <p><a href="{{ url_for('users.profile', username=current_user.get_id()) }}">Профиль</a></p>
+    <p><a href="{{ url_for('users.profile', username=current_user.get_id(), page_num=1) }}">Профиль</a></p>
     {% endif %}
     <ul class="mainmenu">
     <li><a href="{{ url_for('.index') }}">Главная</a></li>
