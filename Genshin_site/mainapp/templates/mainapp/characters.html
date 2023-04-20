@@ -1,13 +1,6 @@
 {% extends 'base.html' %}
 {% block content %}
 {{ super() }}
-{% block off_menu %}
-    <ul class="off_menu">
-        {% for m in off_menu -%}
-    <li><a href="{{m.url}}">{{m.name}}</a></li>
-        {% endfor -%}
-    </ul>
-{% endblock off_menu %}
 <ul>
     <li><a href="{{ url_for('mainapp.index')}}">Главная</a></li>
     <li><span>Персонажи</span></li>

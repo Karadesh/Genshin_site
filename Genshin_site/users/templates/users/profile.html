@@ -1,13 +1,6 @@
 {% extends 'base.html' %}
 {% block content %}
 {{ super() }}
-{% block off_menu %}
-    <ul class="off_menu">
-        {% for m in off_menu -%}
-    <li><a href="{{m.url}}">{{m.name}}</a></li>
-        {% endfor -%}
-    </ul>
-{% endblock off_menu %}
     <h1>{{ title }}</h1>
     <ul>
         <li><a href="{{url_for('mainapp.index')}}">Главная</a></li>
@@ -16,6 +9,9 @@
     <li><a href="{{url_for('all_posts.create_post')}}">Создать Пост</a></li>
     {% endif %}
     </ul>
+    {% if active_background != None %}
+    <img src="{{active_background}}" alt="">
+    {% endif %}
     {% if current_user_checker == True %}
     {% for cat, msg in get_flashed_messages(True)%}
     <div class="flash {{cat}}">{{msg}}</div>

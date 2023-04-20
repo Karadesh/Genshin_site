@@ -1,13 +1,6 @@
 {% extends 'base.html' %}
 {% block content %}
 {{ super() }}
-{% block off_menu %}
-    <ul class="off_menu">
-        <li><a href="{{url_for('all_posts.posts', page_num=1)}}">Гайды</a></li>
-        <li><a href="{{url_for('mainapp.characters')}}">Персонажи</a></li>
-        <li><a href="{{url_for('mainapp.feedback')}}">Обратная связь</a></li>
-    </ul>
-{% endblock off_menu %}
 <p>Страницы нет, но вы держитесь. Вот вам менюшки! Переходите на существующие страницы!</p>
 <p>Или можно вернуться на <a href="{{url_for('mainapp.index')}}">главную</a> страницу
 {% endblock %}

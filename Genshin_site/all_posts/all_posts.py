@@ -3,7 +3,7 @@ from flask_login import login_required, current_user
 from Genshin_site.FDataBase import FDataBase
 import base64
 from transliterate import translit
-from Genshin_site.forms import PostForm
+from Genshin_site.forms import PostForm, RegistrationForm, AuthorisationForm
 from datetime import datetime
 
 all_posts = Blueprint('all_posts', __name__, template_folder='templates', static_folder='static')
@@ -97,25 +97,31 @@ def get_postcreator_avatar(url, app=all_posts):
 
 @all_posts.route("/posts/<int:page_num>")
 def posts(page_num):
+    form_auth = AuthorisationForm()
+    form_reg = RegistrationForm()
     #characters=image_maker(chars_list) Для добавления персонажей в бд
     likes={}
     posts=dbase.getPostsAnonce(page_num)
     for i in posts:
         likes[i.id] = how_likes(i.id)
-    return render_template("all_posts/posts.html",title = "Список Гайдов", off_menu=dbase.getOffmenu(), posts=posts, likes=likes)
+    return render_template("all_posts/posts.html",title = "Список Гайдов", posts=posts, likes=likes, form_auth=form_auth, form_reg=form_reg)
 
 @all_posts.route("/posts_character/<alias>?<int:page_num>")
 def posts_character(alias, page_num):
+    form_auth = AuthorisationForm()
+    form_reg = RegistrationForm()
     likes={}
     images={}
     posts=dbase.getPostsAnonceCharacter(alias, page_num)
     for i in posts:
         likes[i.id] = how_likes(i.id)
         images[i.id] = dbase.getPostPreview(i.id)
-    return render_template("all_posts/posts_character.html",title = "Список гайдов", off_menu=dbase.getOffmenu(), posts=posts, likes=likes, images=images, character=dbase.get_char(alias))
+    return render_template("all_posts/posts_character.html",title = "Список гайдов", posts=posts, likes=likes, images=images, character=dbase.get_char(alias), form_auth=form_auth, form_reg=form_reg)
 
 @all_posts.route("/post/<alias>", methods=['POST', 'GET'])
 def show_post(alias):
+    form_auth = AuthorisationForm()
+    form_reg = RegistrationForm()
     get_post = dbase.get_post(alias)
     title = get_post['title'] 
     post = get_post['text']
@@ -143,7 +149,7 @@ def show_post(alias):
                 return(redirect(url_for('.show_post', alias=url)))
         else:
             flash('Ошибка добавления комментария', category = 'error')
-    return render_template("all_posts/post.html",date_list=date_list,likes=likes, islike=islike, post_id=post_id, title = title, post=post, post_image=post_image, isactive=isactive, userid=str(userid), off_menu=dbase.getOffmenu(), comments=comments, url=[url], avatars=get_avatars_dict(url), islocked=islocked, creator=get_postcreator_avatar(url))
+    return render_template("all_posts/post.html",date_list=date_list,likes=likes, islike=islike, post_id=post_id, title = title, post=post, post_image=post_image, isactive=isactive, userid=str(userid), comments=comments, url=[url], avatars=get_avatars_dict(url), islocked=islocked, creator=get_postcreator_avatar(url), form_auth=form_auth, form_reg=form_reg)
 
 @all_posts.route("/post_like/<post_id>?<userid>?<post_url>")
 @login_required
@@ -194,7 +200,7 @@ def create_post():
                      flash('Ошибка добавления статьи', category = 'error')
     else:
         return redirect(url_for('users.authorisation'))
-    return render_template("all_posts/create_post.html",title = "Create Post", off_menu=dbase.getOffmenu(), characters=dbase.get_chars(), form=form, select_chars=select_chars)
+    return render_template("all_posts/create_post.html",title = "Create Post", characters=dbase.get_chars(), form=form, select_chars=select_chars)
 
 @all_posts.route("/lock_post/<alias>")
 @login_required

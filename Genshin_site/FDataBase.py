@@ -2,7 +2,7 @@ from transliterate import translit
 import re
 from flask import url_for, current_app
 from flask_login import current_user
-from Genshin_site.models import Comments, Users, Offmenu, Posts, Feedback, Feedback_answer, Characters, Admin_requests, db, PostsImages, Post_likes, PostOfDay
+from Genshin_site.models import Comments, Users, Posts, Feedback, Feedback_answer, Characters, Admin_requests, db, PostsImages, Post_likes, PostOfDay
 import random
 from datetime import date, datetime
 import base64
@@ -10,10 +10,6 @@ import base64
 class FDataBase:
     def __init__(self):
         self.__db = db
-    
-    def getOffmenu(self):
-        sql = Offmenu.query.all()
-        return sql
     
     def create_post(self, title, text, userid, character):
         trans_name = translit(title, language_code='ru', reversed=True)
@@ -691,7 +687,31 @@ class FDataBase:
                 base64_string = base64.b64encode(img_ava).decode('utf-8')
                 img=f'data:image/png;base64,{base64_string}'
             str_time = datetime.strftime(udata.time, "%d/%m/%Y %H:%M")
-            sorted_data = {"id":udata.id, "login":udata.login, "time":str_time, "character":udata.character, "avatar":img}
+            sorted_data = {"id":udata.id, "login":udata.login, "time":str_time, "character":udata.character, "avatar":img, "active_background": udata.activebackground}
             return sorted_data
         except Exception:
             print("Ошибка поиска профиля user_data")
+
+    def choose_background(self, id):
+        try:
+            user_data = Users.query.filter(Users.id==id).first()
+            backgrounds_string = user_data.backgrounds
+            if backgrounds_string== None:
+                return backgrounds_string
+            else:
+                backgrounds_list = backgrounds_string.split(",")
+                return backgrounds_list
+        except Exception:
+            print("Ошибка choose_background")
+            return None
+    
+    def add_background(self, id, background):
+        try:
+            user_searcher= Users.query.filter(Users.id==id).first()
+            user_searcher.activebackground=background
+            db.session.add(user_searcher)
+            db.session.commit()
+            return True
+        except Exception:
+            print("Ошибка add_background")
+            return False

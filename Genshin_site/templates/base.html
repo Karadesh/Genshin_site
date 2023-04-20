@@ -21,6 +21,8 @@
     <ul class="mainmenu">
     <li><a href="{{url_for('mainapp.index')}}">Главная</a></li>
     <li><a href="{{url_for('all_posts.posts', page_num=1)}}">Гайды</a></li>
+    <li><a href="{{url_for('mainapp.characters')}}">Персонажи</a></li>
+    <li><a href="{{url_for('mainapp.feedback')}}">Обратная связь</a></li>
     <li><a href="{{url_for('all_posts.create_post')}}">Создать Гайд</a></li>
     {% if current_user.is_authenticated %}
     <img src="{{current_user.getProfileAvatar()}}" alt="">
@@ -35,5 +37,45 @@
         {% endif %}
         {% endblock mainmenu %}
     {% endblock content %}
+    {% if not current_user.is_authenticated %}
+    <form action="{{url_for('users.auth_reg')}}" method="post" class="form-authorisation">
+        {{ form_auth.hidden_tag() }}
+        {% for field in form_auth if field.name not in ['csrf_token', 'remember', 'submit'] -%}
+        <p>{{ field.label() }}
+        {% if field.errors %}
+        {{ field(class="invalid") }}
+        <span class="invalid-feedback">
+            {% for e in field.errors %}
+            {{ e }}
+            {% endfor %}
+        </span>
+        {% else %}
+            {{ field() }}
+        {% endif %}
+        {% endfor %}
+        <p>{{ form_auth.remember.label() }} {{ form_auth.remember() }}
+        {{ form_auth.submit() }}
+        <hr align=left width="300px">
+        <p><button>Регистрация</button>
+        <p><a href="{{url_for('users.reset_request')}}">Забыли пароль?</a> 
+    </form>
+    <form action="{{url_for('users.auth_reg')}}" method="post" class="form-contact">
+        {{ form_reg.hidden_tag() }}
+        {% for field in form_reg if field.name not in ['csrf_token', 'submit'] -%}
+        <p>{{ field.label() }}
+            {% if field.errors %}
+            {{ field(class="invalid") }}
+            <span class="invalid-feedback">
+                {% for e in field.errors %}
+                {{ e }}
+                {% endfor %}
+            </span>
+            {% else %}
+                {{ field() }}
+            {% endif %}
+            {% endfor %}
+        <p>{{ form_reg.submit() }}
+    </form>
+    {% endif %}
 </body>
 </html>

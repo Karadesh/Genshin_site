@@ -5,13 +5,6 @@
 {% for cat, msg in get_flashed_messages(True) %}
 <div class="flash {{cat}}">{{msg}}</div>
 {% endfor %}
-{% block off_menu %}
-    <ul class="off_menu">
-        {% for m in off_menu -%}
-    <li><a href="{{m.url}}">{{m.name}}</a></li>
-        {% endfor -%}
-    </ul>
-{% endblock off_menu %}
 {% if current_user.isActive() %}
 <form action="{{url_for('.create_post')}}" method="post" class="form-contact", enctype="multipart/form-data">
     {{ form. csrf_token }}

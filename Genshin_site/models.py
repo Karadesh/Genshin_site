@@ -15,6 +15,8 @@ class Users(db.Model):
     isactive = db.Column(db.Boolean, default=True)
     admin = db.Column(db.String(50), default="user")
     character = db.Column(db.String(60), default="Путешественник")
+    backgrounds = db.Column(db.String, nullable=True)
+    activebackground = db.Column(db.String(60), nullable=True)
 
     def get_reset_token(self, expires_sec=1800):
         reset_token = jwt.encode({'user_id': self.id, 'exp': datetime.datetime.now(tz=datetime.timezone.utc) + datetime.timedelta(seconds=expires_sec)},
@@ -38,11 +40,6 @@ class Users(db.Model):
 
     def __repr__(self):
         return f"<users {self.id}>"
-
-class Offmenu(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(50), nullable=False)
-    url = db.Column(db.String(200), nullable=False)
 
 class Posts(db.Model):
     id = db.Column(db.Integer, primary_key=True)

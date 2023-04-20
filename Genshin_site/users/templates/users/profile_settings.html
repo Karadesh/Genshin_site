@@ -1,13 +1,6 @@
 {% extends 'base.html' %}
 {% block content %}
 {{ super() }}
-{% block off_menu %}
-    <ul class="off_menu">
-        {% for m in off_menu -%}
-    <li><a href="{{m.url}}">{{m.name}}</a></li>
-        {% endfor -%}
-    </ul>
-{% endblock off_menu %}
     <h1>{{ title }}</h1>
     <ul>
         <li><a href="{{url_for('mainapp.index')}}">Главная</a></li>
@@ -49,5 +42,15 @@
                 </select>
             <input type="submit" value="Выбрать персонажа">
             </form>
+            {% if backgrounds!=None %}
+            <li><form action="{{url_for('.select_background', id=current_user.get_id())}}" method="POST" enctype="multipart/form-data">
+                <select name="backgrounds" class="form-control">
+                    {% for i in backgrounds %}
+                    <option value="{{i}}">{{i}}</option>
+                    {% endfor %}
+                </select>
+            <input type="submit" value="Выбрать фон профиля">
+            </form>
+            {% endif %}
         </ul>
 {% endblock content %}

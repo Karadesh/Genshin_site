@@ -4,7 +4,7 @@ from flask_login import LoginManager, login_required, login_user, logout_user, c
 from Genshin_site.UserLogin import UserLogin
 from Genshin_site.forms import AuthorisationForm, RegistrationForm, RequestResetForm, ResetPasswordForm
 from werkzeug.security import generate_password_hash, check_password_hash
-from Genshin_site.users.utils import send_reset_email 
+from Genshin_site.users.utils import send_reset_email, background_maker 
 from datetime import datetime
 
 users = Blueprint('users', __name__, template_folder='templates', static_folder='static')
@@ -35,7 +35,13 @@ def logout():
 
 @users.route("/profile/<username>?<int:page_num>", methods=["POST", "GET"])
 def profile(username, page_num=1):
+    form_auth = AuthorisationForm()
+    form_reg = RegistrationForm()
     user_data = dbase.user_data(username)
+    if user_data["active_background"] != None:
+        active_background = background_maker(user_data["active_background"])
+    else:
+        active_background=None
     try:
         current_user_checker = (user_data['id'] == int(current_user.get_id()))
     except Exception:
@@ -56,19 +62,26 @@ def profile(username, page_num=1):
         posts_likes = []
         posts_images = []
     image = dbase.search_character_image(username)
-    return render_template("users/profile.html",title = "Profile", likes=likes, image=image, user_data=user_data, current_user_checker = current_user_checker,guides=guides, posts_likes=posts_likes, posts_images=posts_images, off_menu=dbase.getOffmenu(), userid=user_data["id"], username=user_data["login"])
+    return render_template("users/profile.html",title = "Profile", likes=likes, image=image, user_data=user_data, current_user_checker = current_user_checker,guides=guides, posts_likes=posts_likes, posts_images=posts_images, userid=user_data["id"], username=user_data["login"],form_reg=form_reg, form_auth=form_auth, active_background=active_background)
 
 @users.route("/profile/profile_settings/<id>", methods=["POST", "GET"])
 def profile_settings(id):
     if int(current_user.get_id())!=int(id):
         abort(401)
     else:
+        backgrounds = dbase.choose_background(id)
         user_data = dbase.user_data(id)
         select_chars = dbase.character_searcher()
         if request.method=="POST":
             dbase.choose_character(request.form["character"], current_user.get_id())
     image = dbase.search_character_image(id)
-    return render_template("users/profile_settings.html", title="Настройки", select_chars=select_chars, image=image, user_data=user_data, off_menu=dbase.getOffmenu())
+    return render_template("users/profile_settings.html", title="Настройки", select_chars=select_chars, image=image, user_data=user_data, backgrounds=backgrounds)
+
+@users.route("/profile/select_background/<id>", methods=["POST", "GET"])
+def select_background(id):
+    if request.method=="POST":
+        dbase.add_background(id, request.form["backgrounds"])
+    return redirect(url_for('.profile_settings', id=id))
 
 @users.route("/profile/admin_request/<username>", methods=["POST", "GET"])
 @login_required
@@ -110,7 +123,7 @@ def upload():
 def authorisation():
     #session.permanent = True #для запоминания сессии. потом включить
     if current_user.is_authenticated:
-        return redirect(request.args.get("next") or url_for(".profile", username=current_user.get_id()))
+        return redirect(request.args.get("next") or url_for(".profile", username=current_user.get_id(), page_num=1))
     form = AuthorisationForm()
     if form.validate_on_submit():
         user = dbase.getUserByLogin(form.name.data)
@@ -136,6 +149,33 @@ def register():
     else:
         flash("Проверьте поле 'e-mail'. Также пароль должен быть не менее одного символа", "error")
     return render_template("users/register.html", title="Registration", form=form)
+
+@users.route("/auth_reg", methods=["POST", "GET"])
+def auth_reg():
+    if current_user.is_authenticated:
+        return redirect(request.args.get("next") or url_for(".profile", username=current_user.get_id(), page_num=1))
+    form_auth = AuthorisationForm()
+    form_reg = RegistrationForm()
+    if form_auth.validate_on_submit():
+        user = dbase.getUserByLogin(form_auth.name.data)
+        if user and check_password_hash(user.password, form_auth.password.data):
+            userlogin = UserLogin().create(user)
+            rm = form_auth.remember.data
+            login_user(userlogin, remember=rm)
+            return redirect(request.args.get("next") or url_for("mainapp.index"))
+        flash("Неверный логин или пароль", "error")
+    if form_reg.validate_on_submit():
+        hash = generate_password_hash(form_reg.password.data)
+        try:
+            dbase.add_user(form_reg.name.data, hash, form_reg.email.data)
+            flash("Вы успешно зарегистрированы!", "success")
+            return redirect(url_for('.authorisation'))
+        except:
+            flash("Ошибка при добавлении в БД", "error")
+    else:
+        flash("Проверьте поле 'e-mail'. Также пароль должен быть не менее одного символа", "error")
+    return render_template("/base.html", form_auth=form_auth, form_reg=form_reg)
+
 
 @users.route("/reset_password", methods=['GET', 'POST'])
 def reset_request():
@@ -167,6 +207,8 @@ def reset_token(token):
 
 @users.route("/userguides/<id>?<int:page_num>")
 def my_guides(id, page_num):
+    form_auth = AuthorisationForm()
+    form_reg = RegistrationForm()
     try:
         user_data = dbase.user_data(id)
         guides=dbase.my_guides(id, page_num)
@@ -180,12 +222,14 @@ def my_guides(id, page_num):
         user_data = []
         likes = []
         images = []
-    return render_template('users/my_guides.html', title=f'Гайды пользователя {user_data["login"]}', guides=guides, likes=likes, images=images, off_menu=dbase.getOffmenu(), userid=user_data["id"], username=user_data["login"])
+    return render_template('users/my_guides.html', title=f'Гайды пользователя {user_data["login"]}', guides=guides, likes=likes, images=images, userid=user_data["id"], username=user_data["login"], form_reg=form_reg, form_auth=form_auth)
 
 
 @users.route("/achievments/<id>")
 def achievments(id):
+    form_auth = AuthorisationForm()
+    form_reg = RegistrationForm()
     try: user_data = dbase.user_data(id)
     except Exception:
         print("achievments error")
-    return render_template('users/achievments.html', title=f'Достижения пользователя {user_data["login"]}', off_menu=dbase.getOffmenu())
+    return render_template('users/achievments.html', title=f'Достижения пользователя {user_data["login"]}', form_reg=form_reg, form_auth=form_auth)
