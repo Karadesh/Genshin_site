@@ -140,3 +140,11 @@ class Post_likes(db.Model):
 
     def __repr__(self):
         return f"<Post_likes: {self.postid}>"
+    
+class Week_likes(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    userid = db.Column(db.Integer, nullable=False)
+    likes = db.Column(db.Integer, default=0)
+
+    def __repr__(self):
+        return f"<Week_likes: {self.id}>"

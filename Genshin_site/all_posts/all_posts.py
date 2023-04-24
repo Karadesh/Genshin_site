@@ -101,9 +101,14 @@ def posts(page_num):
     form_reg = RegistrationForm()
     #characters=image_maker(chars_list) Для добавления персонажей в бд
     likes={}
-    posts=dbase.getPostsAnonce(page_num)
-    for i in posts:
-        likes[i.id] = how_likes(i.id)
+    try:
+        posts=dbase.getPostsAnonce(page_num)
+        if posts==[]:
+            abort(404)
+        for i in posts:
+            likes[i.id] = how_likes(i.id)
+    except:
+        abort(404)
     return render_template("all_posts/posts.html",title = "Список Гайдов", posts=posts, likes=likes, form_auth=form_auth, form_reg=form_reg)
 
 @all_posts.route("/posts_character/<alias>?<int:page_num>")
@@ -113,6 +118,8 @@ def posts_character(alias, page_num):
     likes={}
     images={}
     posts=dbase.getPostsAnonceCharacter(alias, page_num)
+    if posts==[]:
+        abort(404)
     for i in posts:
         likes[i.id] = how_likes(i.id)
         images[i.id] = dbase.getPostPreview(i.id)
@@ -123,6 +130,8 @@ def show_post(alias):
     form_auth = AuthorisationForm()
     form_reg = RegistrationForm()
     get_post = dbase.get_post(alias)
+    if get_post==None:
+        abort(404)
     title = get_post['title'] 
     post = get_post['text']
     url = get_post['url']
@@ -151,10 +160,12 @@ def show_post(alias):
             flash('Ошибка добавления комментария', category = 'error')
     return render_template("all_posts/post.html",date_list=date_list,likes=likes, islike=islike, post_id=post_id, title = title, post=post, post_image=post_image, isactive=isactive, userid=str(userid), comments=comments, url=[url], avatars=get_avatars_dict(url), islocked=islocked, creator=get_postcreator_avatar(url), form_auth=form_auth, form_reg=form_reg)
 
-@all_posts.route("/post_like/<post_id>?<userid>?<post_url>")
+@all_posts.route("/post_like/<post_id>?<userid>?<post_url>?<creator>")
 @login_required
-def like_post_inside(post_id, userid, post_url):
-    dbase.like_post(post_id,userid)
+def like_post_inside(post_id, userid, post_url, creator):
+    like = dbase.like_post(post_id,userid,creator)
+    if like == False:
+        abort(404)
     return redirect(url_for('.show_post', alias=post_url))
 
 @all_posts.route("/confirm_delete/<alias>")
@@ -165,13 +176,17 @@ def confirm_delete(alias):
 @all_posts.route("/delete_post/<alias>", methods=['GET','DELETE'])
 @login_required
 def delete_post(alias):
-        dbase.delete_post(alias)
+        deleter = dbase.delete_post(alias)
+        if deleter == False:
+            abort(404)
         return(redirect(url_for('.posts', page_num=1)))
 
 @all_posts.route("/delete_comment/<alias>?<id>", methods=['GET', 'DELETE'])
 @login_required
 def delete_comment(alias, id):
-    dbase.delete_comment(id)
+    comment_deleter=dbase.delete_comment(id)
+    if comment_deleter==False:
+        abort(404)
     return(redirect(url_for('.show_post', alias=alias)))
 
 @all_posts.route("/create_post", methods=['POST', 'GET'])
@@ -206,7 +221,9 @@ def create_post():
 @login_required
 def lock_post(alias):
     try:
-        dbase.lockpost(alias)
+        post_locker = dbase.lockpost(alias)
+        if post_locker==False:
+            abort(404)
     except:
         print("Ошибка закрытия поста lock_post")
     return(redirect(url_for('.show_post', alias=alias)))

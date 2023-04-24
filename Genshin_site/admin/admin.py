@@ -75,6 +75,8 @@ def admin_showpost(alias):
        return abort(401)
     if moderator_checker():
         get_post = dbase.get_post(alias)
+        if get_post==None:
+            abort(404)
         title = get_post['title'] 
         post = get_post['text']
         url = get_post['url']
@@ -93,7 +95,9 @@ def lock_post(alias):
        return abort(401)
     if moderator_checker():
         try:
-            dbase.lockpost(alias)
+            locker=dbase.lockpost(alias)
+            if locker==None:
+                abort(404)
         except:
             print("Ошибка закрытия поста lock_post")
     else:
@@ -108,6 +112,8 @@ def admin_changepoststatus(alias):
        return abort(401)
     if moderator_checker():
         get_post=dbase.get_post(alias)
+        if get_post==None:
+            abort(404)
         if request.method == "POST":
             try:
                 dbase.admin_post_change_active(alias, request.form['reason'])
@@ -127,7 +133,9 @@ def deletecomment(id, postname):
        return abort(401)
     else:
         if moderator_checker():
-            dbase.delete_comment(id, 'deleted by admin')
+            deleter = dbase.delete_comment(id, 'deleted by admin')
+            if deleter==None:
+                abort(404)
         else:
             abort(401)
     return redirect(url_for('.admin_showpost', alias=postname))
@@ -156,7 +164,9 @@ def user_changestatus(id):
        return abort(401)
     if moderator_checker():
         try:
-            dbase.admin_user_change_active(id)
+            status_changer=dbase.admin_user_change_active(id)
+            if status_changer==None:
+                abort(404)
             return redirect(url_for('.listusers'))
         except:
             print("Ошибка Изменения статуса user_changestatus")
@@ -186,6 +196,8 @@ def feedbackanswer(id):
        return abort(401)
     if feedback_checker():
         get_feedback = dbase.get_feedback(id)
+        if get_feedback==None:
+            abort(404)
         feedback_id = id
         username = get_feedback['username']
         email = get_feedback['email']
@@ -225,7 +237,9 @@ def aprove_admin(username,type):
        return abort(401)
     if feedback_checker():
         try:
-            dbase.add_new_admin(username,type)
+            new_admin=dbase.add_new_admin(username,type)
+            if new_admin==None:
+                abort(404)
         except:
             print("ошибка добавления администратора")
     return redirect(url_for('.admin_requests'))
@@ -238,7 +252,9 @@ def cancel_admin(username):
        return abort(401)
     if feedback_checker():
         try:
-            dbase.admin_delete_request(username)
+            delete_request=dbase.admin_delete_request(username)
+            if delete_request==None:
+                abort(404)
         except:
             print("ошибка удаления реквеста cancel_admin")
     return redirect(url_for('.admin_requests'))
@@ -328,7 +344,9 @@ def make_post_of_day(id):
        return abort(401)
     if feedback_checker():
         try:
-            dbase.choose_daypost(id)
+            postofday=dbase.choose_daypost(id)
+            if postofday==None:
+                abort(404)
             return redirect(url_for(".index"))
         except:
             print("Не получилось выбрать пост дня")

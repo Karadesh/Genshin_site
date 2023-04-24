@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, g, request, flash, redirect, url_for
+from flask import Blueprint, render_template, g, request, flash, redirect, url_for, abort
 from Genshin_site.FDataBase import FDataBase
 from Genshin_site.db import db
 import base64
@@ -45,7 +45,10 @@ def characters():
 def character(alias):
     form_auth = AuthorisationForm()
     form_reg = RegistrationForm()
-    return render_template("mainapp/character.html", character=dbase.get_char(alias), form_auth=form_auth, form_reg=form_reg)
+    character=dbase.get_char(alias)
+    if character==None:
+        abort(404)
+    return render_template("mainapp/character.html", character=character, form_auth=form_auth, form_reg=form_reg)
 
 @mainapp.route("/feedback", methods=["POST", "GET"])
 def feedback():
@@ -67,6 +70,8 @@ def all_postsofday(page_num):
     likes={}
     images={}
     posts = dbase.dayposts_list(page_num)
+    if posts==[]:
+        abort(404)
     for i in posts:
         likes[i.id] = dbase.how_likes(i.postid)
         images[i.id] = dbase.getPostPreview(i.postid)

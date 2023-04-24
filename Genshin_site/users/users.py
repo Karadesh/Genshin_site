@@ -2,7 +2,7 @@ from flask import Blueprint, g, redirect, url_for, abort, render_template, make_
 from Genshin_site.FDataBase import FDataBase
 from flask_login import LoginManager, login_required, login_user, logout_user, current_user
 from Genshin_site.UserLogin import UserLogin
-from Genshin_site.forms import AuthorisationForm, RegistrationForm, RequestResetForm, ResetPasswordForm
+from Genshin_site.forms import AuthorisationForm, RegistrationForm, RequestResetForm, ResetPasswordForm, ChangeEmailForm
 from werkzeug.security import generate_password_hash, check_password_hash
 from Genshin_site.users.utils import send_reset_email, background_maker 
 from datetime import datetime
@@ -38,6 +38,8 @@ def profile(username, page_num=1):
     form_auth = AuthorisationForm()
     form_reg = RegistrationForm()
     user_data = dbase.user_data(username)
+    if user_data==None:
+        abort(404)
     if user_data["active_background"] != None:
         active_background = background_maker(user_data["active_background"])
     else:
@@ -50,22 +52,22 @@ def profile(username, page_num=1):
     #    abort(401)
     likes = dbase.user_likes(username)
     try:
-        guides=dbase.my_guides(username, page_num)
+        guides=dbase.my_guides(username, int(page_num))
+        if guides==[]:
+            abort(404)
         posts_likes={}
         posts_images={}
         for i in guides:
             posts_likes[i.id] = dbase.how_likes(i.id)
             posts_images[i.id] = dbase.getPostPreview(i.id)
     except Exception:
-        guides = None
-        user_data = []
-        posts_likes = []
-        posts_images = []
+        abort(404)
     image = dbase.search_character_image(username)
     return render_template("users/profile.html",title = "Profile", likes=likes, image=image, user_data=user_data, current_user_checker = current_user_checker,guides=guides, posts_likes=posts_likes, posts_images=posts_images, userid=user_data["id"], username=user_data["login"],form_reg=form_reg, form_auth=form_auth, active_background=active_background)
 
 @users.route("/profile/profile_settings/<id>", methods=["POST", "GET"])
 def profile_settings(id):
+    form=ChangeEmailForm()
     if int(current_user.get_id())!=int(id):
         abort(401)
     else:
@@ -75,10 +77,25 @@ def profile_settings(id):
         if request.method=="POST":
             dbase.choose_character(request.form["character"], current_user.get_id())
     image = dbase.search_character_image(id)
-    return render_template("users/profile_settings.html", title="Настройки", select_chars=select_chars, image=image, user_data=user_data, backgrounds=backgrounds)
+    return render_template("users/profile_settings.html", title="Настройки", select_chars=select_chars, image=image, user_data=user_data, backgrounds=backgrounds, form=form)
+
+@users.route("/profile/change_email/<id>", methods=["POST", "GET"])
+def change_email(id):
+    form=ChangeEmailForm()
+    if int(current_user.get_id())!=int(id):
+        abort(401)
+    if request.method=="POST":
+        try:
+            dbase.change_email(id, form.email.data)
+        except Exception:
+            print("Ошибка change_email")
+    return redirect(url_for('.profile_settings', id=id))
+        
 
 @users.route("/profile/select_background/<id>", methods=["POST", "GET"])
 def select_background(id):
+    if int(current_user.get_id())!=int(id):
+        abort(401)
     if request.method=="POST":
         dbase.add_background(id, request.form["backgrounds"])
     return redirect(url_for('.profile_settings', id=id))
@@ -87,8 +104,9 @@ def select_background(id):
 @login_required
 def admin_request(username):
     if request.method=="POST":
+        username=current_user.getName()
         dbase.add_admin_request(username, request.form['admin_type'], request.form['reason'])
-        return redirect(url_for('.profile', username=current_user.get_id()))
+        return redirect(url_for('.profile', username=current_user.get_id(), page_num=1))
     return render_template("users/admin_request.html", title="Admin request")
 
 @users.route('/userava')
@@ -168,6 +186,7 @@ def auth_reg():
         hash = generate_password_hash(form_reg.password.data)
         try:
             dbase.add_user(form_reg.name.data, hash, form_reg.email.data)
+            dbase.user_week_likes(form_reg.email.data)
             flash("Вы успешно зарегистрированы!", "success")
             return redirect(url_for('.authorisation'))
         except:
@@ -211,17 +230,18 @@ def my_guides(id, page_num):
     form_reg = RegistrationForm()
     try:
         user_data = dbase.user_data(id)
+        if user_data==None:
+            abort(404)
         guides=dbase.my_guides(id, page_num)
+        if guides==[]:
+            abort(404)
         likes={}
         images={}
         for i in guides:
             likes[i.id] = dbase.how_likes(i.id)
             images[i.id] = dbase.getPostPreview(i.id)
     except Exception:
-        guides = None
-        user_data = []
-        likes = []
-        images = []
+        abort(404)
     return render_template('users/my_guides.html', title=f'Гайды пользователя {user_data["login"]}', guides=guides, likes=likes, images=images, userid=user_data["id"], username=user_data["login"], form_reg=form_reg, form_auth=form_auth)
 
 
@@ -229,7 +249,11 @@ def my_guides(id, page_num):
 def achievments(id):
     form_auth = AuthorisationForm()
     form_reg = RegistrationForm()
-    try: user_data = dbase.user_data(id)
+    try: 
+        user_data = dbase.user_data(id)
+        if user_data==None:
+            abort(404)
     except Exception:
         print("achievments error")
+        abort(404)
     return render_template('users/achievments.html', title=f'Достижения пользователя {user_data["login"]}', form_reg=form_reg, form_auth=form_auth)

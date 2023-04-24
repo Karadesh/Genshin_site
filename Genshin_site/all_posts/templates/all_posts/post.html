@@ -40,9 +40,9 @@
     {% endif %}
     {% if current_user.is_authenticated %}
     {% if islike == True %}
-        <div class="post_like"><a href="{{url_for('.like_post_inside', post_id=post_id, userid=current_user.get_id(), post_url=url[0])}}">Убрать лайк</a></div>
+        <div class="post_like"><a href="{{url_for('.like_post_inside', post_id=post_id, userid=current_user.get_id(), post_url=url[0], creator=userid)}}">Убрать лайк</a></div>
     {% else %}
-        <div class="post_like"><a href="{{url_for('.like_post_inside', post_id=post_id, userid=current_user.get_id(), post_url=url[0])}}">Поставить лайк</a></div>
+        <div class="post_like"><a href="{{url_for('.like_post_inside', post_id=post_id, userid=current_user.get_id(), post_url=url[0], creator=userid)}}">Поставить лайк</a></div>
     {% endif %}
     {% endif %}
     {{ likes }}

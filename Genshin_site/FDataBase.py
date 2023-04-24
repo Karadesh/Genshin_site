@@ -2,7 +2,7 @@ from transliterate import translit
 import re
 from flask import url_for, current_app
 from flask_login import current_user
-from Genshin_site.models import Comments, Users, Posts, Feedback, Feedback_answer, Characters, Admin_requests, db, PostsImages, Post_likes, PostOfDay
+from Genshin_site.models import Comments, Users, Posts, Feedback, Feedback_answer, Characters, Admin_requests, db, PostsImages, Post_likes, PostOfDay, Week_likes
 import random
 from datetime import date, datetime
 import base64
@@ -47,6 +47,8 @@ class FDataBase:
             except:
                 ("не получилось получить изображения get_post")
             post_list = {'id': post_query.id, 'title': post_query.title, 'text': post_query.text, 'url': post_query.url, 'userid': post_query.userid, 'isactive' : post_query.isactive, 'islocked' : post_query.islocked, 'images': images, 'postOfDay': post_query.postOfDay}
+            if post_list["id"] == None:
+                return None
             return post_list
         except:
             print("Ошибка получения статьи из бд get_post")
@@ -59,16 +61,31 @@ class FDataBase:
         except:
             print("Ошибка получения id из бд get_post_id")
 
-    def like_post(self, postid,userid):
+    def like_post(self, postid, userid, creator):
+        week_like = Week_likes.query.filter(Week_likes.userid==creator).first()
+        if week_like==None:
+            return False
+        likes = week_like.likes
+        post_searcher=Posts.query.filter(Posts.id==postid and Posts.userid==userid).first()
+        if post_searcher==None:
+            return False
         try:
             searcher = Post_likes.query.filter(Post_likes.userid==userid and Post_likes.postid==postid).first()
             db.session.delete(searcher)
+            db.session.commit()
+            likes=likes-1
+            week_like.likes=likes
+            db.session.add(week_like)
             db.session.commit()
         except:
             post_finder = Posts.query.filter(Posts.id==postid).first()
             creatorid = post_finder.userid
             add_like = Post_likes(userid=userid, postid=postid, creatorid=creatorid)
             db.session.add(add_like)
+            db.session.commit()
+            likes=likes+1
+            week_like.likes=likes
+            db.session.add(week_like)
             db.session.commit()
         return True
 
@@ -100,24 +117,30 @@ class FDataBase:
     def lockpost(self, alias):
         try:
             lockingpost = Posts.query.filter(Posts.url==alias).first()
+            if lockingpost==None:
+                return False
             if lockingpost.islocked==True:
                 lockingpost.islocked=False
             else:
                 lockingpost.islocked=True
             db.session.add(lockingpost)
             db.session.commit()
+            return True
         except:
             print("Ошибка смены статуса поста lockpost")
+            return False
 
     def delete_post(self, alias):
-        delete_post = Posts.query.filter(Posts.url == alias).first()
+        post_deleter = Posts.query.filter(Posts.url == alias).first()
+        if post_deleter == None:
+            return False
         user_checker = current_user.get_id()
-        if delete_post.userid==user_checker:
+        if int(post_deleter.userid)==int(user_checker):
             try:
-                delete_post.isactive=False
-                delete_post.reason='deleted by user'
-                delete_post.changer=current_user.getName()
-                db.session.add(delete_post)
+                post_deleter.isactive=False
+                post_deleter.reason='deleted by user'
+                post_deleter.changer=current_user.getName()
+                db.session.add(post_deleter)
                 db.session.commit()
                 return True
             except:
@@ -142,6 +165,9 @@ class FDataBase:
     
     def getPostsAnonceCharacter(self, alias, page_num):
         try:
+            posts_searcher=Posts.query.filter(Posts.isactive==True, Posts.character==alias).all()
+            if posts_searcher==[]:
+                return []
             anonce = Posts.query.filter(Posts.isactive==True, Posts.character==alias).order_by(Posts.time.desc()).paginate(per_page=5, page=page_num, error_out=True)
             return anonce
         except:
@@ -202,16 +228,20 @@ class FDataBase:
 
     def delete_comment(self, id, reason='deleted by user'):
         try:
-            creator_checker = current_user.getName()
+            creator_checker = current_user.get_id()
             comm_to_delete = Comments.query.filter(Comments.id==id).first()
+            if comm_to_delete==None:
+                return False
             if reason=='deleted by user':
                 try:
-                    if comm_to_delete.username == creator_checker:
+                    if int(comm_to_delete.userid) == int(creator_checker):
                         comm_to_delete.isactive = False
                         comm_to_delete.changer = current_user.getName()
-                    
+                    else: 
+                        return False
                 except:
                     print('Ошибка при удалении комментария delete_comment')
+                    return False
             else:
                 admin_checker = Users.query.filter(Users.login==creator_checker).first()
                 if admin_checker.admin == 'moderator' or admin_checker.admin == 'god': 
@@ -220,6 +250,7 @@ class FDataBase:
             comm_to_delete.reason = reason
             db.session.add(comm_to_delete)
             db.session.commit()
+            return True
         except:
             print("Ошибка удаления из бд delete_comment")
         return (False, False)
@@ -324,7 +355,9 @@ class FDataBase:
     def admin_user_change_active(self, id):
         try:
             status_changer = Users.query.filter(Users.id==id).first()
-            if status_changer.isactive==True:
+            if status_changer==None:
+                return None
+            elif status_changer.isactive==True:
                 status_changer.isactive=False
             else:
                 status_changer.isactive=True
@@ -360,6 +393,8 @@ class FDataBase:
     def get_feedback(self, id):
         try:
             fb = Feedback.query.filter(Feedback.id==id).first()
+            if fb==None:
+                return None
             feedback_dict = {'id' : fb.id, 'username': fb.username, 'email' : fb.email, 'message' : fb.message}
             return feedback_dict
         except:
@@ -437,6 +472,8 @@ class FDataBase:
     def admin_delete_request(self,name):
         try:
             request_to_delete = Admin_requests.query.filter(Admin_requests.name==name).first()
+            if request_to_delete==None:
+                return None
             db.session.delete(request_to_delete)
             db.session.commit()
         except:
@@ -445,6 +482,8 @@ class FDataBase:
     def add_new_admin(self, username, type):
         try:
             new_admin=Users.query.filter(Users.login==username).first()
+            if new_admin==None:
+                return None
             new_admin.admin=type
             db.session.add(new_admin)
             db.session.commit()
@@ -549,6 +588,8 @@ class FDataBase:
         if same_post_of_day == None:
             try:
                 post_searcher = Posts.query.filter(Posts.id==id).first()
+                if post_searcher==None:
+                    return None
                 post_searcher.postOfDay=True
                 db.session.add(post_searcher)
                 db.session.commit()
@@ -670,11 +711,13 @@ class FDataBase:
             return anonce
         except:
             print("Ошибка получения постов my_guides")
-        return []
+            return []
 
     def user_data(self, id, app=current_app):
         try:
             udata = Users.query.filter(Users.id==id).first()
+            if udata==None:
+                return udata
             if udata.avatar==None:
                 try:
                     with app.open_resource(app.root_path + url_for('static', filename= 'images/default.jpeg'), "rb") as f:
@@ -691,6 +734,7 @@ class FDataBase:
             return sorted_data
         except Exception:
             print("Ошибка поиска профиля user_data")
+            return None
 
     def choose_background(self, id):
         try:
@@ -715,3 +759,27 @@ class FDataBase:
         except Exception:
             print("Ошибка add_background")
             return False
+    
+    def change_email(self, id, email):
+        try:
+            user_searcher = Users.query.filter(Users.id==id).first()
+            user_searcher.email=email
+            db.session.add(user_searcher)
+            db.session.commit()
+            return True
+        except Exception:
+            print("change_email error")
+            return False
+
+
+
+    def user_week_likes(self, email):
+        try:
+            user_searcher = Users.query.filter(Users.email==email).first()
+            table_creator = Week_likes(userid=user_searcher.id)
+            db.session.add(table_creator)
+            db.session.commit()
+            return True
+        except Exception:
+            print("Ошибка user_week_likes")
+            return False 
