@@ -1,11 +1,12 @@
-from flask import Blueprint, g, redirect, url_for, abort, render_template, make_response, request, flash
+from flask import Blueprint, g, redirect, url_for, abort, render_template, make_response, request, flash, json
 from Genshin_site.FDataBase import FDataBase
 from flask_login import LoginManager, login_required, login_user, logout_user, current_user
 from Genshin_site.UserLogin import UserLogin
 from Genshin_site.forms import AuthorisationForm, RegistrationForm, RequestResetForm, ResetPasswordForm, ChangeEmailForm
 from werkzeug.security import generate_password_hash, check_password_hash
-from Genshin_site.users.utils import send_reset_email, background_maker 
+from Genshin_site.users.utils import send_reset_email, background_maker, save_avatar
 from datetime import datetime
+import os
 
 users = Blueprint('users', __name__, template_folder='templates', static_folder='static')
 login_manager = LoginManager(users)
@@ -51,6 +52,7 @@ def profile(username, page_num=1):
     #if username != current_user.get_id():
     #    abort(401)
     likes = dbase.user_likes(username)
+    ach_date=dbase.ach_date(user_data["id"])
     try:
         guides=dbase.my_guides(username, int(page_num))
         if guides==[]:
@@ -63,6 +65,7 @@ def profile(username, page_num=1):
     except Exception:
         abort(404)
     image = dbase.search_character_image(username)
+
     return render_template("users/profile.html",title = "Profile", likes=likes, image=image, user_data=user_data, current_user_checker = current_user_checker,guides=guides, posts_likes=posts_likes, posts_images=posts_images, userid=user_data["id"], username=user_data["login"],form_reg=form_reg, form_auth=form_auth, active_background=active_background)
 
 @users.route("/profile/profile_settings/<id>", methods=["POST", "GET"])
@@ -112,7 +115,7 @@ def admin_request(username):
 @users.route('/userava')
 @login_required
 def userava():
-    img=current_user.getAvatar(users)
+    img=current_user.getAvatar()
     if not img:
         return ""
     h=make_response(img)
@@ -126,13 +129,16 @@ def upload():
         file = request.files['file']
         if file and current_user.verifyExt(file.filename):
             try:
-                img = file.read()
-                res = dbase.updateUserAvatar(img, current_user.get_id())
+                image_name=str(current_user.get_id())
+                _, f_ext = os.path.splitext(file.filename)
+                image_name=image_name+f_ext
+                save_avatar(file,image_name)
+                res = dbase.updateUserAvatar(image_name, current_user.get_id())
                 if not res:
                     flash("Ошибка обновления аватара", "error")
                 flash("Аватар обновлен", "success")
             except FileNotFoundError as e:
-                flash("Ошибка чтения файла", "error")
+                flash("Ошибка чтения файла", "error"+str(e))
         else:
             flash("Ошибка обновления аватара", "error")
     return redirect(url_for('.profile_settings', id=current_user.get_id()))
@@ -149,6 +155,7 @@ def authorisation():
             userlogin = UserLogin().create(user)
             rm = form.remember.data
             login_user(userlogin, remember=rm)
+            achievment = dbase.ach_newbie(form.name.data)
             return redirect(request.args.get("next") or url_for("mainapp.index"))
         flash("Неверный логин или пароль", "error")
     return render_template("users/authorisation.html", title="Authorisation", form=form) 
@@ -161,6 +168,10 @@ def register():
         try:
             dbase.add_user(form.name.data, hash, form.email.data)
             flash("Вы успешно зарегистрированы!", "success")
+            """all_achievments=achievments()"""
+            with users.open_resource(users.root_path + url_for('static', filename='achievments.json')) as json_file:
+                data = json.load(json_file)
+                dbase.add_achievments(form.email.data, data)
             return redirect(url_for('.authorisation'))
         except:
             flash("Ошибка при добавлении в БД", "error")
@@ -180,13 +191,17 @@ def auth_reg():
             userlogin = UserLogin().create(user)
             rm = form_auth.remember.data
             login_user(userlogin, remember=rm)
+            dbase.ach_newbie(form_auth.name.data)
             return redirect(request.args.get("next") or url_for("mainapp.index"))
         flash("Неверный логин или пароль", "error")
     if form_reg.validate_on_submit():
         hash = generate_password_hash(form_reg.password.data)
         try:
             dbase.add_user(form_reg.name.data, hash, form_reg.email.data)
-            dbase.user_week_likes(form_reg.email.data)
+            with users.open_resource(users.root_path + url_for('static', filename='achievments.json')) as json_file:
+                data = json.load(json_file)
+                dbase.add_achievments(form_reg.email.data, data)
+            """dbase.user_week_likes(form_reg.email.data)"""
             flash("Вы успешно зарегистрированы!", "success")
             return redirect(url_for('.authorisation'))
         except:

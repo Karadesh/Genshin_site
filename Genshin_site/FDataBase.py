@@ -2,10 +2,11 @@ from transliterate import translit
 import re
 from flask import url_for, current_app
 from flask_login import current_user
-from Genshin_site.models import Comments, Users, Posts, Feedback, Feedback_answer, Characters, Admin_requests, db, PostsImages, Post_likes, PostOfDay, Week_likes
+from Genshin_site.models import Comments, Users, Posts, Feedback, Feedback_answer, Characters, Admin_requests, db, PostsImages, Post_likes, PostOfDay, Week_likes, Achievments
 import random
 from datetime import date, datetime
 import base64
+import json
 
 class FDataBase:
     def __init__(self):
@@ -43,15 +44,19 @@ class FDataBase:
                     if i.image==None:
                         images=None
                     else:
-                        images.append(i.image)
-            except:
-                ("не получилось получить изображения get_post")
+                        with current_app.open_resource(current_app.root_path + url_for('.static', filename= f'images/posts/{i.image}'), "rb") as f:
+                            base64_string = base64.b64encode(f.read()).decode('utf-8')
+                            img_url=f'data:image/png;base64,{base64_string}'
+                        images.append(img_url)
+            except Exception as e:
+                print(e)
             post_list = {'id': post_query.id, 'title': post_query.title, 'text': post_query.text, 'url': post_query.url, 'userid': post_query.userid, 'isactive' : post_query.isactive, 'islocked' : post_query.islocked, 'images': images, 'postOfDay': post_query.postOfDay}
             if post_list["id"] == None:
                 return None
             return post_list
-        except:
-            print("Ошибка получения статьи из бд get_post")
+        except Exception as e:
+            print(e)
+            return None
 
     def get_post_id(self, alias):
         try:
@@ -111,8 +116,8 @@ class FDataBase:
             add_image = PostsImages(Postsid=post_id, image=img_string)
             db.session.add(add_image)
             db.session.commit()
-        except:
-            print("Ошибка добавления в бд add_images")
+        except Exception as e:
+            print(e)
 
     def lockpost(self, alias):
         try:
@@ -158,9 +163,15 @@ class FDataBase:
     def getPostPreview(self, postid):
         try:
             image = PostsImages.query.filter(PostsImages.Postsid==postid).first()
-            return image.image
-        except:
-            print("Не удалось найти изображение getPostPreview")
+            if image.image==None:
+                return None
+            else:
+                with current_app.open_resource(current_app.root_path + url_for('.static', filename= f'images/posts/{image.image}'), "rb") as f:
+                    base64_string = base64.b64encode(f.read()).decode('utf-8')
+                    img_url=f'data:image/png;base64,{base64_string}'
+            return img_url
+        except Exception as e:
+            print(e)
             return None
     
     def getPostsAnonceCharacter(self, alias, page_num):
@@ -178,10 +189,13 @@ class FDataBase:
         try:
             posts_query = Posts.query.filter(Posts.url==url).first()
             users_query = Users.query.filter(Users.id==posts_query.userid).first()
-            userava = {'username': users_query.login, 'avatar': users_query.avatar, 'userid': users_query.id}
+            with current_app.open_resource(current_app.root_path + url_for('.static', filename= f'images/avatars/{users_query.avatar}'), "rb") as f:
+                base64_string = base64.b64encode(f.read()).decode('utf-8')
+                img_url=f'data:image/png;base64,{base64_string}'
+            userava = {'username': users_query.login, 'avatar': img_url, 'userid': users_query.id}
             return userava
-        except:
-            print("Ошибка получения аватаров getPostcreatorAvatar")
+        except Exception as e:
+            print(e)
             return False
     
     def getCommentsAnonce(self, url):
@@ -209,7 +223,10 @@ class FDataBase:
             for user in username:
                 same_users = Users.query.filter(Users.login==user).all()
                 for i in same_users:
-                    avas.append({i.login : i.avatar})
+                    with current_app.open_resource(current_app.root_path + url_for('.static', filename= f'images/avatars/{i.avatar}'), "rb") as f:
+                        base64_string = base64.b64encode(f.read()).decode('utf-8')
+                        img_url=f'data:image/png;base64,{base64_string}'
+                        avas.append({i.login : img_url})
             return avas
         except:
             print("Ошибка получения данных из БД getCommentatorsAvas")
@@ -221,8 +238,8 @@ class FDataBase:
              c = Comments(text=text, postname=postname, username=username, userid=current_user.get_id())
              db.session.add(c)
              db.session.commit()
-         except:
-             print("DB insertation error create_comment")
+         except Exception as e:
+             print(e)
              return False
          return True
 
@@ -266,8 +283,8 @@ class FDataBase:
             user_add = Users(login=name, password=hpsh, email=email, admin=admin)
             db.session.add(user_add)
             db.session.commit()
-        except:
-            print("Ошибка добавления в бд add_user")
+        except Exception as e:
+            print(e)
             return False
         return True
 
@@ -293,17 +310,16 @@ class FDataBase:
             print("Ошибка получения данных из БД getUserByLogin")
         return False 
 
-    def updateUserAvatar(self, avatar, user_id):
-        if not avatar:
+    def updateUserAvatar(self, avatar_name, user_id):
+        if not avatar_name:
             return False
         try:
-            binary = bytearray(avatar)
             user_table = Users.query.filter(Users.id==user_id).first()
-            user_table.avatar = binary
+            user_table.avatar = avatar_name
             db.session.add(user_table)
             db.session.commit()
-        except:
-             print("Ошибка обновления аватара в БД: updateUserAvatar")
+        except Exception as e:
+             print("Ошибка обновления аватара в БД: updateUserAvatar"+str(e))
              return False
         return True
     
@@ -512,8 +528,8 @@ class FDataBase:
                 addchar = Characters(name=chars_dict['name'], image=chars_dict['img'], url=chars_dict['url'])
                 db.session.add(addchar)
                 db.session.commit()
-        except:
-            print("Ошибка добавления персонажа add_character")
+        except Exception as e:
+            print(e)
         return []
 
     def get_chars(self):
@@ -521,10 +537,13 @@ class FDataBase:
         try:
             chars = Characters.query.all()
             for i in chars:
-                chars_list.append({'id': i.id, 'name': i.name, 'image': i.image, 'url': i.url, 'story': i.story})
+                with current_app.open_resource(current_app.root_path + url_for('.static', filename= f'images/characters/{i.image}.jpg'), "rb") as f:
+                    base64_string=base64.b64encode(f.read()).decode('utf-8')
+                    img=f'data:image/png;base64,{base64_string}'
+                chars_list.append({'id': i.id, 'name': i.name, 'image': img, 'url': i.url, 'story': i.story})
             return chars_list
-        except:
-            print("Ошибка поиска списка в бд get_chars")
+        except Exception as e:
+            print(e)
             return False
 
     def get_chars_names(self):
@@ -662,18 +681,25 @@ class FDataBase:
             db.session.add(user)
             db.session.commit()
             return True
-        except:
-            print("Пользователь не найден choose_character")
+        except Exception as e:
+            print("Пользователь не найден choose_character"+str(e))
             return False
     
     def search_character_image(self, userid):
         try:
             user_searcher = Users.query.filter(Users.id==userid).first()
             character = user_searcher.character
-            searcher = Characters.query.filter(Characters.name==character).first()
-            return searcher.image
-        except:
-            print("Персонаж не найден search_character_image")
+            character = translit(character, language_code='ru', reversed=True)
+            character = character.replace("'", "")
+            character = character.replace("-", "")
+            character = character.replace(" ", "")
+            character = character.lower()
+            with current_app.open_resource(current_app.root_path + url_for('.static', filename= f'images/characters/{character}.jpg'), "rb") as f:
+                    base64_string=base64.b64encode(f.read()).decode('utf-8')
+                    img=f'data:image/png;base64,{base64_string}'
+            return img
+        except Exception as e:
+            print("Персонаж не найден search_character_image"+ str(e))
             return False
         
     def search_user(id):
@@ -718,17 +744,9 @@ class FDataBase:
             udata = Users.query.filter(Users.id==id).first()
             if udata==None:
                 return udata
-            if udata.avatar==None:
-                try:
-                    with app.open_resource(app.root_path + url_for('static', filename= 'images/default.jpeg'), "rb") as f:
-                        base64_string=base64.b64encode(f.read()).decode('utf-8')
-                        img=f'data:image/png;base64,{base64_string}'  
-                except FileNotFoundError as e:
-                    print("Не найден аватар по умолчанию" +str(e))
-            else:
-                img_ava = udata.avatar
-                base64_string = base64.b64encode(img_ava).decode('utf-8')
-                img=f'data:image/png;base64,{base64_string}'
+            with app.open_resource(app.root_path + url_for('static', filename= f'images/avatars/{udata.avatar}'), "rb") as f:
+                base64_string=base64.b64encode(f.read()).decode('utf-8')
+                img=f'data:image/png;base64,{base64_string}'    
             str_time = datetime.strftime(udata.time, "%d/%m/%Y %H:%M")
             sorted_data = {"id":udata.id, "login":udata.login, "time":str_time, "character":udata.character, "avatar":img, "active_background": udata.activebackground}
             return sorted_data
@@ -756,8 +774,8 @@ class FDataBase:
             db.session.add(user_searcher)
             db.session.commit()
             return True
-        except Exception:
-            print("Ошибка add_background")
+        except Exception as e:
+            print("Ошибка add_background"+str(e))
             return False
     
     def change_email(self, id, email):
@@ -783,3 +801,129 @@ class FDataBase:
         except Exception:
             print("Ошибка user_week_likes")
             return False 
+
+    """Achievments"""
+    def add_achievments(self, email, all_achievments):
+        try:
+            user=Users.query.filter(Users.email==email).first()
+            for i in all_achievments:
+                add_achievments=Achievments(userid=user.id, name=all_achievments[i][0]["name"], total=int(all_achievments[i][0]["total"]), description=all_achievments[i][0]["description"], reward=all_achievments[i][0]["reward"], rewarddesc=all_achievments[i][0]["rewarddesc"], image=all_achievments[i][0]["image"])
+                db.session.add(add_achievments)
+                db.session.commit()
+            return True
+        except:
+            print("add_achievments error")
+            return False
+
+    def ach_newbie(self, login):
+        try:
+            user_searcher=Users.query.filter(Users.login==login).first()
+            achievment_searcher=Achievments.query.filter(Achievments.userid==user_searcher.id and Achievments.name=="Я еще новенький!").first()
+            if achievment_searcher.ready==True or achievment_searcher.earned==True:
+                return False
+            else:
+                achievment_searcher.ready=True
+                db.session.add(achievment_searcher)
+                db.session.commit()
+                return True
+        except Exception:
+            print("ach_newbie error")
+            return False
+        
+    def ach_date(self, userid):
+        try:
+            user_searcher=Users.query.filter(Users.id==userid).first()
+            user_time=user_searcher.time
+            time_now=datetime.utcnow()
+            day_pass_checker = (str(time_now-user_time)).split(" ")
+            if len(day_pass_checker)>1 and (day_pass_checker[1] == "days," or day_pass_checker[1] == "day,"):
+                how_days=int(str(time_now-user_time).split(" ")[0])
+                how_years=int((str(how_days/365)).split(".")[0])
+                how_months = int((str(int(how_days)/30)).split(".")[0])
+                year_checker=Achievments.query.filter(Achievments.userid==userid, Achievments.name=="Город мудрости").first()
+                thirty_days_checker=Achievments.query.filter(Achievments.userid==userid, Achievments.name=="Мне сегодня 30...").first()
+                seven_days_checker=Achievments.query.filter(Achievments.userid==userid, Achievments.name=="Я уже смешарик!").first()
+                if how_years>=1:
+                    if year_checker.earned==True or year_checker.ready==True:
+                        pass
+                    else:
+                        year_checker.ready=True
+                        year_checker.score=12
+                        db.session.add(year_checker)
+                        db.session.commit()
+                    if thirty_days_checker.earned==True or thirty_days_checker.ready==True:
+                        pass
+                    else:
+                        thirty_days_checker.ready=True
+                        thirty_days_checker.score=30
+                        db.session.add(thirty_days_checker)
+                        db.session.commit()
+                    if seven_days_checker.earned==True or seven_days_checker.ready==True:
+                        pass
+                    else:
+                        seven_days_checker.ready=True
+                        seven_days_checker.score=7
+                        db.session.add(seven_days_checker)
+                        db.session.commit()
+                    return True
+                elif how_months>=1:
+                    year_checker.score=how_months
+                    db.session.add(year_checker)
+                    db.session.commit()
+                    if thirty_days_checker.earned==True or thirty_days_checker.ready==True:
+                        pass
+                    else:
+                        thirty_days_checker.ready=True
+                        thirty_days_checker.score=30
+                        db.session.add(thirty_days_checker)
+                        db.session.commit()
+                    if seven_days_checker.earned==True or seven_days_checker.ready==True:
+                        pass
+                    else:
+                        seven_days_checker.ready=True
+                        seven_days_checker.score=7
+                        db.session.add(seven_days_checker)
+                        db.session.commit()
+                    return True
+                elif how_days>=7:
+                    thirty_days_checker.score=how_days
+                    db.session.add(thirty_days_checker)
+                    db.session.commit()
+                    if seven_days_checker.earned==True or seven_days_checker.ready==True:
+                        return False
+                    else:
+                        seven_days_checker.ready=True
+                        seven_days_checker.score=7
+                        db.session.add(seven_days_checker)
+                        db.session.commit()
+                        return True
+                else:
+                    thirty_days_checker.score=how_days
+                    db.session.add(thirty_days_checker)
+                    db.session.commit()
+                    seven_days_checker.score=how_days
+                    db.session.add(seven_days_checker)
+                    db.session.commit()
+                    return True
+            else:
+                return False  
+        except Exception as e:
+            print("ach error"+str(e))
+            return False
+
+
+
+
+            
+
+
+            """seven_days_checker=Achievments.query.filter(Achievments.userid==userid and Achievments.name=="Я уже смешарик!").first()
+            if seven_days_checker.earned==True or seven_days_checker.ready==True:
+                thirty_days_checker=Achievments.query.filter(Achievments.userid==userid and Achievments.name=="Мне сегодня 30...").first()
+                if thirty_days_checker.earned==True or thirty_days_checker.ready==True:
+                    """
+
+
+    
+    
+    

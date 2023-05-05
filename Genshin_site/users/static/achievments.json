@@ -1,0 +1,132 @@
+{
+    "Newbie":[
+        {
+        "name": "Я еще новенький!",
+        "total": "1",
+        "description": "Авторизуйтесь на сайте!",
+        "reward": "mondstadt town",
+        "rewarddesc": "Фон профиля 'Mondstadt town'",
+        "image": "images/achievments/logo.jpeg"
+        }
+    ],
+    "smesharik":[
+        {
+        "name": "Я уже смешарик!",
+        "total": "7",
+        "description": "Уже неделю на сайте!",
+        "reward": "liyue  town",
+        "rewarddesc": "Фон профиля 'liyue town'",
+        "image": "images/achievments/logo.jpeg"
+        }
+    ],
+    "30days":[
+        {
+        "name": "Мне сегодня 30...",
+        "total": "30",
+        "description": "30 дней на сайте!",
+        "reward": "inazuma town",
+        "rewarddesc": "Фон профиля 'inazuma town'",
+        "image": "images/achievments/logo.jpeg"
+        }
+    ],
+    "year":[
+        {
+        "name": "Город мудрости",
+        "total": "12",
+        "description": "Год на сайте!",
+        "reward": "sumeru town",
+        "rewarddesc": "Фон профиля 'sumeru town'",
+        "image": "images/achievments/logo.jpeg"
+        }
+    ],
+    "10likes":[
+        {
+        "name": "Горячая десяточка",
+        "total": "10",
+        "description": "Получите 10 отметок 'Мне нравится'",
+        "reward": "ember",
+        "rewarddesc": "Фон профиля 'ember'",
+        "image": "images/achievments/ember.jpeg"
+        }
+    ],
+    "100likes":[
+        {
+        "name": "100 баллов!",
+        "total": "100",
+        "description": "Получите 100 отметок 'Мне нравится'",
+        "reward": "sucrose",
+        "rewarddesc": "Фон профиля 'sucrose'",
+        "image": "images/achievments/sucrose.jpeg"
+        }
+    ],
+    "1000likes":[
+        {
+        "name": "Всем это понравилось",
+        "total": "1000",
+        "description": "Получите 1000 отметок 'Мне нравится'",
+        "reward": "albedo",
+        "rewarddesc": "Фон профиля 'albedo'",
+        "image": "images/achievments/albedo.jpeg"
+        }
+    ],
+    "10000likes":[
+        {
+        "name": "It's over 9000!",
+        "total": "1000",
+        "description": "Получите 10000 отметок 'Мне нравится'",
+        "reward": "eula",
+        "rewarddesc": "Фон профиля 'eula'",
+        "image": "images/achievments/eula.jpeg"
+        }
+    ],
+    "1post":[
+        {
+        "name": "Начало положено",
+        "total": "1",
+        "description": "Создайте свой первый пост!",
+        "reward": "yanfei",
+        "rewarddesc": "Фон профиля 'Yanfei'",
+        "image": "images/achievments/yanfei.jpeg"
+        }
+    ],
+    "10post":[
+        {
+        "name": "Плодотворная работа",
+        "total": "10",
+        "description": "Создайте 10 постов!",
+        "reward": "kequing",
+        "rewarddesc": "Фон профиля 'Kequing'",
+        "image": "images/achievments/kequing.jpeg"
+        }
+    ],
+    "20post":[
+        {
+        "name": "По уши в делах",
+        "total": "20",
+        "description": "Создайте 20 постов!",
+        "reward": "ninguang",
+        "rewarddesc": "Фон профиля 'Ninguang'",
+        "image": "images/achievments/ninguang.jpeg"
+        }
+    ],
+    "50post":[
+        {
+        "name": "Работать, как Архонт",
+        "total": "50",
+        "description": "Создайте 50 постов!",
+        "reward": "zhongli",
+        "rewarddesc": "Фон профиля 'Zhongli'",
+        "image": "images/achievments/zhongli.jpeg"
+        }
+    ],
+    "100post":[
+        {
+        "name": "Моё хобби - работа!",
+        "total": "100",
+        "description": "Создайте 100 постов!",
+        "reward": "ganyu",
+        "rewarddesc": "Фон профиля 'Ganyu'",
+        "image": "images/achievments/ganyu.jpeg"
+        }
+    ]
+}

@@ -1,5 +1,5 @@
 class Config:
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///Ginshin.db'
+    SQLALCHEMY_DATABASE_URI = 'mysql+mysqlconnector://karadesh:1t2n3gmth45bt@localhost/Genshindb'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SECRET_KEY = 'askwqifdslk5iasd951jask5iaslkglasj595'
     DEBUG = True

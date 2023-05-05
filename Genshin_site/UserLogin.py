@@ -27,17 +27,13 @@ class UserLogin(UserMixin):
     def getCharacter(self):
         return self.__user.character if self.__user else "Без персонажа"
 
-    def getAvatar(self,app=current_app):
-        img=None
-        if not self.__user.avatar:
-            try:
-                with app.open_resource(app.root_path + url_for('static', filename= 'images/default.jpeg'), "rb") as f:
-                    img=f.read()
-            except FileNotFoundError as e:
-                print("Не найден аватар по умолчанию" +str(e))
-        else:
-            img = self.__user.avatar
-        return img
+    def getAvatar(self):
+        try:
+            with current_app.open_resource(current_app.root_path + url_for('static', filename= f'images/avatars/{self.__user.avatar}'), "rb") as f:
+                img=f.read()
+                return img
+        except FileNotFoundError as e:
+            print("Не найден аватар по умолчанию" +str(e))
 
     def getAdmin(self):
         return self.__user.admin if self.__user else "Без администраторства"
@@ -50,16 +46,12 @@ class UserLogin(UserMixin):
     
     def getProfileAvatar(self,app=current_app):
         img=None
-        if not self.__user.avatar:
-            try:
-                with app.open_resource(app.root_path + url_for('static', filename= 'images/default.jpeg'), "rb") as f:
-                    base64_string=base64.b64encode(f.read()).decode('utf-8')
-                    img=f'data:image/png;base64,{base64_string}'  
-            except FileNotFoundError as e:
+        try:
+            with app.open_resource(app.root_path + url_for('static', filename= f'images/avatars/{self.__user.avatar}'), "rb") as f:
+                base64_string=base64.b64encode(f.read()).decode('utf-8')
+                img=f'data:image/png;base64,{base64_string}'
+            return img  
+        except FileNotFoundError as e:
                 print("Не найден аватар по умолчанию" +str(e))
-        else:
-            img_ava = self.__user.avatar
-            base64_string = base64.b64encode(img_ava).decode('utf-8')
-            img=f'data:image/png;base64,{base64_string}'
-        return img
+                return False
         

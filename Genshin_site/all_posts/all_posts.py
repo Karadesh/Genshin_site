@@ -1,10 +1,13 @@
-from flask import Blueprint, request,render_template,flash, url_for, redirect, g, abort
+from flask import Blueprint, request,render_template,flash, url_for, redirect, g, abort, current_app
 from flask_login import login_required, current_user
 from Genshin_site.FDataBase import FDataBase
 import base64
 from transliterate import translit
 from Genshin_site.forms import PostForm, RegistrationForm, AuthorisationForm
 from datetime import datetime
+import secrets
+import os
+from PIL import Image
 
 all_posts = Blueprint('all_posts', __name__, template_folder='templates', static_folder='static')
 chars_list = ["Дехья", "Мика", "Аль-Хайтам", "Яо Яо", "Странник", "Фарузан", 
@@ -22,6 +25,21 @@ chars_list = ["Дехья", "Мика", "Аль-Хайтам", "Яо Яо", "С�
 # Не забудьте вернуть обратно!
 
 dbase = None
+
+def save_picture(image, name):
+    try:
+        full_path = os.path.join(current_app.root_path, 'static', 'images', 'posts')
+        print(full_path)
+        picture_path=os.path.join(full_path,name)
+        output_size = (500,500)
+        i=Image.open(image)
+        i.thumbnail(output_size)
+        i.save(picture_path)
+        return True
+    except Exception as e:
+        print(e)
+        return False
+
 
 def authentificator():
     if not current_user.is_authenticated:
@@ -45,7 +63,7 @@ def teardown_request(request):
 def how_likes(post_id):
     return dbase.how_likes(post_id)
 
-def image_maker(chars_list, app=all_posts):
+def image_maker(chars_list):
     chars_dict_list = []
     for i in chars_list:
         url = translit(i, language_code='ru', reversed=True)
@@ -53,44 +71,25 @@ def image_maker(chars_list, app=all_posts):
         url = url.replace("-", "")
         url = url.replace(" ", "")
         url = url.lower()
-        with app.open_resource(app.root_path + url_for('.static', filename= f'images/{url}.jpg'), "rb") as f:
-            base64_string=base64.b64encode(f.read()).decode('utf-8')
-            img=f'data:image/png;base64,{base64_string}'
-        chars_dict={'url': url, 'name': i, 'img': img}
+        chars_dict={'url': url, 'name': i, 'img': url}
         chars_dict_list.append(chars_dict)
-        dbase.add_character(chars_dict) #для добавления нового персонажа в бд
+        #dbase.add_character(chars_dict) для добавления нового персонажа в бд
     return chars_dict_list
 
-def get_avatars_dict(url, app=all_posts):
+def get_avatars_dict(url):
     try:
         usernames = dbase.getCommentatorsNames(url)
-        avas_dict = {}
-        for i in dbase.getCommentatorsAvas(usernames):
-            for j, k in i.items():
-                if k == None:
-                    with app.open_resource(app.root_path + url_for('.static', filename= 'images/default.jpeg'), "rb") as f:
-                        base64_string=base64.b64encode(f.read()).decode('utf-8')
-                else:
-                    base64_string = base64.b64encode(k).decode('utf-8')
-                img_url=f'data:image/png;base64,{base64_string}'
-                avas_dict[j] = img_url
-    except:
-        pass
-    return avas_dict
+        return dbase.getCommentatorsAvas(usernames)
+    except Exception as e:
+        print(e)
+        return False
 
-def get_postcreator_avatar(url, app=all_posts):
+def get_postcreator_avatar(url):
     try:
-        nameandavatar=dbase.getPostcreatorAvatar(url) #словарь формата { 'username': username, 'avatar: useravatar }
-        if nameandavatar['avatar'] == None:
-            with app.open_resource(app.root_path + url_for('.static', filename= 'images/default.jpeg'), "rb") as f:
-                        base64_string=base64.b64encode(f.read()).decode('utf-8')
-        else:
-            base64_string = base64.b64encode(nameandavatar['avatar']).decode('utf-8')
-        img_url=f'data:image/png;base64,{base64_string}'
-        nameandavatar['avatar']=img_url
+        nameandavatar=dbase.getPostcreatorAvatar(url) 
         return nameandavatar
-    except:
-        print(' Ошибка аватара get_postcreator_avatar')
+    except Exception as e:
+        print(e)
         return False
 
 
@@ -99,17 +98,19 @@ def get_postcreator_avatar(url, app=all_posts):
 def posts(page_num):
     form_auth = AuthorisationForm()
     form_reg = RegistrationForm()
-    #characters=image_maker(chars_list) Для добавления персонажей в бд
+    characters=image_maker(chars_list) #Для добавления персонажей в бд
     likes={}
+    posts_preview={}
     try:
         posts=dbase.getPostsAnonce(page_num)
         if posts==[]:
             abort(404)
         for i in posts:
             likes[i.id] = how_likes(i.id)
+            posts_preview[i.id] = dbase.getPostPreview(i.id)
     except:
         abort(404)
-    return render_template("all_posts/posts.html",title = "Список Гайдов", posts=posts, likes=likes, form_auth=form_auth, form_reg=form_reg)
+    return render_template("all_posts/posts.html",title = "Список Гайдов", posts=posts, posts_preview=posts_preview, likes=likes, form_auth=form_auth, form_reg=form_reg)
 
 @all_posts.route("/posts_character/<alias>?<int:page_num>")
 def posts_character(alias, page_num):
@@ -201,15 +202,17 @@ def create_post():
                 userid = int(current_user.get_id())
                 try:
                     dbase.create_post(form.title.data, form.text.data, userid, request.form['character'])
-                    if form.image.data != '':
+                    for j in form.image.data:
+                        null_checker=j.filename
+                    if null_checker != '':
                         post_id = dbase.get_post_id(form.title.data)
                         for i in form.image.data:
-                            img=i.read()
-                            base64_string=base64.b64encode(img).decode('utf-8')
-                            img_string=f'data:image/png;base64,{base64_string}'
-                            if img_string == 'data:image/png;base64,':
-                                img_string = None
-                            dbase.add_images(img_string, post_id)
+                            image_name = secrets.token_hex(16)
+                            _, f_ext = os.path.splitext(i.filename)
+                            print(f_ext)
+                            image_name=image_name+f_ext
+                            save_picture(i, image_name)
+                            dbase.add_images(image_name, post_id)
                     return redirect(url_for('.posts', page_num=1))
                 except:
                      flash('Ошибка добавления статьи', category = 'error')
