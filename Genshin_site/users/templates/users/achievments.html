@@ -8,4 +8,103 @@
     <title>Genshin Funzone</title>
     {% endif %}
 {% endblock title %}
+{% if ready_achievments!=None %}
+<h1>Новые</h1>
+{% for i in ready_achievments %}
+<img src="{{images.get(i.name)}}" alt="">
+<h4>{{i.name}}</h4>
+<p>{{i.description}}</p>
+<p>{{i.total}}/{{i.total}}</p>
+<h6>Награда: {{i.rewarddesc}}</h6>
+{% if userid == current_user.get_id() %}
+<a href="{{url_for('.earn_achievment', userid=userid, achievment_name=i.name)}}">Получить</a>
+{% endif %}
+{% endfor %}
+{% endif %}
+<h1>Количество времени на сайте</h1>
+{% if date_earned_achievments!=None %}
+{% for i in date_earned_achievments %}
+<img src="{{images.get(i.name)}}" alt="">
+<h4>{{i.name}}</h4>
+<p>{{i.description}}</p>
+<p>{{i.total}}/{{i.total}}</p>
+<h6>Награда: {{i.rewarddesc}}</h6>
+{% endfor %}
+{% endif %}
+{% if date_notearned_achievments!=None %}
+{% for i in date_notearned_achievments %}
+<img src="{{images.get(i.name)}}" alt="">
+<h4>{{i.name}}</h4>
+<p>{{i.description}}</p>
+{% if i.ready == True %}
+<p>{{i.total}}/{{i.total}}</p>
+{% elif i.name=="Город мудрости" %}
+<p>{{how_months}}/{{i.total}}</p>
+{% else %}
+<p>{{how_days}}/{{i.total}}</p>
+{% endif %}
+<h6>Награда: {{i.rewarddesc}}</h6>
+{% if userid == current_user.get_id() %}
+{% if i.ready == True %}
+<a href="{{url_for('.earn_achievment', userid=userid, achievment_name=i.name)}}">Получить</a>
+{% endif %}
+{% endif %}
+{% endfor %}
+{% endif %}
+<h1>Отметки "Мне нравится"</h1>
+{% if likes_earned_achievments!=None %}
+{% for i in likes_earned_achievments %}
+<img src="{{images.get(i.name)}}" alt="">
+<h4>{{i.name}}</h4>
+<p>{{i.description}}</p>
+<p>{{i.total}}/{{i.total}}</p>
+<h6>Награда: {{i.rewarddesc}}</h6>
+{% endfor %}
+{% endif %}
+{% if likes_notearned_achievments!=None %}
+{% for i in likes_notearned_achievments %}
+<img src="{{images.get(i.name)}}" alt="">
+<h4>{{i.name}}</h4>
+<p>{{i.description}}</p>
+{% if i.ready == True %}
+<p>{{i.total}}/{{i.total}}</p>
+{% else %}
+<p>{{likes}}/{{i.total}}</p>
+{% endif %}
+<h6>Награда: {{i.rewarddesc}}</h6>
+{% if userid == current_user.get_id() %}
+{% if i.ready == True %}
+<a href="{{url_for('.earn_achievment', userid=userid, achievment_name=i.name)}}">Получить</a>
+{% endif %}
+{% endif %}
+{% endfor %}
+{% endif %}
+<h1>Гайды</h1>
+{% if posts_earned_achievments!=None %}
+{% for i in posts_earned_achievments %}
+<img src="{{images.get(i.name)}}" alt="">
+<h4>{{i.name}}</h4>
+<p>{{i.description}}</p>
+<p>{{i.total}}/{{i.total}}</p>
+<h6>Награда: {{i.rewarddesc}}</h6>
+{% endfor %}
+{% endif %}
+{% if posts_notearned_achievments!=None %}
+{% for i in posts_notearned_achievments %}
+<img src="{{images.get(i.name)}}" alt="">
+<h4>{{i.name}}</h4>
+<p>{{i.description}}</p>
+{% if i.ready == True %}
+<p>{{i.total}}/{{i.total}}</p>
+{% else %}
+<p>{{how_posts}}/{{i.total}}</p>
+{% endif %}
+<h6>Награда: {{i.rewarddesc}}</h6>
+{% if userid == current_user.get_id() %}
+{% if i.ready == True %}
+<a href="{{url_for('.earn_achievment', userid=userid, achievment_name=i.name)}}">Получить</a>
+{% endif %}
+{% endif %}
+{% endfor %}
+{% endif %}
 {% endblock content %}

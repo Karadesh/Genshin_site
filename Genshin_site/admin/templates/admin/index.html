@@ -4,6 +4,7 @@
 {% block postofday %}
 {% if current_user.getAdmin() == "feedback" or current_user.getAdmin() == "god" %}
 {% for p in posts %}
+<li><img src="{{posts_preview.get(p.id)}}" alt=""></li>
 <p class="title"><a href="{{ url_for('admin.admin_showpost', alias=p.url)}}">{{p.title}}</a></p>
 <p>{{p.text[:200] | safe}}</p>
 <a href="{{url_for('.make_post_of_day', id=p.id)}}">Сделать постом дня</a>

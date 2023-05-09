@@ -6,7 +6,8 @@
         "description": "Авторизуйтесь на сайте!",
         "reward": "mondstadt town",
         "rewarddesc": "Фон профиля 'Mondstadt town'",
-        "image": "images/achievments/logo.jpeg"
+        "image": "images/achievments/logo.jpeg",
+        "achtype": "date"
         }
     ],
     "smesharik":[
@@ -16,7 +17,8 @@
         "description": "Уже неделю на сайте!",
         "reward": "liyue  town",
         "rewarddesc": "Фон профиля 'liyue town'",
-        "image": "images/achievments/logo.jpeg"
+        "image": "images/achievments/logo.jpeg",
+        "achtype": "date"
         }
     ],
     "30days":[
@@ -26,7 +28,8 @@
         "description": "30 дней на сайте!",
         "reward": "inazuma town",
         "rewarddesc": "Фон профиля 'inazuma town'",
-        "image": "images/achievments/logo.jpeg"
+        "image": "images/achievments/logo.jpeg",
+        "achtype": "date"
         }
     ],
     "year":[
@@ -36,7 +39,8 @@
         "description": "Год на сайте!",
         "reward": "sumeru town",
         "rewarddesc": "Фон профиля 'sumeru town'",
-        "image": "images/achievments/logo.jpeg"
+        "image": "images/achievments/logo.jpeg",
+        "achtype": "date"
         }
     ],
     "10likes":[
@@ -46,7 +50,8 @@
         "description": "Получите 10 отметок 'Мне нравится'",
         "reward": "ember",
         "rewarddesc": "Фон профиля 'ember'",
-        "image": "images/achievments/ember.jpeg"
+        "image": "images/achievments/logo.jpeg",
+        "achtype": "likes"
         }
     ],
     "100likes":[
@@ -56,7 +61,8 @@
         "description": "Получите 100 отметок 'Мне нравится'",
         "reward": "sucrose",
         "rewarddesc": "Фон профиля 'sucrose'",
-        "image": "images/achievments/sucrose.jpeg"
+        "image": "images/achievments/logo.jpeg",
+        "achtype": "likes"
         }
     ],
     "1000likes":[
@@ -66,17 +72,19 @@
         "description": "Получите 1000 отметок 'Мне нравится'",
         "reward": "albedo",
         "rewarddesc": "Фон профиля 'albedo'",
-        "image": "images/achievments/albedo.jpeg"
+        "image": "images/achievments/logo.jpeg",
+        "achtype": "likes"
         }
     ],
     "10000likes":[
         {
         "name": "It's over 9000!",
-        "total": "1000",
+        "total": "10000",
         "description": "Получите 10000 отметок 'Мне нравится'",
         "reward": "eula",
         "rewarddesc": "Фон профиля 'eula'",
-        "image": "images/achievments/eula.jpeg"
+        "image": "images/achievments/logo.jpeg",
+        "achtype": "likes"
         }
     ],
     "1post":[
@@ -86,7 +94,8 @@
         "description": "Создайте свой первый пост!",
         "reward": "yanfei",
         "rewarddesc": "Фон профиля 'Yanfei'",
-        "image": "images/achievments/yanfei.jpeg"
+        "image": "images/achievments/logo.jpeg",
+        "achtype": "posts"
         }
     ],
     "10post":[
@@ -96,7 +105,8 @@
         "description": "Создайте 10 постов!",
         "reward": "kequing",
         "rewarddesc": "Фон профиля 'Kequing'",
-        "image": "images/achievments/kequing.jpeg"
+        "image": "images/achievments/logo.jpeg",
+        "achtype": "posts"
         }
     ],
     "20post":[
@@ -106,7 +116,8 @@
         "description": "Создайте 20 постов!",
         "reward": "ninguang",
         "rewarddesc": "Фон профиля 'Ninguang'",
-        "image": "images/achievments/ninguang.jpeg"
+        "image": "images/achievments/logo.jpeg",
+        "achtype": "posts"
         }
     ],
     "50post":[
@@ -116,7 +127,8 @@
         "description": "Создайте 50 постов!",
         "reward": "zhongli",
         "rewarddesc": "Фон профиля 'Zhongli'",
-        "image": "images/achievments/zhongli.jpeg"
+        "image": "images/achievments/logo.jpeg",
+        "achtype": "posts"
         }
     ],
     "100post":[
@@ -126,7 +138,8 @@
         "description": "Создайте 100 постов!",
         "reward": "ganyu",
         "rewarddesc": "Фон профиля 'Ganyu'",
-        "image": "images/achievments/ganyu.jpeg"
+        "image": "images/achievments/logo.jpeg",
+        "achtype": "posts"
         }
     ]
 }

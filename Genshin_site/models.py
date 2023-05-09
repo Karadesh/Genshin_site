@@ -154,7 +154,6 @@ class Achievments(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     userid = db.Column(db.Integer, nullable=False)
     name = db.Column(db.String(100), nullable=False)
-    score = db.Column(db.Integer, default=0)
     total = db.Column(db.Integer, nullable=False)
     earned = db.Column(db.Boolean, default=False)
     ready = db.Column(db.Boolean, default=False)
@@ -162,6 +161,7 @@ class Achievments(db.Model):
     image = db.Column(db.String(100), nullable=False)
     reward = db.Column(db.String(100), nullable=False)
     rewarddesc = db.Column(db.String(100), nullable=False)
+    achtype = db.Column(db.String(100), nullable=False)
 
     def __repr__(self):
         return f"<Achievments: {self.id}>"

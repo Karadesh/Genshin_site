@@ -1,6 +1,8 @@
 from flask_mail import Message
 from Genshin_site.starter import mail
-from Genshin_site.FDataBase import FDataBase
+import os
+from PIL import Image
+from flask import current_app
 
 def send_feedback_answer(feedback_answer):
     find_request = feedback_answer
@@ -13,3 +15,14 @@ def send_feedback_answer(feedback_answer):
                   recipients=[email])
     msg.body = f'''Здравствуйте, {username}! {answer} Спасибо за обратную связь! {admin_user}'''
     mail.send(msg)
+
+def save_character_image(image, image_name):
+    try:
+        full_path = os.path.join(current_app.root_path, 'static', 'images', 'posts')
+        picture_path=os.path.join(full_path,image_name)
+        i=Image.open(image)
+        i.save(picture_path)
+        return True
+    except Exception as e:
+        print("save_character_image"+str(e))
+        return False

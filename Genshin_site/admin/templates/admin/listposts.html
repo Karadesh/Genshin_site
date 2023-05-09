@@ -6,6 +6,7 @@
 <ul class="list-posts">
 {% for p in list_posts %}
 <li>
+    <li><img src="{{posts_preview.get(p['id'])}}" alt=""></li>
     <p class="title"><a href="{{ url_for('admin.admin_showpost', alias=p.url)}}">{{p.title}}</a></p>
     <p class="annonce">{{ p.text[:200] | safe }}</p>
     <p class="announce">Статус:</p>

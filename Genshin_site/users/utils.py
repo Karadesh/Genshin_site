@@ -37,4 +37,10 @@ def save_avatar(file,image_name):
     except Exception as e:
         print(e)
         return False
+    
+def ach_imagemaker(image_name):
+    with current_app.open_resource(current_app.root_path + url_for('static', filename= image_name), "rb") as f:
+        base64_string=base64.b64encode(f.read()).decode('utf-8')
+        img=f'data:image/png;base64,{base64_string}'
+    return img
         

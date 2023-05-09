@@ -16,6 +16,11 @@
 <p><a href="{{url_for('admin.lock_post', alias=url)}}">Закрыть пост</a></p>
 {% endif %}
 {{ post | safe }}
+{% if images!=None %}
+{% for i in images %}
+<li><img src="{{i}}" alt=""></li>
+{% endfor %}
+{% endif %}
 {% block comments %}
 {% for p in comments %}
 <h3 class="username">{{p.username}}</h3>

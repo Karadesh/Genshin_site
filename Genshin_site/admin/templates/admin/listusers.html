@@ -7,6 +7,7 @@
 {% for p in list_users %}
 <li>
     <p class="title">{{p.login}}</p>
+    <img src="{{p.avatar}}" alt="">
     <p class="title">{{p.email}}</p>
     <p>Изменить статус аккаунта:</p>
     {% if p.isactive %}

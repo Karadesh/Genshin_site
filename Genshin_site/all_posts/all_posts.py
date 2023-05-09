@@ -4,6 +4,7 @@ from Genshin_site.FDataBase import FDataBase
 import base64
 from transliterate import translit
 from Genshin_site.forms import PostForm, RegistrationForm, AuthorisationForm
+from Genshin_site.all_posts.utils import save_picture
 from datetime import datetime
 import secrets
 import os
@@ -25,21 +26,6 @@ chars_list = ["Дехья", "Мика", "Аль-Хайтам", "Яо Яо", "С�
 # Не забудьте вернуть обратно!
 
 dbase = None
-
-def save_picture(image, name):
-    try:
-        full_path = os.path.join(current_app.root_path, 'static', 'images', 'posts')
-        print(full_path)
-        picture_path=os.path.join(full_path,name)
-        output_size = (500,500)
-        i=Image.open(image)
-        i.thumbnail(output_size)
-        i.save(picture_path)
-        return True
-    except Exception as e:
-        print(e)
-        return False
-
 
 def authentificator():
     if not current_user.is_authenticated:
@@ -209,7 +195,6 @@ def create_post():
                         for i in form.image.data:
                             image_name = secrets.token_hex(16)
                             _, f_ext = os.path.splitext(i.filename)
-                            print(f_ext)
                             image_name=image_name+f_ext
                             save_picture(i, image_name)
                             dbase.add_images(image_name, post_id)

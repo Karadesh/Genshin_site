@@ -4,7 +4,7 @@ from flask_login import LoginManager, login_required, login_user, logout_user, c
 from Genshin_site.UserLogin import UserLogin
 from Genshin_site.forms import AuthorisationForm, RegistrationForm, RequestResetForm, ResetPasswordForm, ChangeEmailForm
 from werkzeug.security import generate_password_hash, check_password_hash
-from Genshin_site.users.utils import send_reset_email, background_maker, save_avatar
+from Genshin_site.users.utils import send_reset_email, background_maker, save_avatar, ach_imagemaker
 from datetime import datetime
 import os
 
@@ -52,7 +52,6 @@ def profile(username, page_num=1):
     #if username != current_user.get_id():
     #    abort(401)
     likes = dbase.user_likes(username)
-    ach_date=dbase.ach_date(user_data["id"])
     try:
         guides=dbase.my_guides(username, int(page_num))
         if guides==[]:
@@ -155,7 +154,7 @@ def authorisation():
             userlogin = UserLogin().create(user)
             rm = form.remember.data
             login_user(userlogin, remember=rm)
-            achievment = dbase.ach_newbie(form.name.data)
+            dbase.ach_newbie(form.name.data)
             return redirect(request.args.get("next") or url_for("mainapp.index"))
         flash("Неверный логин или пароль", "error")
     return render_template("users/authorisation.html", title="Authorisation", form=form) 
@@ -172,6 +171,7 @@ def register():
             with users.open_resource(users.root_path + url_for('static', filename='achievments.json')) as json_file:
                 data = json.load(json_file)
                 dbase.add_achievments(form.email.data, data)
+            dbase.user_week_likes(form.email.data)
             return redirect(url_for('.authorisation'))
         except:
             flash("Ошибка при добавлении в БД", "error")
@@ -201,7 +201,7 @@ def auth_reg():
             with users.open_resource(users.root_path + url_for('static', filename='achievments.json')) as json_file:
                 data = json.load(json_file)
                 dbase.add_achievments(form_reg.email.data, data)
-            """dbase.user_week_likes(form_reg.email.data)"""
+            dbase.user_week_likes(form_reg.email.data)
             flash("Вы успешно зарегистрированы!", "success")
             return redirect(url_for('.authorisation'))
         except:
@@ -268,7 +268,56 @@ def achievments(id):
         user_data = dbase.user_data(id)
         if user_data==None:
             abort(404)
-    except Exception:
-        print("achievments error")
+        how_posts=dbase.how_posts(id)
+        dbase.achievments_posts_checker(id, how_posts)
+        likes = dbase.user_likes(id)
+        user_time = dbase.user_time(id)
+        if len(user_time)>1 and (user_time[1] == "days," or user_time[1] == "day,"):
+            how_days=int(user_time[0])
+            how_months = int((str(int(how_days)/30)).split(".")[0])
+            ach_date=dbase.ach_date(id, user_time)
+        else:
+            how_days=0
+            how_months=0
+        images={}
+        ready_achievments=dbase.ready_ach_searcher(id)
+        if ready_achievments!=None:
+            for i in ready_achievments:
+                images[i.name]=ach_imagemaker(i.image)
+        date_earned_achievments=dbase.list_achievments(id, "date", True)
+        if date_earned_achievments!=None:
+            for i in date_earned_achievments:
+                images[i.name]=ach_imagemaker(i.image)
+        date_notearned_achievments=dbase.list_achievments(id, "date", False)
+        if date_notearned_achievments!=None:
+            for i in date_notearned_achievments:
+                images[i.name]=ach_imagemaker(i.image)
+        likes_earned_achievments=dbase.list_achievments(id, "likes", True)
+        if likes_earned_achievments!=None:
+            for i in likes_earned_achievments:
+                images[i.name]=ach_imagemaker(i.image)
+        likes_notearned_achievments=dbase.list_achievments(id, "likes", False)
+        if likes_notearned_achievments!=None:
+            for i in likes_notearned_achievments:
+                images[i.name]=ach_imagemaker(i.image)
+        posts_earned_achievments=dbase.list_achievments(id, "posts", True)
+        if posts_earned_achievments!=None:
+            for i in posts_earned_achievments:
+                images[i.name]=ach_imagemaker(i.image)
+        posts_notearned_achievments=dbase.list_achievments(id, "posts", False)
+        if posts_notearned_achievments!=None:
+            for i in posts_notearned_achievments:
+                images[i.name]=ach_imagemaker(i.image)
+        
+    except Exception as e:
+        print("achievments error" + str(e))
         abort(404)
-    return render_template('users/achievments.html', title=f'Достижения пользователя {user_data["login"]}', form_reg=form_reg, form_auth=form_auth)
+    return render_template('users/achievments.html', title=f'Достижения пользователя {user_data["login"]}', images=images, form_reg=form_reg, form_auth=form_auth, ready_achievments=ready_achievments, date_earned_achievments=date_earned_achievments, date_notearned_achievments=date_notearned_achievments, likes_earned_achievments=likes_earned_achievments, likes_notearned_achievments=likes_notearned_achievments, posts_earned_achievments=posts_earned_achievments, posts_notearned_achievments=posts_notearned_achievments, how_days=how_days, how_months=how_months, likes=likes, how_posts=how_posts, userid=id)
+
+@users.route("/achievments/earn/<userid>?<achievment_name>")
+def earn_achievment(userid, achievment_name):
+    if int(userid)==int(current_user.get_id()):
+        dbase.earn_ready_achievment(userid, achievment_name)
+    else:
+        abort(404)
+    return redirect(request.args.get("next") or url_for(".achievments", id=current_user.get_id()))

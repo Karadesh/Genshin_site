@@ -2,9 +2,11 @@ from flask import Blueprint, request,render_template,flash, abort, url_for, redi
 from Genshin_site.FDataBase import FDataBase
 from flask_login import login_required, current_user
 from Genshin_site.forms import AddCharForm, AddImageForm, AddStoryForm, PostForm, AddElementForm
-import base64
+from Genshin_site.all_posts.utils import save_picture
 from transliterate import translit
-from Genshin_site.admin.utils import send_feedback_answer
+from Genshin_site.admin.utils import send_feedback_answer, save_character_image
+import os
+import secrets
 
 
 admin = Blueprint('admin', __name__, template_folder='templates', static_folder='static')
@@ -49,7 +51,11 @@ def index():
         return redirect(url_for('users.authorisation'))
     if user_checker():
        return abort(401)
-    return render_template('admin/index.html', title='Admin pannel',posts =dbase.make_daypost())
+    posts_preview={}
+    posts =dbase.make_daypost()
+    for i in posts:
+        posts_preview[i.id] = dbase.getPostPreview(i.id)
+    return render_template('admin/index.html', title='Admin pannel',posts = posts, posts_preview=posts_preview)
 
 @admin.route('/list-posts')
 def listposts():
@@ -59,13 +65,16 @@ def listposts():
        return abort(401)
     if moderator_checker():
         list_posts = []
+        posts_preview={}
         try:
             list_posts = dbase.get_admin_posts()
+            for i in list_posts:
+                posts_preview[i["id"]] = dbase.getPostPreview(i["id"])
         except:
             print("Ошибка получения статей listposts")
     else:
         abort(401)
-    return render_template('admin/listposts.html', title="Список постов", list_posts=list_posts)
+    return render_template('admin/listposts.html', title="Список постов", list_posts=list_posts, posts_preview=posts_preview)
 
 @admin.route('/post/<alias>')
 def admin_showpost(alias):
@@ -83,9 +92,10 @@ def admin_showpost(alias):
         userid = get_post['userid']
         isactive = get_post['isactive']
         islocked = get_post['islocked']
+        images=get_post['images']
     else:
         abort(401)
-    return render_template("admin/post.html", title = title, post=post, isactive=isactive, userid=str(userid), url=url, comments=dbase.getAdminCommentsAnonce(url), islocked=islocked)
+    return render_template("admin/post.html", title = title, post=post, isactive=isactive, userid=str(userid), url=url, comments=dbase.getAdminCommentsAnonce(url), islocked=islocked, images=images)
 
 @admin.route("/lock_post/<alias>")
 def lock_post(alias):
@@ -274,22 +284,20 @@ def add_character():
         if request.method == "POST" and form_addchar.validate_on_submit():
             try:
                 image = form_addchar.image.data
-                img=image.read()
-                base64_string=base64.b64encode(img).decode('utf-8')
-                img_string=f'data:image/png;base64,{base64_string}'
                 url = translit(form_addchar.name.data, language_code='ru', reversed=True)
-                dbase.admin_add_character(form_addchar.name.data, url, img_string, form_addchar.story.data)
+                image_name=url+".jpg"
+                save_character_image(image, image_name)
+                dbase.admin_add_character(form_addchar.name.data, url, url, form_addchar.story.data)
                 return redirect(url_for('.add_character'))
             except:
                 print("Ошибка добавления полной формы add_character")
         if request.method == "POST" and form_addimage.validate_on_submit():
             try:
                 image = form_addimage.image.data
-                img=image.read()
-                base64_string=base64.b64encode(img).decode('utf-8')
-                img_string=f'data:image/png;base64,{base64_string}'
                 url = translit(request.form['character'], language_code='ru', reversed=True)
-                dbase.admin_add_character(name = request.form['character'], url = url, image=img_string)
+                image_name=url+".jpg"
+                save_character_image(image, image_name)
+                dbase.admin_add_character(name = request.form['character'], url = url, image=url)
                 return redirect(url_for('.add_character'))
             except:
                 print("Ошибка добавления картинки add_character")
@@ -322,15 +330,16 @@ def admin_make_post():
                 userid = int(current_user.get_id())
                 try:
                     dbase.create_post(form.title.data, form.text.data, userid, request.form['character'])
-                    if form.image.data:
+                    for i in form.image.data:
+                        null_checker=i.filename
+                    if null_checker != '':
                         post_id = dbase.get_post_id(form.title.data)
-                        for i in form.image.data:
-                            img=i.read()
-                            base64_string=base64.b64encode(img).decode('utf-8')
-                            img_string=f'data:image/png;base64,{base64_string}'
-                            if img_string=='data:image/png;base64,':
-                                img_string=None
-                            dbase.add_images(img_string, post_id)
+                    for i in form.image.data:
+                        image_name = secrets.token_hex(16)
+                        _, f_ext = os.path.splitext(i.filename)
+                        image_name=image_name+f_ext
+                        save_picture(i, image_name)
+                        dbase.add_images(image_name, post_id)
                     return redirect(url_for('.admin_make_post'))
                 except:
                     flash('Ошибка добавления статьи', category = 'error')

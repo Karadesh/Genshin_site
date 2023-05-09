@@ -44,7 +44,7 @@ class FDataBase:
                     if i.image==None:
                         images=None
                     else:
-                        with current_app.open_resource(current_app.root_path + url_for('.static', filename= f'images/posts/{i.image}'), "rb") as f:
+                        with current_app.open_resource(current_app.root_path + url_for('static', filename= f'images/posts/{i.image}'), "rb") as f:
                             base64_string = base64.b64encode(f.read()).decode('utf-8')
                             img_url=f'data:image/png;base64,{base64_string}'
                         images.append(img_url)
@@ -68,6 +68,10 @@ class FDataBase:
 
     def like_post(self, postid, userid, creator):
         week_like = Week_likes.query.filter(Week_likes.userid==creator).first()
+        user_searcher = Users.query.filter(Users.id==creator).first()
+        if user_searcher==None:
+            return False
+        user_likes = user_searcher.howlikes
         if week_like==None:
             return False
         likes = week_like.likes
@@ -79,8 +83,12 @@ class FDataBase:
             db.session.delete(searcher)
             db.session.commit()
             likes=likes-1
+            user_likes=user_likes-1
             week_like.likes=likes
+            user_searcher.howlikes=user_likes
             db.session.add(week_like)
+            db.session.commit()
+            db.session.add(user_searcher)
             db.session.commit()
         except:
             post_finder = Posts.query.filter(Posts.id==postid).first()
@@ -89,9 +97,14 @@ class FDataBase:
             db.session.add(add_like)
             db.session.commit()
             likes=likes+1
+            user_likes=user_likes+1
             week_like.likes=likes
+            user_searcher.howlikes=user_likes
             db.session.add(week_like)
             db.session.commit()
+            db.session.add(user_searcher)
+            db.session.commit()
+            self.likes_achievment(creator)
         return True
 
     def show_like(self, post_id, userid):
@@ -166,12 +179,12 @@ class FDataBase:
             if image.image==None:
                 return None
             else:
-                with current_app.open_resource(current_app.root_path + url_for('.static', filename= f'images/posts/{image.image}'), "rb") as f:
+                with current_app.open_resource(current_app.root_path + url_for('static', filename= f'images/posts/{image.image}'), "rb") as f:
                     base64_string = base64.b64encode(f.read()).decode('utf-8')
                     img_url=f'data:image/png;base64,{base64_string}'
             return img_url
         except Exception as e:
-            print(e)
+            print("previews"+str(e))
             return None
     
     def getPostsAnonceCharacter(self, alias, page_num):
@@ -351,7 +364,7 @@ class FDataBase:
             posts_list=[]
             admin_posts = Posts.query.all()
             for i in admin_posts:
-                posts_list.append({'title' : i.title, 'text': i.text, 'url' : i.url, 'isactive': i.isactive})
+                posts_list.append({'id':i.id, 'title' : i.title, 'text': i.text, 'url' : i.url, 'isactive': i.isactive})
             return posts_list
         except:
              print("Ошибка выборки постов в БД: get_admin_posts")
@@ -362,7 +375,10 @@ class FDataBase:
             users_list=[]
             admin_users = Users.query.all()
             for i in admin_users:
-                users_list.append({'id': i.id, 'login' : i.login, 'email': i.email, 'isactive': i.isactive})
+                with current_app.open_resource(current_app.root_path + url_for('static', filename= f'images/avatars/{i.avatar}'), "rb") as f:
+                        base64_string = base64.b64encode(f.read()).decode('utf-8')
+                        img=f'data:image/png;base64,{base64_string}'
+                users_list.append({'id': i.id, 'login' : i.login, 'email': i.email, 'isactive': i.isactive, 'avatar': img})
             return users_list
         except:
              print("Ошибка выборки постов в БД: get_admin_posts")
@@ -642,6 +658,10 @@ class FDataBase:
             max_daypost= PostOfDay.query.all()
             max_daypost = max_daypost[-1]
             image = PostsImages.query.filter(PostsImages.Postsid == max_daypost.postid).first()
+            if image!=None:
+                 with current_app.open_resource(current_app.root_path + url_for('.static', filename= f'images/posts/{i.image}'), "rb") as f:
+                    base64_string=base64.b64encode(f.read()).decode('utf-8')
+                    img=f'data:image/png;base64,{base64_string}'
             likes = Post_likes.query.filter(Post_likes.postid==max_daypost.id).all()
             like = 0
             if likes == None:
@@ -649,7 +669,7 @@ class FDataBase:
             else:
                 for i in likes:
                     like = like+1
-            daypost={'title': max_daypost.title, 'text': max_daypost.text, 'url': max_daypost.url, 'character': max_daypost.character, 'userid': max_daypost.userid, 'time': max_daypost.time, 'postid': max_daypost.postid, 'images': image.image, 'likes': like}
+            daypost={'title': max_daypost.title, 'text': max_daypost.text, 'url': max_daypost.url, 'character': max_daypost.character, 'userid': max_daypost.userid, 'time': max_daypost.time, 'postid': max_daypost.postid, 'images': img, 'likes': like}
             dayposts.append(daypost)
             d = max_daypost.id - 1
             if d <= 6:
@@ -807,7 +827,7 @@ class FDataBase:
         try:
             user=Users.query.filter(Users.email==email).first()
             for i in all_achievments:
-                add_achievments=Achievments(userid=user.id, name=all_achievments[i][0]["name"], total=int(all_achievments[i][0]["total"]), description=all_achievments[i][0]["description"], reward=all_achievments[i][0]["reward"], rewarddesc=all_achievments[i][0]["rewarddesc"], image=all_achievments[i][0]["image"])
+                add_achievments=Achievments(userid=user.id, name=all_achievments[i][0]["name"], total=int(all_achievments[i][0]["total"]), description=all_achievments[i][0]["description"], reward=all_achievments[i][0]["reward"], rewarddesc=all_achievments[i][0]["rewarddesc"], image=all_achievments[i][0]["image"], achtype=all_achievments[i][0]["achtype"])
                 db.session.add(add_achievments)
                 db.session.commit()
             return True
@@ -829,101 +849,158 @@ class FDataBase:
         except Exception:
             print("ach_newbie error")
             return False
-        
-    def ach_date(self, userid):
+
+    def user_time(self, userid):
+        user_searcher=Users.query.filter(Users.id==userid).first()
+        user_time=user_searcher.time
+        time_now=datetime.utcnow()
+        day_pass_checker = (str(time_now-user_time)).split(" ")
+        return day_pass_checker
+
+    def ach_date(self, userid, user_time):
         try:
-            user_searcher=Users.query.filter(Users.id==userid).first()
-            user_time=user_searcher.time
-            time_now=datetime.utcnow()
-            day_pass_checker = (str(time_now-user_time)).split(" ")
-            if len(day_pass_checker)>1 and (day_pass_checker[1] == "days," or day_pass_checker[1] == "day,"):
-                how_days=int(str(time_now-user_time).split(" ")[0])
-                how_years=int((str(how_days/365)).split(".")[0])
-                how_months = int((str(int(how_days)/30)).split(".")[0])
-                year_checker=Achievments.query.filter(Achievments.userid==userid, Achievments.name=="Город мудрости").first()
-                thirty_days_checker=Achievments.query.filter(Achievments.userid==userid, Achievments.name=="Мне сегодня 30...").first()
-                seven_days_checker=Achievments.query.filter(Achievments.userid==userid, Achievments.name=="Я уже смешарик!").first()
-                if how_years>=1:
-                    if year_checker.earned==True or year_checker.ready==True:
-                        pass
-                    else:
-                        year_checker.ready=True
-                        year_checker.score=12
-                        db.session.add(year_checker)
-                        db.session.commit()
-                    if thirty_days_checker.earned==True or thirty_days_checker.ready==True:
-                        pass
-                    else:
-                        thirty_days_checker.ready=True
-                        thirty_days_checker.score=30
-                        db.session.add(thirty_days_checker)
-                        db.session.commit()
-                    if seven_days_checker.earned==True or seven_days_checker.ready==True:
-                        pass
-                    else:
-                        seven_days_checker.ready=True
-                        seven_days_checker.score=7
-                        db.session.add(seven_days_checker)
-                        db.session.commit()
-                    return True
-                elif how_months>=1:
-                    year_checker.score=how_months
+            year_checker=Achievments.query.filter(Achievments.userid==userid, Achievments.name=="Город мудрости").first()
+            thirty_days_checker=Achievments.query.filter(Achievments.userid==userid, Achievments.name=="Мне сегодня 30...").first()
+            seven_days_checker=Achievments.query.filter(Achievments.userid==userid, Achievments.name=="Я уже смешарик!").first()
+            if user_time>=365:
+                if year_checker.earned==True or year_checker.ready==True:
+                    pass
+                else:
+                    year_checker.ready=True
                     db.session.add(year_checker)
                     db.session.commit()
-                    if thirty_days_checker.earned==True or thirty_days_checker.ready==True:
-                        pass
-                    else:
-                        thirty_days_checker.ready=True
-                        thirty_days_checker.score=30
-                        db.session.add(thirty_days_checker)
-                        db.session.commit()
-                    if seven_days_checker.earned==True or seven_days_checker.ready==True:
-                        pass
-                    else:
-                        seven_days_checker.ready=True
-                        seven_days_checker.score=7
-                        db.session.add(seven_days_checker)
-                        db.session.commit()
-                    return True
-                elif how_days>=7:
-                    thirty_days_checker.score=how_days
-                    db.session.add(thirty_days_checker)
-                    db.session.commit()
-                    if seven_days_checker.earned==True or seven_days_checker.ready==True:
-                        return False
-                    else:
-                        seven_days_checker.ready=True
-                        seven_days_checker.score=7
-                        db.session.add(seven_days_checker)
-                        db.session.commit()
-                        return True
+            if user_time>=30:
+                if thirty_days_checker.earned==True or thirty_days_checker.ready==True:
+                    pass
                 else:
-                    thirty_days_checker.score=how_days
+                    thirty_days_checker.ready=True
                     db.session.add(thirty_days_checker)
                     db.session.commit()
-                    seven_days_checker.score=how_days
+            if user_time>=7:
+                if seven_days_checker.earned==True or seven_days_checker.ready==True:
+                    pass
+                else:
+                    seven_days_checker.ready=True
                     db.session.add(seven_days_checker)
                     db.session.commit()
-                    return True
-            else:
-                return False  
+            return True
         except Exception as e:
             print("ach error"+str(e))
             return False
 
-
-
-
-            
-
-
-            """seven_days_checker=Achievments.query.filter(Achievments.userid==userid and Achievments.name=="Я уже смешарик!").first()
-            if seven_days_checker.earned==True or seven_days_checker.ready==True:
-                thirty_days_checker=Achievments.query.filter(Achievments.userid==userid and Achievments.name=="Мне сегодня 30...").first()
-                if thirty_days_checker.earned==True or thirty_days_checker.ready==True:
-                    """
-
-
+    def likes_achievment(self, userid):
+        user_searcher=Users.query.filter(Users.id==userid).first()
+        likes_checker=user_searcher.howlikes
+        ten_likes=Achievments.query.filter(Achievments.userid==userid, Achievments.name=="Горячая десяточка").first()
+        hundred_likes=Achievments.query.filter(Achievments.userid==userid, Achievments.name=="100 баллов!").first()
+        thousand_likes=Achievments.query.filter(Achievments.userid==userid, Achievments.name=="Всем это понравилось").first()
+        ten_thousand_likes=Achievments.query.filter(Achievments.userid==userid, Achievments.name=="It's over 9000!").first()
+        if ten_thousand_likes.earned==True or ten_thousand_likes.ready==True:
+            return True
+        elif likes_checker>=ten_thousand_likes.total:
+            ten_thousand_likes.ready=True
+            db.session.add(ten_thousand_likes)
+            db.session.commit()
+            return True
+        elif thousand_likes.earned==True or thousand_likes.ready==True:
+            return True
+        elif likes_checker>=thousand_likes.total:
+            thousand_likes.ready=True
+            db.session.add(thousand_likes)
+            db.session.commit()
+            return True
+        elif hundred_likes.earned==True or hundred_likes.ready==True:
+            return True
+        elif likes_checker>=hundred_likes.total:
+            hundred_likes.ready=True
+            db.session.add(hundred_likes)
+            db.session.commit()
+            return True
+        elif ten_likes.earned==True or hundred_likes.ready==True:
+            return True
+        elif likes_checker>=ten_likes.total:
+            ten_likes.ready=True
+            db.session.add(ten_likes)
+            db.session.commit()
+            return True
+                
+    def ready_ach_searcher(self, id):
+            achievment_searcher=Achievments.query.filter(Achievments.userid==id, Achievments.ready==True).all()
+            if achievment_searcher==[]:
+                return None
+            else:
+                return achievment_searcher
     
+    def list_achievments(self, id, ach_type, if_earned):
+        achievment_searcher=Achievments.query.filter(Achievments.userid==id, Achievments.achtype==ach_type, Achievments.earned==if_earned).all()
+        if achievment_searcher==[]:
+                return None
+        else:
+            return achievment_searcher
+
+    def how_posts(self,id):
+        counter=0
+        posts_number=Posts.query.filter(Posts.userid==id).all()
+        for i in posts_number:
+            counter=counter+1
+        return counter
     
-    
+    def achievments_posts_checker(self, id, how_posts):
+        one_post=Achievments.query.filter(Achievments.userid==id, Achievments.name=="Начало положено").first()
+        ten_posts=Achievments.query.filter(Achievments.userid==id, Achievments.name=="Плодотворная работа").first()
+        twenty_posts=Achievments.query.filter(Achievments.userid==id, Achievments.name=="По уши в делах").first()
+        fifty_posts=Achievments.query.filter(Achievments.userid==id, Achievments.name=="Работать, как Архонт").first()
+        hundred_posts=Achievments.query.filter(Achievments.userid==id, Achievments.name=="Моё хобби - работа!").first()
+        if hundred_posts.ready==True or hundred_posts.earned==True:
+            pass
+        else:
+            if how_posts>=hundred_posts.total:
+                hundred_posts.ready=True
+                db.session.add(hundred_posts)
+        if fifty_posts.ready==True or fifty_posts.earned==True:
+            pass
+        else:
+            if how_posts>=fifty_posts.total:
+                fifty_posts.ready=True
+                db.session.add(fifty_posts)
+        if twenty_posts.ready==True or twenty_posts.earned==True:
+            pass
+        else:
+            if how_posts>=twenty_posts.total:
+                twenty_posts.ready=True
+                db.session.add(twenty_posts)
+        if ten_posts.ready==True or ten_posts.earned==True:
+            pass
+        else:
+            if how_posts>=ten_posts.total:
+                ten_posts.ready=True
+                db.session.add(ten_posts)
+        if one_post.ready==True or one_post.earned==True:
+            pass
+        else:
+            if how_posts>=one_post.total:
+                one_post.ready=True
+                db.session.add(one_post)
+        db.session.commit()
+        return True
+
+
+    def earn_ready_achievment(self, userid, achievment_name):
+        user_searcher=Users.query.filter(Users.id==userid).first()
+        if user_searcher==None:
+            return False
+        ready_achievment=Achievments.query.filter(Achievments.userid==userid, Achievments.name==achievment_name, Achievments.ready==True).first()
+        if ready_achievment==None:
+            return False
+        else:
+            ready_achievment.ready=False
+            ready_achievment.earned=True
+            db.session.add(ready_achievment)
+            user_backgrounds = user_searcher.backgrounds
+            if user_backgrounds==None:
+                user_backgrounds=""
+            earned_background = str(user_backgrounds)+","+str(ready_achievment.reward)
+            user_searcher.backgrounds = earned_background
+            db.session.add(user_searcher)
+            db.session.commit()
+            return True
