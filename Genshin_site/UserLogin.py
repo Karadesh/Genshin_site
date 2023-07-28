@@ -29,9 +29,7 @@ class UserLogin(UserMixin):
 
     def getAvatar(self):
         try:
-            with current_app.open_resource(current_app.root_path + url_for('static', filename= f'images/avatars/{self.__user.avatar}'), "rb") as f:
-                img=f.read()
-                return img
+            return self.__user.avatar
         except FileNotFoundError as e:
             print("Не найден аватар по умолчанию" +str(e))
 
@@ -47,11 +45,34 @@ class UserLogin(UserMixin):
     def getProfileAvatar(self,app=current_app):
         img=None
         try:
-            with app.open_resource(app.root_path + url_for('static', filename= f'images/avatars/{self.__user.avatar}'), "rb") as f:
-                base64_string=base64.b64encode(f.read()).decode('utf-8')
-                img=f'data:image/png;base64,{base64_string}'
-            return img  
+            return self.__user.avatar  
         except FileNotFoundError as e:
                 print("Не найден аватар по умолчанию" +str(e))
                 return False
         
+    def getAuthors(self):
+        authors=[]
+        if self.__user.authorone != None:
+            authors.append(self.__user.authorone)
+        if self.__user.authortwo != None:
+            authors.append(self.__user.authortwo)
+        if self.__user.authorthree != None:
+            authors.append(self.__user.authorthree)
+        return authors
+    
+    def charChecker(self, char_num):
+        if char_num=="1":
+            if self.__user.characterone=="default":
+                return False
+            else:
+                return True
+        elif char_num=="2":
+            if self.__user.charactertwo=="default":
+                return False
+            else:
+                return True
+        elif char_num=="3":
+            if self.__user.characterthree=="default":
+                return False
+            else:
+                return True

@@ -4,3 +4,5 @@ all_posts/__pycache__
 users/__pycache__
 mainapp/__pycache__
 apperrors/__pycache__
+static/images/avatars/
+static/images/posts/

@@ -11,7 +11,7 @@
 {% if ready_achievments!=None %}
 <h1>Новые</h1>
 {% for i in ready_achievments %}
-<img src="{{images.get(i.name)}}" alt="">
+<img src="{{url_for('static', filename=i.image)}}" alt="">
 <h4>{{i.name}}</h4>
 <p>{{i.description}}</p>
 <p>{{i.total}}/{{i.total}}</p>
@@ -24,7 +24,7 @@
 <h1>Количество времени на сайте</h1>
 {% if date_earned_achievments!=None %}
 {% for i in date_earned_achievments %}
-<img src="{{images.get(i.name)}}" alt="">
+<img src="{{url_for('static', filename=i.image)}}" alt="">
 <h4>{{i.name}}</h4>
 <p>{{i.description}}</p>
 <p>{{i.total}}/{{i.total}}</p>
@@ -33,7 +33,7 @@
 {% endif %}
 {% if date_notearned_achievments!=None %}
 {% for i in date_notearned_achievments %}
-<img src="{{images.get(i.name)}}" alt="">
+<img src="{{url_for('static', filename=i.image)}}" alt="">
 <h4>{{i.name}}</h4>
 <p>{{i.description}}</p>
 {% if i.ready == True %}
@@ -54,7 +54,7 @@
 <h1>Отметки "Мне нравится"</h1>
 {% if likes_earned_achievments!=None %}
 {% for i in likes_earned_achievments %}
-<img src="{{images.get(i.name)}}" alt="">
+<img src="{{url_for('static', filename=i.image)}}" alt="">
 <h4>{{i.name}}</h4>
 <p>{{i.description}}</p>
 <p>{{i.total}}/{{i.total}}</p>
@@ -63,7 +63,7 @@
 {% endif %}
 {% if likes_notearned_achievments!=None %}
 {% for i in likes_notearned_achievments %}
-<img src="{{images.get(i.name)}}" alt="">
+<img src="{{url_for('static', filename=i.image)}}" alt="">
 <h4>{{i.name}}</h4>
 <p>{{i.description}}</p>
 {% if i.ready == True %}
@@ -82,7 +82,7 @@
 <h1>Гайды</h1>
 {% if posts_earned_achievments!=None %}
 {% for i in posts_earned_achievments %}
-<img src="{{images.get(i.name)}}" alt="">
+<img src="{{url_for('static', filename=i.image)}}" alt="">
 <h4>{{i.name}}</h4>
 <p>{{i.description}}</p>
 <p>{{i.total}}/{{i.total}}</p>
@@ -91,7 +91,7 @@
 {% endif %}
 {% if posts_notearned_achievments!=None %}
 {% for i in posts_notearned_achievments %}
-<img src="{{images.get(i.name)}}" alt="">
+<img src="{{url_for('static', filename=i.image)}}" alt="">
 <h4>{{i.name}}</h4>
 <p>{{i.description}}</p>
 {% if i.ready == True %}

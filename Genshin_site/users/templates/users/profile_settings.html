@@ -20,7 +20,7 @@
     {% endblock admin_pannel %}
     <table border="0" class="profile-table">
         <tr><td valign="top">
-            <div class="profile-ava"><img src="{{url_for('.userava')}}"></div>
+            <div class="profile-ava"><img src="{{url_for('static', filename='images/avatars/'+ current_user.getAvatar())}}"></div>
             <div class="profile-load">
             <form action="{{url_for('.upload')}}" method="POST" enctype="multipart/form-data">
                 <p><input type="file" name="file">
@@ -41,9 +41,16 @@
                 {{ form.submit() }}
             </form>
             </li>
-            <li>Количество лайков: {{likes}}</li>
-            <li><img src="{{image}}"></li>
-            <li><form action="{{url_for('.profile_settings', id=current_user.get_id())}}" method="POST" enctype="multipart/form-data">
+            Настройка сайд-бара
+            {% if user_data.showcharacters == False %}
+            <a href="{{url_for('.show_characters')}}">Показывать любимых персонажей</a>
+            {% else %}
+            <a href="{{url_for('.show_characters')}}">Скрыть любимых персонажей</a>
+            {% endif %}
+            {% if user_data.showcharacters==True %}
+            {% for key in image%}
+            <img src="{{url_for('static', filename='/images/characters/' + image.get(key)+ '.jpg')}}">
+            <li><form action="{{url_for('.change_character', char_num=key)}}" method="POST" enctype="multipart/form-data">
                 <select name="character" class="form-control">
                     {% for i in select_chars %}
                     <option value="{{i}}">{{i}}</option>
@@ -51,6 +58,21 @@
                 </select>
             <input type="submit" value="Выбрать персонажа">
             </form>
+            {% if current_user.charChecker(key) == True %}
+            <a href="{{url_for('.delete_char', char_num=key)}}">Удалить персонажа</a>
+            {% endif %}
+            {% endfor %}
+            {% endif %}
+            {% if user_data.showauthors == False %}
+            <a href="{{url_for('.show_authors')}}">Показывать любимых авторов</a>
+            {% else %}
+            <a href="{{url_for('.show_authors')}}">Скрыть любимых авторов</a>
+            {% endif %}
+            {% if user_data.bestpostshow == False %}
+            <a href="{{url_for('.show_best_post')}}">Показывать ваш самый оцененный гайд</a>
+            {% else %}
+            <a href="{{url_for('.show_best_post')}}">Скрыть ваш самый оцененный гайд</a>
+            {% endif %}
             {% if backgrounds!=None %}
             <li><form action="{{url_for('.select_background', id=current_user.get_id())}}" method="POST" enctype="multipart/form-data">
                 <select name="backgrounds" class="form-control">

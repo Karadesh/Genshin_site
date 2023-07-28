@@ -14,11 +14,14 @@
     {% for p in posts %}
     <li>
     {% if images.get(p.id) != None %}
-    <img src="{{images.get(p.id)}}" alt="img">
+    <img src="{{url_for('static', filename='/images/posts/' + images.get(p.id))}}" alt="img">
+    {% else %}
+    <img src="{{url_for('static', filename='/images/watch_all.png')}}" alt="img">
     {% endif %}
     <p class="title"><a href="{{ url_for('all_posts.show_post', alias=p.url)}}">{{p.title}}</a></p>
     <p class="annonce">{{ p.text[:300] | safe }}</p>
     {{likes.get(p.id)}}
+    {{comments_num.get(p.url)}}
     </li>
     {% endfor %}
     </ul>

@@ -3,48 +3,51 @@
 {{ super() }}
 {{title}}
 <form action="{{url_for('admin.add_character')}}" method="post" class="form-contact", enctype="multipart/form-data">
-<h1>Добавление нового персонажа</h1>
-{{ form_addchar.csrf_token }}
-{{ form_addchar.hidden_tag() }}
-<h3>Имя персонажа:</h3>
-{{ form_addchar.name }}
-<h3> Изображение персонажа (Должно быть в формате jpg):</h3>
-{{ form_addchar.image }}
-<h3> История персонажа:</h3>
-{{ form_addchar.story }}
-{{ form_addchar.submit() }}
+    <h1>Добавление нового персонажа</h1>
+    {{ form_addchar.csrf_token }}
+    {{ form_addchar.hidden_tag() }}
+    <h3>Имя персонажа:</h3>
+    {{ form_addchar.name }}
+    <h3> Изображение персонажа (Должно быть в формате jpg):</h3>
+    {{ form_addchar.image }}
+    <h3> История персонажа:</h3>
+    {{ form_addchar.story }}
+    <h3>Элемент персонажа:</h3>
+    {{ form_addchar.element }}
+    <h3>Город персонажа:</h3>
+    {{ form_addchar.country }}
+    {{ form_addchar.submit() }}
 </form>
 <form action="{{url_for('admin.add_character')}}" method="post" class="form-contact", enctype="multipart/form-data">
-<h1>Добавление Изображения персонажа персонажа</h1>
-{{ form_addimage.csrf_token }}
-{{ form_addimage.hidden_tag() }}
-<h3>Имя персонажа:</h3>
-<select name="character" class="form-control">
-    {% for i in select_chars %}
-    <option value="{{i}}">{{i}}</option>
-    {% endfor %}
-</select>
-<h3> Изображение персонажа:</h3>
-{{ form_addimage.image }}
-{{ form_addimage.submit() }}
-</form>
-
-<form action="{{url_for('admin.add_character')}}" method="post" class="form-contact", enctype="multipart/form-data">
-<h1>Добавление Истории персонажа персонажа</h1>
-{{ form_addstory.csrf_token }}
-{{ form_addstory.hidden_tag() }}
-<h3>Имя персонажа:</h3>
-<select name="character" class="form-control">
-    {% for i in select_chars %}
-    <option value="{{i}}">{{i}}</option>
-    {% endfor %}
-</select>
-<h3>История персонажа</h3>
-{{ form_addstory.story }}
-{{ form_addstory.submit() }}
+    <h1>Добавление Изображения персонажа персонажа</h1>
+    {{ form_addimage.csrf_token }}
+    {{ form_addimage.hidden_tag() }}
+    <h3>Имя персонажа:</h3>
+    <select name="character" class="form-control">
+        {% for i in select_chars %}
+        <option value="{{i}}">{{i}}</option>
+        {% endfor %}
+    </select>
+    <h3> Изображение персонажа:</h3>
+    {{ form_addimage.image }}
+    {{ form_addimage.submit() }}
 </form>
 <form action="{{url_for('admin.add_character')}}" method="post" class="form-contact", enctype="multipart/form-data">
-    <h1>Добавление Истории элемента персонажа</h1>
+    <h1>Добавление Истории персонажа персонажа</h1>
+    {{ form_addstory.csrf_token }}
+    {{ form_addstory.hidden_tag() }}
+    <h3>Имя персонажа:</h3>
+    <select name="character" class="form-control">
+        {% for i in select_chars %}
+        <option value="{{i}}">{{i}}</option>
+        {% endfor %}
+    </select>
+    <h3>История персонажа</h3>
+    {{ form_addstory.story }}
+    {{ form_addstory.submit() }}
+</form>
+<form action="{{url_for('admin.add_character')}}" method="post" class="form-contact", enctype="multipart/form-data">
+    <h1>Добавление элемента персонажа</h1>
     {{ form_addelement.csrf_token }}
     {{ form_addelement.hidden_tag() }}
     <h3>Имя персонажа:</h3>
@@ -56,5 +59,19 @@
     <h3>Элемент персонажа</h3>
     {{ form_addelement.element }}
     {{ form_addelement.submit() }}
-    </form>
+</form>
+<form action="{{url_for('admin.add_character')}}" method="post" class="form-contact", enctype="multipart/form-data">
+    <h1>Добавление Города персонажа</h1>
+    {{ form_addcountry.csrf_token }}
+    {{ form_addcountry.hidden_tag() }}
+    <h3>Имя персонажа:</h3>
+    <select name="character" class="form-control">
+        {% for i in select_chars %}
+        <option value="{{i}}">{{i}}</option>
+        {% endfor %}
+    </select>
+    <h3>Город персонажа</h3>
+    {{ form_addcountry.country }}
+    {{ form_addcountry.submit() }}
+</form>
 {% endblock %}

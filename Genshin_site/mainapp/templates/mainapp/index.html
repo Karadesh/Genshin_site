@@ -1,27 +1,32 @@
 {% extends 'base.html' %}
 {% block content %}
 {{ super() }}
-{%  if title %}
-<h1>{{ title }}</h1>
-{% else %}
-<h1>Genshin Funzone</h1>
-{% endif %}
 {% block dayposts %}
-{% for p in dayposts %}
-{% if p == dayposts[0] %}
-<h3><a href="{{ url_for('all_posts.show_post', alias=p.url)}}">{{p.title}}</a></h3>
-<p>{{p.text[:110]| safe}}</p>
-{% if p.images != None %}
-<a href="{{ url_for('all_posts.show_post', alias=p.url)}}"><img src="{{p.images}}" alt="pic"></a>
-{% else %}
-<a href="{{ url_for('all_posts.show_post', alias=p.url)}}"><img src="{{standart_image}}" alt="pic"></a>
-{% endif %}
-<p>{{p.likes}}</p>
-{% else %}
-<p>{{p['time']}}</p>
-<a href="{{url_for('all_posts.show_post', alias=p['url'])}}"><img src="{{p['image']}}" alt="{{p['time']}}"></a>
-{% endif %}
-{% endfor %}
-<a href="{{url_for('.all_postsofday', page_num=1)}}">Смотреть все -><img src="{{standart_image}}" alt="Смотреть все ->"></a>
+<main class="content">
+    <div class="container guides-day">
+        {% for p in dayposts %}
+        {% if p == dayposts[0] %}
+        {% if p.images != None %}
+        <a class="guides-day__item bg-img" href="{{ url_for('all_posts.show_post', alias=p.url)}}" style='background-image:url("{{url_for('static', filename='img/one-pixel.jpeg')}}");' data-bg="{{url_for('static', filename='/images/posts/' + p.images)}}"><span class="guides-day__date post-date blur">{{p['time']}}</span>
+        {% else %}
+        <a class="guides-day__item bg-img" href="{{ url_for('all_posts.show_post', alias=p.url)}}" style='background-image:url("{{url_for('static', filename='img/one-pixel.jpeg')}}");' data-bg="{{url_for('static', filename='images/watch_all.png')}}"><span class="guides-day__date post-date blur">{{p['time']}}</span>
+        {% endif %}
+            <div class="guides-day__text">
+                <h1>{{p.title}}</h1>
+                <h2 class="guides-day__caption">{{p.text[:110]| safe}}</h2>
+            </div>
+            <div class="statistics"><span class="statistics__item icon-like blur">{{p.likes}}</span><span class="statistics__item icon-comment blur">{{p.comments}}</span></div></a>
+        {% else %}
+        {% if p.image != None %}
+        <a class="guides-day__item bg-img" href="{{ url_for('all_posts.show_post', alias=p.url)}}" style='background-image:url("{{url_for('static', filename='img/one-pixel.jpeg')}}");' data-bg="{{url_for('static', filename='/images/posts/' + p['image'])}}"><span class="guides-day__date post-date blur">{{p['time']}}</span></a>
+        {% else %}
+        <a class="guides-day__item bg-img" href="{{ url_for('all_posts.show_post', alias=p.url)}}" style='background-image:url("{{url_for('static', filename='img/one-pixel.jpeg')}}");' data-bg="{{url_for('static', filename='images/watch_all.png')}}"><span class="guides-day__date post-date blur">{{p['time']}}</span></a>
+        {% endif %}
+        {% endif %}
+        {% endfor %}
+        <a class="guides-day__item" href="{{url_for('.all_postsofday', page_num=1)}}"><span class="guides-day__show-all icon-arrow">Смотреть все</span></a>
+    </div>
+    <button class="btn btn_color-blue btn-up"></button>
+</main>
 {% endblock dayposts %}
 {% endblock content%}

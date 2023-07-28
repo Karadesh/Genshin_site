@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link type="text/css" href="{{ url_for('static', filename='css/styles.css')}}" rel="stylesheet" />
+    <link type="text/css" href="{{ url_for('static', filename='css/main.min.css')}}" rel="stylesheet" />
     {% block title %}
     {% if title %}
     <title>{{ title }}</title>
@@ -16,66 +16,109 @@
 </html>
 
 <body>
-    {% block content -%}
-        {% block mainmenu -%}
-    <ul class="mainmenu">
-    <li><a href="{{url_for('mainapp.index')}}">Главная</a></li>
-    <li><a href="{{url_for('all_posts.posts', page_num=1)}}">Гайды</a></li>
-    <li><a href="{{url_for('mainapp.characters')}}">Персонажи</a></li>
-    <li><a href="{{url_for('mainapp.feedback')}}">Обратная связь</a></li>
-    <li><a href="{{url_for('all_posts.create_post')}}">Создать Гайд</a></li>
-    {% if current_user.is_authenticated %}
-    <img src="{{current_user.getProfileAvatar()}}" alt="">
-    {{current_user.getName()}}
-    <li><a href="{{url_for('users.profile', username=current_user.get_id(), page_num=1)}}">Профиль</a></li>
-    <li><a href="{{url_for('users.my_guides', id=current_user.get_id(), page_num=1)}}">Мои Гайды</a></li>
-    <li><a href="{{url_for('users.logout')}}">Выйти</a></li>
-    {% else -%}
-    <li><a href="{{url_for('users.authorisation')}}">Авторизоваться</a></li>
-    <li><a href="{{url_for('users.register')}}">Зарегистрироваться</a></li>
-    </ul>
+    {% block content %}
+    {% block mainmenu %}
+    <div class="wrapper" id="wrapper">
+        <header class="header blur" id="header">
+            <div class="header__wrap container"><a class="header__logo logo" href="{{url_for('mainapp.index')}}">Genshin Guides</a>
+                <nav class="header__menu menu">
+                    <button class="burger"><span class="burger__item"></span><span class="burger__item"></span><span class="burger__item"></span></button>
+                    <ul class="menu__list">
+                        <li><a class="menu__link" href="{{url_for('all_posts.posts', page_num=1)}}">Гайды</a></li>
+                        <li><a class="menu__link" href="{{url_for('mainapp.characters')}}">Персонажи</a></li>
+                        <li class="menu__item"><a class="header__btn-create btn btn_color-blue btn-create icon-add" href="{{url_for('all_posts.create_post')}}">Создать</a></li>
+                        <li class="menu__item">
+                            {% if current_user.is_authenticated %}
+                            <button class="header__btn-account"><img src="{{url_for('static', filename='/images/avatars/' + current_user.getProfileAvatar())}}" alt="avatar"><span>{{current_user.getName()}}</span></button>
+                            {% else %}
+                            <button class="header__sign-in"><img src="{{url_for('static', filename='images/avatars/avatar-empty.png')}}" alt="avatar"><span>Войти</span></button>
+                            {% endif %}
+                        </li>
+                    </ul>
+                </nav>
+                <ul class="header__account-dropdown account-dropdown blur">
+                    {% if current_user.is_authenticated %}
+                    <li><a class="icon-user" href="{{url_for('users.profile', username=current_user.get_id(), page_num=1)}}">Профиль</a></li>
+                    <li><a class="icon-posts" href="{{url_for('users.achievments', id=current_user.get_id())}}">Достижения</a></li>
+                    <li><a class="icon-logout" href="{{url_for('users.logout')}}">Выход</a></li>   
+                    {% endif %}
+                </ul>
+            </div>
+        </header>
+            {% endblock mainmenu %}
+            {% endblock content %}
+        <footer class="footer">
+            <div class="container">
+                <div class="footer__copyright-block">
+                    <div class="footer__copyright">&copy; Genshin Guides, 2023</div>
+                    <div class="footer__copyright"><a href="{{url_for('mainapp.feedback')}}">Обратная связь</a></div>
+                </div>
+            </div>
+        </footer>
+        <div class="mobile-menu blur">
+            <div class="mobile-menu__wrap container">
+                <ul class="mobile-menu__list">
+                    <li class="mobile-menu__item"><a class="mobile-menu__link icon-home" href="{{url_for('mainapp.index')}}"></a></li>
+                    <li class="mobile-menu__item"><a class="mobile-menu__link icon-articles" href="{{url_for('all_posts.posts', page_num=1)}}"></a></li>
+                    {% if current_user.is_authenticated %}
+                    <li class="mobile-menu__item"><a class="mobile-menu__link btn-add_mobile icon-plus" href="{{url_for('all_posts.create_post')}}"></a></li>
+                    {% endif %}
+                    <li class="mobile-menu__item"><a class="mobile-menu__link icon-characters" href="{{url_for('mainapp.characters')}}"></a></li>
+                    {% if current_user.is_authenticated %}
+                    <li class="mobile-menu__item">
+                        <button class="mobile-menu__button mobile-menu__account"><img src="{{current_user.getProfileAvatar()}}" alt="avatar"></button>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+            <div class="account-menu container">
+                <ul>
+                    {% if current_user.is_authenticated %}
+                    <li><a href="{{url_for('users.profile', username=current_user.get_id(), page_num=1)}}">Профиль</a></li>
+                    <li><a href="{{url_for('users.logout')}}">Выход</a></li>
+                    {% else %}
+                    <li><a href="{{url_for('users.authorisation')}}">Авторизоваться</a></li>
+                    <li><a href="{{url_for('users.register')}}">Зарегистрироваться</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+        {% if not current_user.is_authenticated %}
+        <div class="forms">
+            <div class="forms__wrap sign-in">
+                <button class="forms__close"></button>
+                <form class="form form__sign-in" action="{{url_for('users.auth_reg')}}" method="post"><span class="form__title">Вход в аккаунт</span>
+                    <div class="form__fields-group">
+                        {{ form_auth.hidden_tag() }}
+                        {% for field in form_auth if field.name not in ['csrf_token', 'remember', 'submit'] -%}
+                        {% if field.errors %}
+                        {{ field(class="invalid") }}
+                        {% else %}
+                        {{ field() }}
+                        {% endif %}
+                        {% endfor %}
+                        {{ form_auth.remember.label() }} {{ form_auth.remember() }}
+                    </div>
+                    <button class="btn btn_color-blue form__btn-sign-in">Войти</button><span class="form__no-account">Нет аккаунта? <span>Регистрация</span></span>
+                    <a href="{{url_for('users.reset_request')}}">Забыли пароль?</a> 
+                </form>
+                <form class="form form__sign-up" action="{{url_for('users.auth_reg')}}" method="post"><span class="form__title">Регистрация</span>
+                    <div class="form__fields-group">
+                        {{ form_reg.hidden_tag() }}
+                        {% for field in form_reg if field.name not in ['csrf_token', 'submit'] -%}
+                        {% if field.errors %}
+                        {{ field(class="invalid") }}
+                        {% else %}
+                        {{ field() }}
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                    <button class="btn btn_color-blue form__btn-sign-up">Регистрация</button><span class="form__have-an-account">Есть аккаунт? <span>Войти</span></span><span class="form__terms-of-use">Регистрируясь, вы соглашаетесь с <a href="#">условиями использования</a></span>
+                </form>
+            </div>
+        </div>
         {% endif %}
-        {% endblock mainmenu %}
-    {% endblock content %}
-    {% if not current_user.is_authenticated %}
-    <form action="{{url_for('users.auth_reg')}}" method="post" class="form-authorisation">
-        {{ form_auth.hidden_tag() }}
-        {% for field in form_auth if field.name not in ['csrf_token', 'remember', 'submit'] -%}
-        <p>{{ field.label() }}
-        {% if field.errors %}
-        {{ field(class="invalid") }}
-        <span class="invalid-feedback">
-            {% for e in field.errors %}
-            {{ e }}
-            {% endfor %}
-        </span>
-        {% else %}
-            {{ field() }}
-        {% endif %}
-        {% endfor %}
-        <p>{{ form_auth.remember.label() }} {{ form_auth.remember() }}
-        {{ form_auth.submit() }}
-        <hr align=left width="300px">
-        <p><button>Регистрация</button>
-        <p><a href="{{url_for('users.reset_request')}}">Забыли пароль?</a> 
-    </form>
-    <form action="{{url_for('users.auth_reg')}}" method="post" class="form-contact">
-        {{ form_reg.hidden_tag() }}
-        {% for field in form_reg if field.name not in ['csrf_token', 'submit'] -%}
-        <p>{{ field.label() }}
-            {% if field.errors %}
-            {{ field(class="invalid") }}
-            <span class="invalid-feedback">
-                {% for e in field.errors %}
-                {{ e }}
-                {% endfor %}
-            </span>
-            {% else %}
-                {{ field() }}
-            {% endif %}
-            {% endfor %}
-        <p>{{ form_reg.submit() }}
-    </form>
-    {% endif %}
+    </div>
+<script src="{{url_for('static', filename='scripts/main.min.js')}}"></script>
 </body>
 </html>

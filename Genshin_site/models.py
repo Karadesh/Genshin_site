@@ -18,6 +18,17 @@ class Users(db.Model):
     backgrounds = db.Column(db.Text, nullable=True)
     activebackground = db.Column(db.String(60), nullable=True)
     howlikes = db.Column(db.Integer, default=0)
+    authorone = db.Column(db.Integer, nullable=True)
+    authortwo = db.Column(db.Integer, nullable=True)
+    authorthree = db.Column(db.Integer, nullable=True)
+    showauthors = db.Column(db.Boolean, default=False)
+    characterone = db.Column(db.String(50), default="default")
+    charactertwo = db.Column(db.String(50), default="default")
+    characterthree = db.Column(db.String(50), default="default")
+    showcharacters = db.Column(db.Boolean, default=False)
+    bestpostshow = db.Column(db.Boolean, default=False)
+    socialservices = db.Column(db.Text, nullable=True)
+    socialshow = db.Column(db.Boolean, default=False)
 
     def get_reset_token(self, expires_sec=1800):
         reset_token = jwt.encode({'user_id': self.id, 'exp': datetime.datetime.now(tz=datetime.timezone.utc) + datetime.timedelta(seconds=expires_sec)},
@@ -48,6 +59,7 @@ class Posts(db.Model):
     text = db.Column(db.Text, nullable=False)
     url = db.Column(db.String(200), nullable=False)
     character = db.Column(db.String(200), nullable=False)
+    element = db.Column(db.String(50), nullable=False)
     userid = db.Column(db.Integer, db.ForeignKey('users.id'))
     time = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     isactive = db.Column(db.Boolean, default=True)
@@ -120,6 +132,7 @@ class Characters(db.Model):
     url = db.Column(db.String(60), nullable=True)
     story = db.Column(db.Text,nullable=True)
     element = db.Column(db.String(50), nullable=True)
+    country = db.Column(db.String(50), nullable=True)
 
     def __repr__(self):
         return f"<Charname: {self.name}>"

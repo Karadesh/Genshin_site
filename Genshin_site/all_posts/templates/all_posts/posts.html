@@ -1,51 +1,77 @@
 {% extends 'base.html' %}
 {% block content %}
 {{ super() }}
-{%  if title %}
-<h1>{{ title }}</h1>
-{% else %}
-<h1>Genshin Funzone</h1>
-{% endif %}
-<!--<ul class="character-posts">
-    <li class="chars">
-    {% for i in characters %}
-    <a href="{{url_for('.posts_character', alias=i.url)}}"><img src="{{i.image}}" alt="{{i.name}}"></a>
-    {% endfor %}
-    </li>
-</ul>-->
-<ul>
-    <li><a href="{{ url_for('mainapp.index')}}">Главная</a></li>
-    <li><span>Гайды</span></li>
-</ul>
-<ul class="list-posts">
-{% for p in posts %}
-{% if posts_preview.get(p.id) != None %}
-<li><img src="{{posts_preview.get(p.id)}}" alt=""></li>
-{% endif %}
-<li>
-<p class="title"><a href="{{ url_for('.show_post', alias=p.url)}}">{{p.title}}</a></p>
-<p class="annonce">{{ p.text[:50] | striptags }}</p>
-{{likes.get(p.id)}}
-</li>
-{% endfor %}
-</ul>
-<ul>
-    {% if posts.has_prev %}
-        <li><a href="{{ url_for('.posts', page_num=posts.prev_num)}}"><</a></li>
-    {% else %}
-        <li><span><</span></li>
-    {% endif %}
-    {% for page in posts.iter_pages(left_edge=3, right_edge=3) %}
-    {% if page %}
-        <li><a href="{{ url_for('.posts', page_num=page)}}">{{page}}</a></li>
-    {% else %}
-        <li><a href="#">...</a></li>
-    {% endif %}
-    {% endfor %}
-    {% if posts.has_next %}
-        <li><a href="{{ url_for('.posts', page_num=posts.next_num)}}">></a></li>
-    {% else %}
-        <li><span>></span></li>
-    {% endif %}
-</ul>
-{% endblock %}
+<main class="content">
+    <div class="container crumbs">        
+        <ul class="crumbs__list">
+            <li><a href="{{ url_for('mainapp.index')}}">Главная</a></li>
+            <li>Гайды</li>
+        </ul>
+    </div>
+    <div class="container page-dual-columns posts-page">
+        <div class="page-dual-columns__content posts">
+            {% for p in posts %}
+            {% if posts_preview.get(p.id) != None %}
+            <div class="post post_horizontal posts__item"><a class="post__img" href="{{ url_for('.show_post', alias=p.url)}}"><span class="post-date blur">{{post_date.get(p.id)}}</span><img src="{{url_for('static', filename='/images/posts/' + posts_preview.get(p.id))}}" alt="post" loading="lazy">
+                    <div class="statistics"><span class="statistics__item icon-like blur">{{likes.get(p.id)}}</span><span class="statistics__item icon-comment blur">{{comments_num.get(p.url)}}</span></div></a>
+                <div class="post__text"><a class="post__title" href="{{ url_for('.show_post', alias=p.url)}}">{{p.title}}</a>
+                    <p class="post__desc">{{ p.text | striptags }}</p>
+                </div>
+                <a class="post__btn-read icon-arrow" href="{{ url_for('.show_post', alias=p.url)}}">Читать</a>
+            </div>
+            {% else %}
+            <div class="post post_horizontal posts__item">
+                <a class="post__img" href="{{ url_for('.show_post', alias=p.url)}}">
+                    <span class="post-date blur">{{post_date.get(p.id)}}</span>
+                    <img src="{{url_for('static', filename='images/watch_all.png')}}" alt="post" loading="lazy">
+                    <div class="statistics"><span class="statistics__item icon-like blur">{{likes.get(p.id)}}</span><span class="statistics__item icon-comment blur">{{comments_num.get(p.url)}}</span></div></a>
+                <div class="post__text">
+                    <a class="post__title" href="{{ url_for('.show_post', alias=p.url)}}">{{p.title}}</a>
+                    <p class="post__desc">{{ p.text[:50] | striptags }}</p>
+                </div>
+                <a class="post__btn-read icon-arrow" href="{{ url_for('.show_post', alias=p.url)}}">Читать</a>
+            </div>
+            {% endif %}
+            {% endfor %}
+            <div class="pagination">
+                <ul class="pagination__list">
+                {% if posts.has_prev %}
+                    <li class="pagination__item"><a class="pagination__link pagination__link_prev" href="{{ url_for('.posts', page_num=posts.prev_num)}}"></a></li>
+                {% else %}
+                    <li class="pagination__item"><span class="pagination__link pagination__link_prev"></span></li>
+                {% endif %}
+                {% for page in posts.iter_pages(left_edge=3, right_edge=3) %}
+                {% if page %}
+                    <li class="pagination__item"><a class="pagination__link" href="{{ url_for('.posts', page_num=page)}}">{{page}}</a></li>
+                {% else %}
+                    <li class="pagination__item"><a class="pagination__link" href="#">...</a></li>
+                {% endif %}
+                {% endfor %}
+                {% if posts.has_next %}
+                    <li class="pagination__item"><a class="pagination__link pagination__link_next" href="{{ url_for('.posts', page_num=posts.next_num)}}"></a></li>
+                {% else %}
+                    <li class="pagination__item"><span class="pagination__link pagination__link_next"></span></li>
+                {% endif %}
+                </ul>
+            </div>
+        </div>
+        <aside class="page-dial-columns__sidebar sidebar">
+            <div class="commencial sidebar__item"><span>Место для вашей рекламы</span></div>
+            {% if side_guides %}
+            <div class="same-posts sidebar__item"><span class="same-posts__caption">Похожие Гайды</span>
+                {% for i in side_guides %}
+                <div class="same-posts__wrap"><a class="post post_square same-posts__item" href="{{url_for('.show_post', alias=i['guide']['url'])}}" style='background-image:url("{{url_for('static', filename=i['image'])}}");'><span class="post-date blur">{{i['time']}}</span>
+                    <div class="post__text">
+                        <h2 class="post__title">{{i['guide']['title']}}</h2><span class="post__desc">{{i['guide']['text']}}</span>
+                    </div>
+                    <div class="statistics"><span class="statistics__item icon-like blur">{{i['likes']}}</span><span class="statistics__item icon-comment blur">{{i['comments']}}</span></div></a>   
+                </div>
+                {% endfor %}
+                <a class="btn btn_color-blue same-posts__show-all" href="{{url_for('.posts_query', page_num=1, query_item=element)}}">Показать все</a>
+            </div>
+            {% endif %}
+        </aside>
+    </div>
+    <button class="btn btn_color-blue btn-up"></button>
+</main>               
+{% endblock content%}

@@ -1,94 +1,148 @@
 {% extends 'base.html' %}
 {% block content %}
 {{ super() }}
-    <h1>{{ title }}</h1>
-    <ul>
-        <li><a href="{{url_for('mainapp.index')}}">Главная</a></li>
-    <li><a href="{{url_for('all_posts.posts', page_num=1)}}">Посты</a></li>
-    {% if current_user.is_authenticated %}
-    <li><a href="{{url_for('all_posts.create_post')}}">Создать Пост</a></li>
-    {% endif %}
-    </ul>
+<main class="content">
+    <div class="page-profile page-user">
     {% if active_background != None %}
-    <img src="{{active_background}}" alt="">
+        <div class="page-profile__header page-user__header" style='background-image:url("{{url_for('static', filename='/images/backgrounds/' + active_background + '.jpeg')}}");'>
+    {% else %}
+        <div class="page-profile__header page-user__header" style='background-image:url("{{url_for('static', filename='images/backgrounds/ordo_favonius.jpeg')}}");'>
     {% endif %}
     {% if current_user_checker == True %}
-    {% for cat, msg in get_flashed_messages(True)%}
-    <div class="flash {{cat}}">{{msg}}</div>
-    {% endfor %}
-    {% block userdata %}
-    <a href="{{url_for('.profile_settings', id=current_user.get_id())}}">Настройки</a>
-    <table border="0" class="profile-table">
-        <tr><td valign="top">
-            <div class="profile-ava"><img src="{{url_for('.userava')}}"></div>
-            <img src="{{image}}">
-        </td>
-        <td valign="top" class="profile-panel">
-            <li><a href="{{url_for('users.my_guides', id=current_user.get_id(), page_num=1)}}">Мои Гайды</a></li>
-            <p><a href="{{url_for('.logout')}}">Выйти</a>
-            <ul class="profile-info">
-            <li>{{ user_data.login }}</li>
-            <li>Количество лайков: {{likes}}</li>
-            <li><a href="{{url_for('.achievments', id=user_data.id)}}">Достижения</a></li>
-            </ul>
-        </td>
-        </tr>
-    </table>
-    {% endblock userdata %}
-    {% else %}
-    {% block otheruserdata %}
-    <table border="0" class="profile-table">
-        <tr><td valign="top">
-            <div class="profile-ava"><img src="{{user_data.avatar}}"></div>
-            </form>
+            <div class="page-profile__info container"><a class="page-user__settings icon-setting" href="{{url_for('.profile_settings', id=current_user.get_id())}}"></a>
+    {% endif %}
+                <div class='page-profile__avatar page-user__avatar' style='background-image:url("{{url_for('static', filename='/images/avatars/' + user_data.avatar)}}")';></div>
+                <div class="page-profile__text">
+                    <h1 class="page-profile__name">{{ user_data.login }}</h1>
+                    <div class="statistics page-user__statistics"><span class="statistics__item icon-articles blur">{{how_posts}}</span><span class="statistics__item icon-like blur">{{likes}}</span></div>
+                    {% if current_user_checker != True %}
+                    {% if current_user.is_authenticated %}
+                    {% if user_data.id not in current_user.getAuthors() %}
+                    <a class="btn btn_color-red page-user__recomendation" href="{{url_for('.user_recommend', id=user_data.id)}}">Рекомендовать</a>
+                    {% else %}
+                    <a class="btn btn_color-red page-user__recomendation" href="{{url_for('.user_recommend', id=user_data.id)}}">Перестать рекомендовать</a>
+                    {% endif %}
+                    {% endif %}
+                    {% endif %}
+                </div>
             </div>
-        </td>
-        <td valign="top" class="profile-panel">
-            <li><a href="{{url_for('users.my_guides', id=user_data.id, page_num=1)}}">Гайды пользователя {{user_data.login}}</a></li>
-            <ul class="profile-info">
-            <li>Имя: {{ user_data.login }}</li>
-            <li>Пользователь с {{ user_data.time}}</li>
-            <li>Количество лайков: {{likes}}</li>
-            <li><img src="{{image}}"></li>
-            <li><a href="{{url_for('.achievments', id=user_data.id)}}">Достижения</a></li>
-            </ul>
-        </td>
-        </tr>
-    </table>
-    {% endblock otheruserdata %}
-    {% endif %}
-    {% if guides == None %}
-    <h3>Здесь будут гайды пользователя. Пока ничего нет</h3>
-    {% else %}
-    {% for p in guides %}
-    <li>
-    {% if posts_images.get(p.id) != None %}
-    <img src="{{posts_images.get(p.id)}}" alt="img">
-    {% endif %}
-    <p class="title"><a href="{{ url_for('all_posts.show_post', alias=p.url)}}">{{p.title}}</a></p>
-    <p class="annonce">{{ p.text[:200] | safe }}</p>
-    {{posts_likes.get(p.id)}}
-    </li>
-    {% endfor %}
-    </ul>
-    <ul>
-        {% if guides.has_prev %}
-            <li><a href="{{ url_for('.profile', username=userid, page_num=guides.prev_num)}}"><</a></li>
+        </div>
+        {% if guides.items != [] %}
+        {% if current_user_checker != True %}
+        <h2 class="page-profile__title container">Гайды пользователя {{user_data.login}}</h2>
         {% else %}
-            <li><span><</span></li>
+        <h2 class="page-profile__title container">Мои гайды</h2>
         {% endif %}
-        {% for page in guides.iter_pages(left_edge=3, right_edge=3) %}
-        {% if page %}
-            <li><a href="{{ url_for('.profile', username=userid, page_num=page)}}">{{page}}</a></li>
         {% else %}
-            <li><a href="#">...</a></li>
+        <h2 class="page-profile__title container"></h2>
         {% endif %}
-        {% endfor %}
-        {% if guides.has_next %}
-            <li><a href="{{ url_for('.profile', username=userid, page_num=guides.next_num)}}">></a></li>
-        {% else %}
-            <li><span>></span></li>
-        {% endif %}
-    </ul>
-    {% endif %}
-    {% endblock content %}
+        <div class="container page-dual-columns">
+            <div class="page-dual-columns__content">
+            {% if guides != None %}
+            {% for p in guides %}
+                <div class="post post_horizontal posts__item">
+                    <div class="post__img">
+                        {% if posts_images.get(p.id) != None %}
+                        <img src="{{url_for('static', filename='/images/posts/'+ posts_images.get(p.id))}}" alt="post">
+                        {% else %}
+                        <img src="{{url_for('static', filename='images/watch_all.png')}}" alt="post">
+                        {% endif %}
+                        <div class="statistics"><span class="statistics__item icon-like blur">{{posts_likes.get(p.id)}}</span><span class="statistics__item icon-comment blur">{{ comments_num.get(p.url) }}</span></div>
+                    </div>
+                    <div class="post__text"><a class="post__title" href="{{ url_for('all_posts.show_post', alias=p.url)}}">{{p.title}}</a>
+                        <p class="post__desc">{{ p.text[:200]| safe }}</p>
+                    </div>
+                    <a class="post__btn-read icon-arrow" href="{{ url_for('all_posts.show_post', alias=p.url)}}">Читать </a>
+                </div>
+            {% endfor %}
+            {% endif %}
+            {% if guides.items != [] %}
+                <div class="pagination">
+                    <ul class="pagination__list">
+                    {% if guides.has_prev %}
+                        <li class="pagination__item"><a class="pagination__link pagination__link_prev" href="{{ url_for('.profile', username=userid, page_num=guides.prev_num)}}"></a></li>
+                    {% else %}
+                        <li class="pagination__item"><span class="pagination__link pagination__link_prev"></span></li>
+                    {% endif %}
+                    {% for page in guides.iter_pages(left_edge=3, right_edge=3) %}
+                    {% if page %}
+                        <li class="pagination__item"><a class="pagination__link" href="{{ url_for('.profile', username=userid, page_num=page)}}">{{page}}</a></li>
+                    {% else %}
+                        <li class="pagination__item"><a class="pagination__link" href="#">...</a></li>
+                    {% endif %}
+                    {% endfor %}
+                    {% if guides.has_next %}
+                        <li class="pagination__item"><a class="pagination__link pagination__link_next" href="{{ url_for('.profile', username=userid, page_num=guides.next_num)}}"></a></li>
+                    {% else %}
+                        <li class="pagination__item"><span class="pagination__link pagination__link_next"></span></li>
+                    {% endif %}
+                    </ul>
+                </div>
+            {% endif %}
+            </div>
+            <aside class="page-dual-columns__sidebar sidebar">
+                <div class="commencial sidebar__item"><span>Место для вашей рекламы</span></div>
+                {% if user_data.showcharacters==True %}
+                <div class="sidebar-favorite-character sidebar__item"><span class="sidebar__title">Любимые персонажи</span>
+                    <div class="sidebar-favorite-character__wrap">
+                        {% for key in char_names %}
+                        {% if char_names.get(key)=="default" %}
+                        <a class="sidebar-favorite-character__item" href=""><img src="{{url_for('static', filename='/images/characters/default.jpg')}}" alt=""></a>
+                        {% else %}
+                        <a class="sidebar-favorite-character__item" href="{{url_for('all_posts.posts_character', alias=char_names.get(key), page_num=1)}}"><img src="{{url_for('static', filename='/images/characters/'+ image.get(key) + '.jpg')}}" alt=""></a>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+                {% if user_data.show_authors == True %}
+                {% if recommended_authors != [] %}
+                <div class="sidebar-recommendations sidebar__item"><span class="sidebar__title">Рекомендации</span>
+                    <div class="sidebar-recommendations__wrap">
+                    {% for i in recommended_authors %}
+                        <a class="sidebar-recommendations__item" href="{{url_for('.profile', username=i.get('id'), page_num=1)}}"><img src="{{url_for('static', filename='/images/avatars/' + i.get('avatar'))}}" alt=""><span>{{i.get('login')}}</span></a>
+                    {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+                {% endif %}
+                {% if user_data.bestpostshow == True %}
+                {% if best_post!=[] %}
+                <div class="same-posts sidebar__item"><span class="sidebar__title">Самый оцененный гайд</span>
+                    {% if best_post.get("image")==None %}
+                    <div class="same-posts__wrap"><a class="post post_square same-posts__item" href="{{url_for('all_posts.show_post', alias=best_post.get('url'))}}" style='background-image:url({{url_for('static', filename='images/watch_all.png')}});'><!--<span class="post-date blur">12/16/2202</span>-->
+                        <div class="post__text">
+                            <h2 class="post__title">{{best_post.get('title')}}</h2>
+                        </div>
+                        <div class="statistics"><span class="statistics__item icon-like blur">{{best_post.get('likes')}}</span><span class="statistics__item icon-comment blur">{{best_post.get('comments')}}</span></div></a>   
+                    </div>
+                    {% else %}
+                    <div class="same-posts__wrap"><a class="post post_square same-posts__item" href="{{url_for('all_posts.show_post', alias=best_post.get('url'))}}" style='background-image:url({{url_for('static', filename='images/posts/' + best_post.get("image"))}});'>
+                        <div class="post__text">
+                            <h2 class="post__title">{{best_post.get('title')}}</h2>
+                        </div>
+                        <div class="statistics"><span class="statistics__item icon-like blur">{{best_post.get('likes')}}</span><span class="statistics__item icon-comment blur">{{best_post.get('comments')}}</span></div></a>   
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+                {% endif %}
+                {% if user_data.socialshow == True %}
+                {% if socialsites != [] %}
+                <div class="sidebar-socials sidebar__item"><span class="sidebar__title">Социальные сети</span>
+                    <div class="sidebar-socials__wrap">
+                    {% for i in socialsites %}
+                        <a class="sidebar-socials__item" href='https://{{i}}'></a>
+                    {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+                {% endif %}
+            </aside>
+        </div>
+    </div>
+    <button class="btn btn_color-blue btn-up"></button>
+</main>
+
+<a href="{{url_for('.achievments', id=user_data.id)}}">Достижения</a>
+{% endblock content %}

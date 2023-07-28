@@ -7,18 +7,20 @@ from Genshin_site.models import Users
 from flask_ckeditor import CKEditorField
 
 elements = [('Пиро', 'Пиро'), ('Дендро', 'Дендро'),('Гидро', 'Гидро'),('Анемо', 'Анемо'),('Крио','Крио'), ('Гео', 'Гео'), ('Электро', 'Электро')]
+char_elements = [('pyro', 'Пиро'), ('dendro', 'Дендро'),('hydro', 'Гидро'),('anemo', 'Анемо'),('cryo','Крио'), ('geo', 'Гео'), ('electro', 'Электро'), ('all','все')]
+countries = [('mondstadt_town', 'Мондштадт'), ('liyue_town', 'Лиюэ'),('inazuma_town', 'Иназума'),('sumeru_town', 'Сумеру'),('fontain_town', 'Фонтейн')]
 
 class AuthorisationForm(FlaskForm):
-    name = StringField("Логин: ", validators=[DataRequired(), Length(min=1, max=50)])
-    password = PasswordField("Пароль: ", validators=[DataRequired()])
+    name = StringField("", validators=[DataRequired(), Length(min=1, max=50)], render_kw={"placeholder": "Логин"})
+    password = PasswordField("Пароль: ", validators=[DataRequired()], render_kw={"placeholder": "Пароль"})
     remember = BooleanField("Запомнить", default=False)
     submit=SubmitField("Войти")
 
 class RegistrationForm(FlaskForm):
-    name = StringField("Логин:", validators=[DataRequired(), Length(min=1, max=50)])
-    email = StringField("E-mail: ", validators=[DataRequired(), Email()])
-    password = PasswordField("Пароль: ", validators=[DataRequired()])
-    password2= PasswordField("Подтвердите пароль: ", validators=[DataRequired(), EqualTo('password')])
+    name = StringField("Логин:", validators=[DataRequired(), Length(min=1, max=50)], render_kw={"placeholder": "Логин"})
+    email = StringField("E-mail: ", validators=[DataRequired(), Email()], render_kw={"placeholder": "Почта"})
+    password = PasswordField("Пароль: ", validators=[DataRequired()], render_kw={"placeholder": "Пароль"})
+    password2= PasswordField("Подтвердите пароль: ", validators=[DataRequired(), EqualTo('password')], render_kw={"placeholder": "Повторите пароль"})
     submit = SubmitField("Зарегистрироваться")
 
 class PostForm(FlaskForm):
@@ -31,6 +33,8 @@ class AddCharForm(FlaskForm):
     name = StringField("Имя персонажа:", validators=[DataRequired(), Length(min=1, max=100)])
     image = FileField("Изображение (png, jpg, jpeg)", validators=[FileAllowed(['png', 'jpg', 'jpeg'])])
     story = TextAreaField("История персонажа:", validators=[DataRequired(), Length(min=10)])
+    element = SelectField("Элемент персонажа:", choices=char_elements)
+    country = SelectField("Город персонажа:", choices=countries)
     submit = SubmitField("Добавить")
 
 class AddImageForm(FlaskForm):
@@ -42,7 +46,11 @@ class AddStoryForm(FlaskForm):
     submit = SubmitField("Добавить")
 
 class AddElementForm(FlaskForm):
-    element = SelectField("Элемент персонажа:", choices=elements)
+    element = SelectField("Элемент персонажа:", choices=char_elements)
+    submit = SubmitField("Добавить")
+
+class AddCountryForm(FlaskForm):
+    country = SelectField("Город персонажа:", choices=countries)
     submit = SubmitField("Добавить")
 
 class RequestResetForm(FlaskForm):

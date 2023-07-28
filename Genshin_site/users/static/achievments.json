@@ -6,7 +6,7 @@
         "description": "Авторизуйтесь на сайте!",
         "reward": "mondstadt town",
         "rewarddesc": "Фон профиля 'Mondstadt town'",
-        "image": "images/achievments/logo.jpeg",
+        "image": "images/achievments/mondstadt_town.jpeg",
         "achtype": "date"
         }
     ],
@@ -15,9 +15,9 @@
         "name": "Я уже смешарик!",
         "total": "7",
         "description": "Уже неделю на сайте!",
-        "reward": "liyue  town",
+        "reward": "liyue town",
         "rewarddesc": "Фон профиля 'liyue town'",
-        "image": "images/achievments/logo.jpeg",
+        "image": "images/achievments/liyue_town.jpeg",
         "achtype": "date"
         }
     ],
@@ -28,7 +28,7 @@
         "description": "30 дней на сайте!",
         "reward": "inazuma town",
         "rewarddesc": "Фон профиля 'inazuma town'",
-        "image": "images/achievments/logo.jpeg",
+        "image": "images/achievments/inazuma_town.jpeg",
         "achtype": "date"
         }
     ],
@@ -39,7 +39,7 @@
         "description": "Год на сайте!",
         "reward": "sumeru town",
         "rewarddesc": "Фон профиля 'sumeru town'",
-        "image": "images/achievments/logo.jpeg",
+        "image": "images/achievments/sumeru_town.jpeg",
         "achtype": "date"
         }
     ],
@@ -50,7 +50,7 @@
         "description": "Получите 10 отметок 'Мне нравится'",
         "reward": "ember",
         "rewarddesc": "Фон профиля 'ember'",
-        "image": "images/achievments/logo.jpeg",
+        "image": "images/achievments/amber.jpeg",
         "achtype": "likes"
         }
     ],
@@ -61,7 +61,7 @@
         "description": "Получите 100 отметок 'Мне нравится'",
         "reward": "sucrose",
         "rewarddesc": "Фон профиля 'sucrose'",
-        "image": "images/achievments/logo.jpeg",
+        "image": "images/achievments/sucrose.jpeg",
         "achtype": "likes"
         }
     ],
@@ -72,7 +72,7 @@
         "description": "Получите 1000 отметок 'Мне нравится'",
         "reward": "albedo",
         "rewarddesc": "Фон профиля 'albedo'",
-        "image": "images/achievments/logo.jpeg",
+        "image": "images/achievments/albedo.jpeg",
         "achtype": "likes"
         }
     ],
@@ -83,7 +83,7 @@
         "description": "Получите 10000 отметок 'Мне нравится'",
         "reward": "eula",
         "rewarddesc": "Фон профиля 'eula'",
-        "image": "images/achievments/logo.jpeg",
+        "image": "images/achievments/eula.jpeg",
         "achtype": "likes"
         }
     ],
@@ -94,7 +94,7 @@
         "description": "Создайте свой первый пост!",
         "reward": "yanfei",
         "rewarddesc": "Фон профиля 'Yanfei'",
-        "image": "images/achievments/logo.jpeg",
+        "image": "images/achievments/yanfei.jpeg",
         "achtype": "posts"
         }
     ],
@@ -105,7 +105,7 @@
         "description": "Создайте 10 постов!",
         "reward": "kequing",
         "rewarddesc": "Фон профиля 'Kequing'",
-        "image": "images/achievments/logo.jpeg",
+        "image": "images/achievments/kequing.jpeg",
         "achtype": "posts"
         }
     ],
@@ -116,7 +116,7 @@
         "description": "Создайте 20 постов!",
         "reward": "ninguang",
         "rewarddesc": "Фон профиля 'Ninguang'",
-        "image": "images/achievments/logo.jpeg",
+        "image": "images/achievments/ninguang.jpeg",
         "achtype": "posts"
         }
     ],
@@ -127,7 +127,7 @@
         "description": "Создайте 50 постов!",
         "reward": "zhongli",
         "rewarddesc": "Фон профиля 'Zhongli'",
-        "image": "images/achievments/logo.jpeg",
+        "image": "images/achievments/zhongli.jpeg",
         "achtype": "posts"
         }
     ],
@@ -138,7 +138,7 @@
         "description": "Создайте 100 постов!",
         "reward": "ganyu",
         "rewarddesc": "Фон профиля 'Ganyu'",
-        "image": "images/achievments/logo.jpeg",
+        "image": "images/achievments/ganyu.jpeg",
         "achtype": "posts"
         }
     ]

@@ -1,7 +1,9 @@
 import os
 from PIL import Image
 from flask import current_app
+from datetime import datetime
 
+'''Сохранение изображения'''
 def save_picture(image, name):
     try:
         full_path = os.path.join(current_app.root_path, 'static', 'images', 'posts')

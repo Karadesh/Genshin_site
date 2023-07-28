@@ -5,8 +5,7 @@ from flask_login import current_user
 from Genshin_site.models import Comments, Users, Posts, Feedback, Feedback_answer, Characters, Admin_requests, db, PostsImages, Post_likes, PostOfDay, Week_likes, Achievments
 import random
 from datetime import date, datetime
-import base64
-import json
+import operator
 
 class FDataBase:
     def __init__(self):
@@ -27,7 +26,9 @@ class FDataBase:
             character = character.replace("-", "")
             character = character.replace(" ", "")
             character = character.lower()
-            new_post = Posts(title=title, text=text, url=url, userid=userid, character=character)
+            element_searcher = Characters.query.filter(Characters.url==character).first()
+            element = element_searcher.element
+            new_post = Posts(title=title, text=text, url=url, userid=userid, character=character, element=element)
             db.session.add(new_post)
             db.session.commit()
         except:
@@ -44,10 +45,7 @@ class FDataBase:
                     if i.image==None:
                         images=None
                     else:
-                        with current_app.open_resource(current_app.root_path + url_for('static', filename= f'images/posts/{i.image}'), "rb") as f:
-                            base64_string = base64.b64encode(f.read()).decode('utf-8')
-                            img_url=f'data:image/png;base64,{base64_string}'
-                        images.append(img_url)
+                        images.append(i.image)
             except Exception as e:
                 print(e)
             post_list = {'id': post_query.id, 'title': post_query.title, 'text': post_query.text, 'url': post_query.url, 'userid': post_query.userid, 'isactive' : post_query.isactive, 'islocked' : post_query.islocked, 'images': images, 'postOfDay': post_query.postOfDay}
@@ -120,9 +118,16 @@ class FDataBase:
     def how_likes(self, post_id):
         like=0
         searcher = Post_likes.query.filter(Post_likes.postid== post_id).all()
-        for i in searcher:
+        for _ in searcher:
             like+=1
         return like
+    
+    def how_comments(self, url):
+        post_comments=0
+        searcher = Comments.query.filter(Comments.postname==url).all()
+        for _ in searcher:
+            post_comments+=1
+        return post_comments
 
     def add_images(self, img_string, post_id):
         try:
@@ -173,20 +178,29 @@ class FDataBase:
             print("Ошибка получения постов getPostsAnonce")
         return []
     
-    def getPostPreview(self, postid):
+    def getPostsQuery(self,page_num, query_item):
+        try:
+            try:
+                int(query_item)
+                anonce = Posts.query.filter(Posts.userid==query_item, Posts.isactive==True).order_by(Posts.time.desc()).paginate(per_page=5, page=page_num, error_out=True)
+            except:
+                anonce = Posts.query.filter(Posts.element==query_item, Posts.isactive==True).order_by(Posts.time.desc()).paginate(per_page=5, page=page_num, error_out=True)
+            return anonce
+        except Exception as e:
+            print("Ошибка получения постов getPostsElement" + str(e))
+        return []
+    
+    def getPostPreviews(self, postid):
         try:
             image = PostsImages.query.filter(PostsImages.Postsid==postid).first()
             if image.image==None:
                 return None
             else:
-                with current_app.open_resource(current_app.root_path + url_for('static', filename= f'images/posts/{image.image}'), "rb") as f:
-                    base64_string = base64.b64encode(f.read()).decode('utf-8')
-                    img_url=f'data:image/png;base64,{base64_string}'
-            return img_url
+                return image.image
         except Exception as e:
             print("previews"+str(e))
             return None
-    
+   
     def getPostsAnonceCharacter(self, alias, page_num):
         try:
             posts_searcher=Posts.query.filter(Posts.isactive==True, Posts.character==alias).all()
@@ -202,10 +216,7 @@ class FDataBase:
         try:
             posts_query = Posts.query.filter(Posts.url==url).first()
             users_query = Users.query.filter(Users.id==posts_query.userid).first()
-            with current_app.open_resource(current_app.root_path + url_for('.static', filename= f'images/avatars/{users_query.avatar}'), "rb") as f:
-                base64_string = base64.b64encode(f.read()).decode('utf-8')
-                img_url=f'data:image/png;base64,{base64_string}'
-            userava = {'username': users_query.login, 'avatar': img_url, 'userid': users_query.id}
+            userava = {'username': users_query.login, 'avatar': users_query.avatar, 'userid': users_query.id}
             return userava
         except Exception as e:
             print(e)
@@ -231,15 +242,12 @@ class FDataBase:
         return []
 
     def getCommentatorsAvas(self, username):
-        avas=[]
+        avas={}
         try:
             for user in username:
                 same_users = Users.query.filter(Users.login==user).all()
                 for i in same_users:
-                    with current_app.open_resource(current_app.root_path + url_for('.static', filename= f'images/avatars/{i.avatar}'), "rb") as f:
-                        base64_string = base64.b64encode(f.read()).decode('utf-8')
-                        img_url=f'data:image/png;base64,{base64_string}'
-                        avas.append({i.login : img_url})
+                    avas[i.login] = i.avatar
             return avas
         except:
             print("Ошибка получения данных из БД getCommentatorsAvas")
@@ -310,7 +318,44 @@ class FDataBase:
             return get_user
         except:
             print("Ошибка получения данных из БД getUser")
-        return False 
+        return False
+    
+    def user_recommend(self, userid):
+        user_id = current_user.get_id()
+        login_owner = Users.query.filter(Users.id==user_id).first()
+        if login_owner.authorone==None:
+            login_owner.authorone=userid
+            db.session.add(login_owner)
+            db.session.commit()
+            return True
+        elif login_owner.authorone==int(userid):
+            login_owner.authorone=None
+            db.session.add(login_owner)
+            db.session.commit()
+            return True
+        elif login_owner.authortwo==None:
+            login_owner.authortwo=userid
+            db.session.add(login_owner)
+            db.session.commit()
+            return True
+        elif login_owner.authortwo==int(userid):
+            login_owner.authortwo=None
+            db.session.add(login_owner)
+            db.session.commit()
+            return True
+        elif login_owner.authorthree==None:
+            login_owner.authorthree=userid
+            db.session.add(login_owner)
+            db.session.commit()
+            return True
+        elif login_owner.authorthree==int(userid):
+            login_owner.authorthree=None
+            db.session.add(login_owner)
+            db.session.commit()
+            return True
+        else:
+            return False
+        
 
     def getUserByLogin(self, login):
         try:
@@ -375,10 +420,7 @@ class FDataBase:
             users_list=[]
             admin_users = Users.query.all()
             for i in admin_users:
-                with current_app.open_resource(current_app.root_path + url_for('static', filename= f'images/avatars/{i.avatar}'), "rb") as f:
-                        base64_string = base64.b64encode(f.read()).decode('utf-8')
-                        img=f'data:image/png;base64,{base64_string}'
-                users_list.append({'id': i.id, 'login' : i.login, 'email': i.email, 'isactive': i.isactive, 'avatar': img})
+                users_list.append({'id': i.id, 'login' : i.login, 'email': i.email, 'isactive': i.isactive, 'avatar': i.avatar})
             return users_list
         except:
              print("Ошибка выборки постов в БД: get_admin_posts")
@@ -455,11 +497,11 @@ class FDataBase:
             print('No answers find_answer')
             return ''
 
-    def admin_add_character(self, name, url, image=None, story=None, element=None):
+    def admin_add_character(self, name, url, image=None, story=None, element=None, country=None):
         try:
             char_searcher = Characters.query.filter(Characters.name==name).first()
             if char_searcher == None:
-                char_searcher = Characters(name=name, image=image, url=url, story=story)
+                char_searcher = Characters(name=name, image=image, url=url, story=story, element=element, country=country)
             else:
                 if image!=None:
                     char_searcher.image=image
@@ -467,6 +509,8 @@ class FDataBase:
                     char_searcher.story=story
                 if element!=None:
                     char_searcher.element=element
+                if country!=None:
+                    char_searcher.country=country
             db.session.add(char_searcher)
             db.session.commit()
         except:
@@ -549,15 +593,9 @@ class FDataBase:
         return []
 
     def get_chars(self):
-        chars_list = []
         try:
-            chars = Characters.query.all()
-            for i in chars:
-                with current_app.open_resource(current_app.root_path + url_for('.static', filename= f'images/characters/{i.image}.jpg'), "rb") as f:
-                    base64_string=base64.b64encode(f.read()).decode('utf-8')
-                    img=f'data:image/png;base64,{base64_string}'
-                chars_list.append({'id': i.id, 'name': i.name, 'image': img, 'url': i.url, 'story': i.story})
-            return chars_list
+            chars = Characters.query.order_by(Characters.id.desc()).all()
+            return chars
         except Exception as e:
             print(e)
             return False
@@ -580,7 +618,37 @@ class FDataBase:
         except:
             print("Ошибка поиска персонажа в бд get_char")
             return False
-        
+
+    def side_bar(self, element=None, userid=None):
+        characters_list=[]
+        if userid!=None:
+            side_posts = Posts.query.filter(Posts.userid==userid, Posts.isactive==True).limit(2).all()
+        else:
+            side_posts =Posts.query.filter(Posts.element==element, Posts.isactive==True).limit(2).all()
+        if side_posts!=[]:
+            for i in side_posts:
+                likes=0
+                posts_likes=Post_likes.query.filter(Post_likes.postid==i.id).all()
+                if posts_likes!=[]:
+                        for j in posts_likes:
+                            likes=likes+1
+                comments=0
+                posts_comments = Comments.query.filter(Comments.postname==i.url).all()
+                if posts_comments!=[]:
+                    for _ in posts_comments:
+                        comments+=1
+                try:
+                    guide_image=PostsImages.query.filter(PostsImages.postid==i.id).first()
+                    img=f'images/posts/{guide_image.image}'
+                except:
+                    img=f'images/characters/{i.character}.jpg'
+                str_time = datetime.strftime(i.time, "%d/%m/%Y")
+                characters_list.append({"guide":i, "image":img, "likes":likes, "comments":comments, "time":str_time})
+            return characters_list
+        else:
+            return []
+                    
+     
     def post_of_day(self):
         try:
             active_posts = Posts.query.filter(Posts.isactive==True, Posts.postOfDay==False).all()
@@ -659,17 +727,22 @@ class FDataBase:
             max_daypost = max_daypost[-1]
             image = PostsImages.query.filter(PostsImages.Postsid == max_daypost.postid).first()
             if image!=None:
-                 with current_app.open_resource(current_app.root_path + url_for('.static', filename= f'images/posts/{i.image}'), "rb") as f:
-                    base64_string=base64.b64encode(f.read()).decode('utf-8')
-                    img=f'data:image/png;base64,{base64_string}'
-            likes = Post_likes.query.filter(Post_likes.postid==max_daypost.id).all()
+                img=image.image
+            else:
+                img=None
+            likes = Post_likes.query.filter(Post_likes.postid==max_daypost.postid).all()
             like = 0
             if likes == None:
                 like = 0
             else:
                 for i in likes:
                     like = like+1
-            daypost={'title': max_daypost.title, 'text': max_daypost.text, 'url': max_daypost.url, 'character': max_daypost.character, 'userid': max_daypost.userid, 'time': max_daypost.time, 'postid': max_daypost.postid, 'images': img, 'likes': like}
+            comments_counter = 0
+            post_comments = Comments.query.filter(Comments.postname==max_daypost.url).all()
+            if post_comments!=[]:
+                for j in post_comments:
+                    comments_counter+=1
+            daypost={'title': max_daypost.title, 'text': max_daypost.text, 'url': max_daypost.url, 'character': max_daypost.character, 'userid': max_daypost.userid, 'time': max_daypost.time, 'postid': max_daypost.postid, 'images': img, 'likes': like, 'comments': comments_counter}
             dayposts.append(daypost)
             d = max_daypost.id - 1
             if d <= 6:
@@ -679,11 +752,14 @@ class FDataBase:
             for i in range(counter):
                 max_daypost = PostOfDay.query.filter(PostOfDay.id==(max_daypost.id-1)).first()
                 image = PostsImages.query.filter(PostsImages.Postsid== max_daypost.postid).first()
-                daypost={'title': max_daypost.title, 'url': max_daypost.url, 'image': image.image, 'time': max_daypost.time}
+                if image!=None:
+                    daypost={'title': max_daypost.title, 'url': max_daypost.url, 'image': image.image, 'time': max_daypost.time}
+                else:
+                    daypost={'title': max_daypost.title, 'url': max_daypost.url, 'image': image, 'time': max_daypost.time}
                 dayposts.append(daypost)
             return dayposts
-        except:
-            print("Ошибка поиска постов дня dayposts_show")
+        except Exception as e:
+            print("Ошибка поиска постов дня dayposts_show" + str(e))
             return []
         
     def dayposts_list(self, page_num):
@@ -693,31 +769,141 @@ class FDataBase:
         except:
             print("Ошибка поиска постов дня dayposts_list")
             return []
-        
-    def choose_character(self, character_name, userid):
+
+    def user_social_sites(self, userid):
+        total_list=[]
         try:
-            user = Users.query.filter(Users.id==userid).first()
-            user.character = character_name
+            user_searcher=Users.query.filter(Users.id==userid).first()
+            websites_string=user_searcher.socialservices
+            if websites_string==None:
+                return total_list
+            else:
+                splited_sites=websites_string.split(',')
+                counter=0
+                for i in splited_sites[:-1]:
+                    i=i.replace('https://', '')
+                    i=i.replace('http://', '')
+                    i=i.replace('www.', '')
+                    total_list.append(i)
+                    counter+=1
+                    if counter>=5:
+                        break
+                return total_list
+        except Exception as e:
+            print('user_social_sites error: ' + str(e))
+
+
+    def user_best_post(self, userid):
+        try:
+            posts_dict={}
+            user_posts=Posts.query.filter(Posts.userid==userid).all()
+            if user_posts!=[]:
+                for i in user_posts:
+                    likes=Post_likes.query.filter(Post_likes.postid==i.id).all()
+                    total_likes=len(likes)
+                    posts_dict[i.id]=total_likes
+                best_id=max(posts_dict.items(), key=operator.itemgetter(1))
+                best_post=Posts.query.filter(Posts.id==best_id[0]).first()
+                image=PostsImages.query.filter(PostsImages.Postsid==best_id[0]).first()
+                if image!=None:
+                    return {"id": best_post.id, "title": best_post.title, "url" : best_post.url, "likes" : best_id[1], "image": image.image}
+                else:
+                    return {"id": best_post.id, "title": best_post.title, "url" : best_post.url, "likes" : best_id[1], "image": image}
+            else:
+                return user_posts
+        except Exception as e:
+            print("user_best_post error"+str(e))
+            return False
+
+        
+    def choose_character(self, character_name, char_num):
+        try:
+            user = Users.query.filter(Users.id==current_user.get_id()).first()
+            if char_num=="1":
+                user.characterone = character_name
+            elif char_num=="2":
+                user.charactertwo = character_name
+            else:
+                user.characterthree = character_name
             db.session.add(user)
             db.session.commit()
             return True
         except Exception as e:
             print("Пользователь не найден choose_character"+str(e))
             return False
+        
+    def delete_character(self, char_num):
+        try:
+            user = Users.query.filter(Users.id==current_user.get_id()).first()
+            if char_num=="1":
+                user.characterone = "default"
+            elif char_num=="2":
+                user.charactertwo = "default"
+            else:
+                user.characterthree = "default"
+            db.session.add(user)
+            db.session.commit()
+            return True
+        except Exception as e:
+            print("Пользователь не найден delete_character"+str(e))
+            return False
     
+    def search_character_names(self, userid):
+        try:
+            user_searcher = Users.query.filter(Users.id==userid).first()
+            characters_dict={}
+            characters_list=[]
+            character = user_searcher.characterone
+            characters_list.append(character)
+            character_two = user_searcher.charactertwo
+            characters_list.append(character_two)
+            character_three = user_searcher.characterthree
+            characters_list.append(character_three)
+            for i in characters_list:
+                if i != "default":
+                    character = translit(i, language_code='ru', reversed=True)
+                    character = character.replace("'", "")
+                    character = character.replace("-", "")
+                    character = character.replace(" ", "")
+                    character = character.lower()
+                else:
+                    character=i
+                characters_dict[str(characters_list.index(i)+1)]=character
+            return characters_dict
+        except Exception as e:
+            print("Персонаж не найден search_character_names"+ str(e))
+            return False
+            
+
     def search_character_image(self, userid):
         try:
             user_searcher = Users.query.filter(Users.id==userid).first()
-            character = user_searcher.character
-            character = translit(character, language_code='ru', reversed=True)
-            character = character.replace("'", "")
-            character = character.replace("-", "")
-            character = character.replace(" ", "")
-            character = character.lower()
-            with current_app.open_resource(current_app.root_path + url_for('.static', filename= f'images/characters/{character}.jpg'), "rb") as f:
-                    base64_string=base64.b64encode(f.read()).decode('utf-8')
-                    img=f'data:image/png;base64,{base64_string}'
-            return img
+            characters_dict={}
+            character = user_searcher.characterone
+            if character != "default":
+                character = translit(character, language_code='ru', reversed=True)
+                character = character.replace("'", "")
+                character = character.replace("-", "")
+                character = character.replace(" ", "")
+                character = character.lower()
+            characters_dict["1"]=character
+            character = user_searcher.charactertwo
+            if character != "default":
+                character = translit(character, language_code='ru', reversed=True)
+                character = character.replace("'", "")
+                character = character.replace("-", "")
+                character = character.replace(" ", "")
+                character = character.lower()
+            characters_dict["2"]=character
+            character = user_searcher.characterthree
+            if character != "default":
+                character = translit(character, language_code='ru', reversed=True)
+                character = character.replace("'", "")
+                character = character.replace("-", "")
+                character = character.replace(" ", "")
+                character = character.lower()
+            characters_dict["3"]=character
+            return characters_dict
         except Exception as e:
             print("Персонаж не найден search_character_image"+ str(e))
             return False
@@ -763,16 +949,71 @@ class FDataBase:
         try:
             udata = Users.query.filter(Users.id==id).first()
             if udata==None:
-                return udata
-            with app.open_resource(app.root_path + url_for('static', filename= f'images/avatars/{udata.avatar}'), "rb") as f:
-                base64_string=base64.b64encode(f.read()).decode('utf-8')
-                img=f'data:image/png;base64,{base64_string}'    
+                return udata    
             str_time = datetime.strftime(udata.time, "%d/%m/%Y %H:%M")
-            sorted_data = {"id":udata.id, "login":udata.login, "time":str_time, "character":udata.character, "avatar":img, "active_background": udata.activebackground}
+            sorted_data = {"id":udata.id, "login":udata.login, "time":str_time, "character":udata.character, "avatar":udata.avatar, "active_background": udata.activebackground, "author_one": udata.authorone, "author_two": udata.authortwo, "author_three": udata.authorthree, "show_authors": udata.showauthors, "showauthors":udata.showauthors, "showcharacters":udata.showcharacters, "bestpostshow":udata.bestpostshow, "socialshow": udata.socialshow}
             return sorted_data
-        except Exception:
-            print("Ошибка поиска профиля user_data")
+        except Exception as e:
+            print("Ошибка поиска профиля user_data" + str(e))
             return None
+        
+    def show_authors(self):
+        user_searcher= Users.query.filter(Users.id==current_user.get_id()).first()
+        if user_searcher.showauthors==True:
+            user_searcher.showauthors=False
+        else:
+            user_searcher.showauthors=True
+        db.session.add(user_searcher)
+        db.session.commit()
+        return True
+    
+    def show_characters(self):
+        user_searcher= Users.query.filter(Users.id==current_user.get_id()).first()
+        if user_searcher.showcharacters==True:
+            user_searcher.showcharacters=False
+        else:
+            user_searcher.showcharacters=True
+        db.session.add(user_searcher)
+        db.session.commit()
+        return True
+    
+    def show_best_post(self):
+        user_searcher= Users.query.filter(Users.id==current_user.get_id()).first()
+        if user_searcher.bestpostshow==True:
+            user_searcher.bestpostshow=False
+        else:
+            user_searcher.bestpostshow=True
+        db.session.add(user_searcher)
+        db.session.commit()
+        return True
+    
+    def recommended_authors(self, userid, app=current_app):
+        authors=[]
+        user_data = Users.query.filter(Users.id==userid).first()
+        if user_data.authorone!=None:
+            author=Users.query.filter(Users.id==user_data.authorone).first()
+            author_one = {}
+            author_one["id"]= author.id
+            author_one["login"] = author.login
+            author_one["avatar"] = author.avatar
+            authors.append(author_one)
+        if user_data.authortwo!=None:
+            author=Users.query.filter(Users.id==user_data.authortwo).first()
+            author_two = {}
+            author_two["id"]= author.id
+            author_two["login"] = author.login
+            author_two["avatar"] = author.avatar   
+            authors.append(author_two)
+        if user_data.authorthree!=None:
+            author=Users.query.filter(Users.id==user_data.authorthree).first()
+            author_three = {}
+            author_three["id"]= author.id
+            author_three["login"] = author.login
+            author_three["avatar"] = author.avatar   
+            authors.append(author_three)
+        return authors
+
+
 
     def choose_background(self, id):
         try:
@@ -822,6 +1063,19 @@ class FDataBase:
             print("Ошибка user_week_likes")
             return False 
 
+    def chars_story_add(self, chars_story):
+        try:
+            for i in chars_story:
+                character=Characters.query.filter(Characters.name==chars_story[i][0]["name"]).first()
+                character.story=chars_story[i][0]["story"]
+                character.country=chars_story[i][0]["country"]
+                character.element=chars_story[i][0]["element"]
+                db.session.add(character)
+                db.session.commit()
+        except Exception as e:
+            print('chars_story_add'+str(e))
+
+
     """Achievments"""
     def add_achievments(self, email, all_achievments):
         try:
@@ -862,27 +1116,29 @@ class FDataBase:
             year_checker=Achievments.query.filter(Achievments.userid==userid, Achievments.name=="Город мудрости").first()
             thirty_days_checker=Achievments.query.filter(Achievments.userid==userid, Achievments.name=="Мне сегодня 30...").first()
             seven_days_checker=Achievments.query.filter(Achievments.userid==userid, Achievments.name=="Я уже смешарик!").first()
-            if user_time>=365:
-                if year_checker.earned==True or year_checker.ready==True:
-                    pass
-                else:
-                    year_checker.ready=True
-                    db.session.add(year_checker)
-                    db.session.commit()
-            if user_time>=30:
-                if thirty_days_checker.earned==True or thirty_days_checker.ready==True:
-                    pass
-                else:
-                    thirty_days_checker.ready=True
-                    db.session.add(thirty_days_checker)
-                    db.session.commit()
-            if user_time>=7:
-                if seven_days_checker.earned==True or seven_days_checker.ready==True:
-                    pass
-                else:
-                    seven_days_checker.ready=True
-                    db.session.add(seven_days_checker)
-                    db.session.commit()
+            if user_time[1]=="days,":
+                if int(user_time[0])>=365:
+                    if year_checker.earned==True or year_checker.ready==True:
+                        pass
+                    else:
+                        year_checker.ready=True
+                        db.session.add(year_checker)
+                        db.session.commit()
+                if int(user_time[0])>=30:
+                    if thirty_days_checker.earned==True or thirty_days_checker.ready==True:
+                        pass
+                    else:
+                        thirty_days_checker.ready=True
+                        db.session.add(thirty_days_checker)
+                        db.session.commit()
+                if int(user_time[0])>=7:
+                    if seven_days_checker.earned==True or seven_days_checker.ready==True:
+                        pass
+                    else:
+                        seven_days_checker.ready=True
+                        db.session.add(seven_days_checker)
+                        db.session.commit()
+                return True
             return True
         except Exception as e:
             print("ach error"+str(e))

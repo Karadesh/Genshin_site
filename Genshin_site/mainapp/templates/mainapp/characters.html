@@ -1,20 +1,17 @@
 {% extends 'base.html' %}
 {% block content %}
 {{ super() }}
-<ul>
-    <li><a href="{{ url_for('mainapp.index')}}">Главная</a></li>
-    <li><span>Персонажи</span></li>
-</ul>
-{%  if title %}
-<h1>{{ title }}</h1>
-{% else %}
-<h1>Genshin Funzone</h1>
-{% endif %}
-<ul class="characters-list">
-    <li class="chars">
-    {% for i in characters %}
-    <a href="{{url_for('.character', alias=i.url)}}"><img src="{{i.image}}" alt="{{i.name}}"></a>
-    {% endfor %}
-    </li>
-</ul>
+<main class="content">
+    <div class="container crumbs">
+        <ul class="crumbs__list">
+            <li><a href="{{ url_for('mainapp.index')}}">Главная</a></li>
+            <li>Персонажи</li>
+        </ul>
+    </div>
+    <div class="container page-characters">
+        {% for i in characters %}
+        <a class="character" href="{{url_for('all_posts.posts_character', alias=i.url, page_num=1)}}"><img class="character__img" src="{{url_for('static', filename='/images/characters/'+ i.image + '.jpg')}}" alt="2"><span class="character__name">{{i.name}}</span></a>
+        {% endfor %}
+    </div>
+    <button class="btn btn_color-blue btn-up"></button>
 {% endblock content%}

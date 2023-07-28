@@ -7,13 +7,13 @@
 {% for p in list_users %}
 <li>
     <p class="title">{{p.login}}</p>
-    <img src="{{p.avatar}}" alt="">
+    <img src="{{url_for('static', filename='/images/avatars/' + p.avatar)}}" alt="">
     <p class="title">{{p.email}}</p>
     <p>Изменить статус аккаунта:</p>
     {% if p.isactive %}
-    <p class="title"><a href="{{url_for('.user_changestatus', id =p.id)}}">Активный</a></p>
+    <p class="title"><a href="{{url_for('.user_changestatus', id = p.id)}}">Активный</a></p>
     {% else %}
-    <p class="title"><a href="{{url_for('.user_changestatus', id =p.id)}}">Заблокированный</a></p>
+    <p class="title"><a href="{{url_for('.user_changestatus', id = p.id)}}">Заблокированный</a></p>
     {% endif %}
 </li>
 {% endfor %}
