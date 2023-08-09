@@ -1,6 +1,6 @@
 from transliterate import translit
 import re
-from flask import url_for, current_app
+from flask import url_for, current_app, json
 from flask_login import current_user
 from Genshin_site.models import Comments, Users, Posts, Feedback, Feedback_answer, Characters, Admin_requests, db, PostsImages, Post_likes, PostOfDay, Week_likes, Achievments
 import random
@@ -780,7 +780,7 @@ class FDataBase:
             else:
                 splited_sites=websites_string.split(',')
                 counter=0
-                for i in splited_sites[:-1]:
+                for i in splited_sites:
                     i=i.replace('https://', '')
                     i=i.replace('http://', '')
                     i=i.replace('www.', '')
@@ -945,13 +945,40 @@ class FDataBase:
             print("Ошибка получения постов my_guides")
             return []
 
+    def add_socials(self, userid, site=None):
+        social_string = site
+        social_string = social_string.replace(' ', '')
+        user_searcher = Users.query.filter(userid==Users.id).first()
+        user_searcher.socialservices = user_searcher.socialservices +','+ social_string if user_searcher.socialservices != None else social_string
+        db.session.add(user_searcher)
+        db.session.commit()
+        return True
+    
+    def del_social(self, site, userid):
+        user_searcher = Users.query.filter(userid==Users.id).first()
+        sites_string = user_searcher.socialservices
+        sites_list = sites_string.split(',')
+        try:
+            sites_list.remove(site)
+            new_sites_string=None
+            for i in sites_list:
+                new_sites_string=new_sites_string + ',' + i if new_sites_string != None else i
+            user_searcher.socialservices = new_sites_string
+            db.session.add(user_searcher)
+            db.session.commit()
+        except Exception as e:
+            print('del_social', str(e))
+            return False
+
     def user_data(self, id, app=current_app):
         try:
             udata = Users.query.filter(Users.id==id).first()
             if udata==None:
                 return udata    
             str_time = datetime.strftime(udata.time, "%d/%m/%Y %H:%M")
-            sorted_data = {"id":udata.id, "login":udata.login, "time":str_time, "character":udata.character, "avatar":udata.avatar, "active_background": udata.activebackground, "author_one": udata.authorone, "author_two": udata.authortwo, "author_three": udata.authorthree, "show_authors": udata.showauthors, "showauthors":udata.showauthors, "showcharacters":udata.showcharacters, "bestpostshow":udata.bestpostshow, "socialshow": udata.socialshow}
+            socials_string = udata.socialservices
+            socials_list = socials_string.split(',') if socials_string != '' else None
+            sorted_data = {"id":udata.id, "login":udata.login, "time":str_time, "character":udata.character, "avatar":udata.avatar, "active_background": udata.activebackground, "author_one": udata.authorone, "author_two": udata.authortwo, "author_three": udata.authorthree, "show_authors": udata.showauthors, "showauthors":udata.showauthors, "showcharacters":udata.showcharacters, "bestpostshow":udata.bestpostshow, "socialshow": udata.socialshow, "socialservices" : socials_list}
             return sorted_data
         except Exception as e:
             print("Ошибка поиска профиля user_data" + str(e))
@@ -963,6 +990,16 @@ class FDataBase:
             user_searcher.showauthors=False
         else:
             user_searcher.showauthors=True
+        db.session.add(user_searcher)
+        db.session.commit()
+        return True
+
+    def show_socials(self):
+        user_searcher= Users.query.filter(Users.id==current_user.get_id()).first()
+        if user_searcher.socialshow==True:
+            user_searcher.socialshow=False
+        else:
+            user_searcher.socialshow=True
         db.session.add(user_searcher)
         db.session.commit()
         return True
@@ -1260,3 +1297,58 @@ class FDataBase:
             db.session.add(user_searcher)
             db.session.commit()
             return True
+
+    def api_validated_posts(self):
+        try:
+            pictures_posts=[]
+            posts = Posts.query.filter(Posts.isactive==True).all()
+            for i in posts:
+                pictures = PostsImages.query.filter(PostsImages.Postsid==i.id).all()
+                pics_list=[]
+                if pictures != []:
+                    for j in pictures:
+                        pics_list.append(j.image)
+                else:
+                    pics_list=None
+                pictures_posts.append({'id': i.id, 'title': i.title, 'text': i.text, 'character': i.character, 'element': i.element, 'userid': i.userid, 'time' : i.time, 'islocked': i.islocked, 'postofday': i.postOfDay, 'images':pics_list})
+            return pictures_posts
+        except Exception as e:
+            print('api_validated_posts error'+ str(e))
+            return False
+        
+    def api_create_post(self, json_string):
+        try:
+            userid=current_user.get_id()
+            data_json = json.loads(json_string)
+            post_searcher = Posts.query.filter(Posts.title==data_json['title']).first()
+            if post_searcher == None:
+                trans_name = translit(data_json['title'], language_code='ru', reversed=True)
+                url = trans_name.replace(" ","_")
+                character = translit(json_string['character'], language_code='ru', reversed=True)
+                character = character.replace("'", "")
+                character = character.replace("-", "")
+                character = character.replace(" ", "")
+                character = character.lower()
+                element_searcher = Characters.query.filter(Characters.url==character).first()
+                element = element_searcher.element
+                post_creator=Posts(title=data_json['title'], text=data_json['text'], character=character, url=url, element=element, userid=userid)
+                db.session.add(post_creator)
+                db.session.commit()
+                return True
+            else:
+                return False
+        except Exception as e:
+            print("api_create_post error" + str(e))
+            return "To add new post use post('/posts'), json={'title': 'title','text':'text', 'character':'character'}"
+        
+    def api_delete_post(self, postid):
+        post_searcher=Posts.query.filter(Posts.id==postid).first()
+        if post_searcher.isactive==True:
+            post_searcher.isactive=False
+            post_searcher.reason='deleted by user'
+            db.session.add(post_searcher)
+            db.session.commit()
+            return True
+        else:
+            return False
+

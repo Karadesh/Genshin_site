@@ -29,9 +29,11 @@ def create_app():
     from Genshin_site.users.users import users
     from Genshin_site.mainapp.mainapp import mainapp
     from Genshin_site.apperrors.apperrors import apperrors
+    from Genshin_site.api.api import api
 
     
     app.register_blueprint(admin, url_prefix='/admin')
+    app.register_blueprint(api, url_prefix='/api')
     app.register_blueprint(all_posts)
     app.register_blueprint(users)
     app.register_blueprint(mainapp)

@@ -71,3 +71,7 @@ class ResetPasswordForm(FlaskForm):
 class ChangeEmailForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired(), Email()])
     submit = SubmitField('Изменить e-mail')
+
+class AddSocialSitesForm(FlaskForm):
+    site = StringField("", validators=[Length(min=5, max=50)])
+    submit = SubmitField('Добавить социальную сеть')

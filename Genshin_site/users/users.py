@@ -2,7 +2,7 @@ from flask import Blueprint, g, redirect, url_for, abort, render_template, make_
 from Genshin_site.FDataBase import FDataBase
 from flask_login import LoginManager, login_required, login_user, logout_user, current_user
 from Genshin_site.UserLogin import UserLogin
-from Genshin_site.forms import AuthorisationForm, RegistrationForm, RequestResetForm, ResetPasswordForm, ChangeEmailForm
+from Genshin_site.forms import AuthorisationForm, RegistrationForm, RequestResetForm, ResetPasswordForm, ChangeEmailForm, AddSocialSitesForm
 from werkzeug.security import generate_password_hash, check_password_hash
 from Genshin_site.users.utils import send_reset_email, background_maker, save_avatar
 from datetime import datetime
@@ -79,6 +79,7 @@ def profile(username, page_num=1):
 @users.route("/profile/profile_settings/<id>", methods=["POST", "GET"])
 def profile_settings(id):
     form=ChangeEmailForm()
+    social_form = AddSocialSitesForm()
     if current_user.get_id()==None:
         abort(404)
     if int(current_user.get_id())!=int(id):
@@ -90,12 +91,38 @@ def profile_settings(id):
         if request.method=="POST":
             dbase.choose_character(request.form["character"], current_user.get_id()) #Добавить выбранного любимого персонажа в бд
     image = dbase.search_character_image(id) #словарь имен изображений любимых персонажей пользователя в бд
-    return render_template("users/profile_settings.html", title="Настройки", select_chars=select_chars, image=image, user_data=user_data, backgrounds=backgrounds, form=form)
+    return render_template("users/profile_settings.html", title="Настройки", select_chars=select_chars, image=image, user_data=user_data, backgrounds=backgrounds, form=form, social_form=social_form)
+
+'''Обработчик опции "добавить социальную сеть"'''
+@users.route("/profile/profile_settings/add_socials/<userid>", methods=['POST'])
+def add_socials(userid):
+    if userid != current_user.get_id():
+        abort(403)
+    social_form = AddSocialSitesForm()
+    if request.method == "POST":
+        dbase.add_socials(userid=userid, site=social_form.site.data)
+    return redirect(url_for('.profile_settings', id=userid))
+
+'''Обработчик опции "Удалить социальную сеть'''
+@users.route("/profile/profile_settings/del/<site>")
+def del_socials(site):
+    try:
+        dbase.del_social(site, current_user.get_id())
+    except Exception as e:
+        print(str(e))
+        abort(404)
+    return redirect(url_for('.profile_settings', id=current_user.get_id()))
 
 '''Обработчик опции "показывать/не показывать любимых персонажей в профиле"'''
 @users.route("/profile/profile_settings/show_characters/")
 def show_characters():
     dbase.show_characters() #Добавить/убрать в бд отметку "показать любимых персонажей"
+    return redirect(url_for('.profile_settings', id=current_user.get_id()))
+
+'''Обработчик опции "показывать/не показывать социальные сети в профиле'''
+@users.route("/profile/profile_settings/show_socials/")
+def show_socials():
+    dbase.show_socials() #Добавить/убрать в бд отметку "показать социальные сети"
     return redirect(url_for('.profile_settings', id=current_user.get_id()))
 
 '''Обработчик опции "показывать/не показывать рекомендованных пользователем авторов в профиле"'''

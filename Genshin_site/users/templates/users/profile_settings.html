@@ -68,6 +68,27 @@
             {% else %}
             <a href="{{url_for('.show_authors')}}">Скрыть любимых авторов</a>
             {% endif %}
+            {% if user_data.socialshow == False %}
+            <a href="{{url_for('.show_socials')}}">Показывать социальные сети</a>
+            {% else %}
+            <a href="{{url_for('.show_socials')}}">Скрыть социальные сети</a>
+            {% endif %}
+            {% if user_data.social_services != None %}
+            {% for i in user_data.socialservices %}
+            <a href="{{i}}">{{i}}</a>
+            <a href="{{url_for('.del_socials', site=i)}}">Удалить социальную сеть</a>
+            {% endfor %}
+            {% endif %}
+            {% if user_data.socialservices | length >= 5 %}
+            {% else %}  
+            Добавить соцсети
+            <li><form action="{{url_for('.add_socials', userid=current_user.get_id())}}" method="POST" enctype="multipart/form-data">  
+                {{ social_form.hidden_tag() }}
+                    {{ social_form.site }}
+                    {{ social_form.submit() }}
+            <input type="submit" value="Выбрать персонажа">
+            </form>
+            {% endif %}
             {% if user_data.bestpostshow == False %}
             <a href="{{url_for('.show_best_post')}}">Показывать ваш самый оцененный гайд</a>
             {% else %}
