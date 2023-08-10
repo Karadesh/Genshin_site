@@ -977,7 +977,10 @@ class FDataBase:
                 return udata    
             str_time = datetime.strftime(udata.time, "%d/%m/%Y %H:%M")
             socials_string = udata.socialservices
-            socials_list = socials_string.split(',') if socials_string != '' else None
+            try:
+                socials_list = socials_string.split(',') if socials_string != '' else None
+            except:
+                socials_list = None
             sorted_data = {"id":udata.id, "login":udata.login, "time":str_time, "character":udata.character, "avatar":udata.avatar, "active_background": udata.activebackground, "author_one": udata.authorone, "author_two": udata.authortwo, "author_three": udata.authorthree, "show_authors": udata.showauthors, "showauthors":udata.showauthors, "showcharacters":udata.showcharacters, "bestpostshow":udata.bestpostshow, "socialshow": udata.socialshow, "socialservices" : socials_list}
             return sorted_data
         except Exception as e:
@@ -1049,8 +1052,23 @@ class FDataBase:
             author_three["avatar"] = author.avatar   
             authors.append(author_three)
         return authors
-
-
+    
+    def del_recommendation(self, userid):
+        userid=int(userid)
+        user_searcher = Users.query.filter(Users.id==current_user.get_id()).first()
+        try:
+            if user_searcher.authorone==userid:
+                user_searcher.authorone=None
+            elif user_searcher.authortwo==userid:
+                user_searcher.authortwo=None
+            elif user_searcher.authorthree==userid:
+                user_searcher.authorthree=None
+            db.session.add(user_searcher)
+            db.session.commit()
+            return True
+        except Exception as e:
+            print('del_recommendation' + str(e))
+            return False
 
     def choose_background(self, id):
         try:

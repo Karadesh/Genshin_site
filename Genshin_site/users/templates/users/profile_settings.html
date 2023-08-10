@@ -63,6 +63,13 @@
             {% endif %}
             {% endfor %}
             {% endif %}
+            {% if recommended_authors != [] %}
+            {% for i in recommended_authors %}
+            <img src="{{url_for('static', filename='images/avatars/' + i.avatar)}}" alt="">
+            <a href="{{url_for('.profile', username=i.id, page_num=1)}}"><span>{{i.login}}</span></a>
+            <a href="{{url_for('.user_del_recommendation', userid=i.id)}}">Удалить рекоммендацию</a>
+            {% endfor %}
+            {% endif %}
             {% if user_data.showauthors == False %}
             <a href="{{url_for('.show_authors')}}">Показывать любимых авторов</a>
             {% else %}
@@ -73,14 +80,24 @@
             {% else %}
             <a href="{{url_for('.show_socials')}}">Скрыть социальные сети</a>
             {% endif %}
-            {% if user_data.social_services != None %}
+            {% if user_data.socialservices != None %}
             {% for i in user_data.socialservices %}
             <a href="{{i}}">{{i}}</a>
             <a href="{{url_for('.del_socials', site=i)}}">Удалить социальную сеть</a>
             {% endfor %}
             {% endif %}
+            {% if user_data.socialservices != None %}
             {% if user_data.socialservices | length >= 5 %}
             {% else %}  
+            Добавить соцсети
+            <li><form action="{{url_for('.add_socials', userid=current_user.get_id())}}" method="POST" enctype="multipart/form-data">  
+                {{ social_form.hidden_tag() }}
+                    {{ social_form.site }}
+                    {{ social_form.submit() }}
+            <input type="submit" value="Выбрать персонажа">
+            </form>
+            {% endif %}
+            {% else %}
             Добавить соцсети
             <li><form action="{{url_for('.add_socials', userid=current_user.get_id())}}" method="POST" enctype="multipart/form-data">  
                 {{ social_form.hidden_tag() }}

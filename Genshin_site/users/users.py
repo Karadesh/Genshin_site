@@ -88,10 +88,11 @@ def profile_settings(id):
         backgrounds = dbase.choose_background(id) #Список изображений-бэкграундов на страницу профиля
         user_data = dbase.user_data(id) #Поиск данных пользователя из бд
         select_chars = dbase.character_searcher() #Поиск списка персонажей из бд
+        recommended_authors=dbase.recommended_authors(id)
         if request.method=="POST":
             dbase.choose_character(request.form["character"], current_user.get_id()) #Добавить выбранного любимого персонажа в бд
     image = dbase.search_character_image(id) #словарь имен изображений любимых персонажей пользователя в бд
-    return render_template("users/profile_settings.html", title="Настройки", select_chars=select_chars, image=image, user_data=user_data, backgrounds=backgrounds, form=form, social_form=social_form)
+    return render_template("users/profile_settings.html", title="Настройки", select_chars=select_chars, image=image, user_data=user_data, backgrounds=backgrounds, form=form, social_form=social_form, recommended_authors=recommended_authors)
 
 '''Обработчик опции "добавить социальную сеть"'''
 @users.route("/profile/profile_settings/add_socials/<userid>", methods=['POST'])
@@ -111,6 +112,11 @@ def del_socials(site):
     except Exception as e:
         print(str(e))
         abort(404)
+    return redirect(url_for('.profile_settings', id=current_user.get_id()))
+
+@users.route("/profile/profile_settings/del_recommendation/<userid>")
+def user_del_recommendation(userid):
+    dbase.del_recommendation(userid)
     return redirect(url_for('.profile_settings', id=current_user.get_id()))
 
 '''Обработчик опции "показывать/не показывать любимых персонажей в профиле"'''
