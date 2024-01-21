@@ -105,7 +105,7 @@ def add_socials(userid):
     return redirect(url_for('.profile_settings', id=userid))
 
 '''Обработчик опции "Удалить социальную сеть'''
-@users.route("/profile/profile_settings/del/<site>")
+@users.route("/profile/profile_settings/del/<path:site>")
 def del_socials(site):
     try:
         dbase.del_social(site, current_user.get_id())

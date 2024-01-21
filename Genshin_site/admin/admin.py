@@ -306,21 +306,21 @@ def add_character():
                 try:
                     image = form_addchar.image.data
                     url = translit(form_addchar.name.data, language_code='ru', reversed=True)
-                    image_name=url+".jpg"
+                    image_name=url.lower()+".jpg"
                     save_character_image(image, image_name)
                     '''Добавление нового персонажа'''
-                    dbase.admin_add_character(form_addchar.name.data, url, url, form_addchar.story.data, form_addchar.element.data, form_addchar.country.data)
+                    dbase.admin_add_character(form_addchar.name.data, url, url.lower(), form_addchar.story.data, form_addchar.element.data, form_addchar.country.data)
                     return redirect(url_for('.add_character'))
-                except:
-                    print("Ошибка добавления полной формы add_character")
+                except Exception as e:
+                    print("Ошибка добавления полной формы add_character"+ str(e))
             if form_addimage.validate_on_submit():
                 try:
                     image = form_addimage.image.data
                     url = translit(request.form['character'], language_code='ru', reversed=True)
-                    image_name=url+".jpg"
+                    image_name=url.lower()+".jpg"
                     save_character_image(image, image_name)
                     '''Добавление изображения персонажа'''
-                    dbase.admin_add_character(name = request.form['character'], url = url, image=url)
+                    dbase.admin_add_character(name = request.form['character'], url = url, image=url.lower())
                     return redirect(url_for('.add_character'))
                 except:
                     print("Ошибка добавления картинки add_character")

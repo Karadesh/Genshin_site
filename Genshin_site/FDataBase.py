@@ -1,6 +1,6 @@
 from transliterate import translit
 import re
-from flask import url_for, current_app, json
+from flask import url_for, current_app, json, abort
 from flask_login import current_user
 from Genshin_site.models import Comments, Users, Posts, Feedback, Feedback_answer, Characters, Admin_requests, db, PostsImages, Post_likes, PostOfDay, Week_likes, Achievments
 import random
@@ -501,7 +501,10 @@ class FDataBase:
         try:
             char_searcher = Characters.query.filter(Characters.name==name).first()
             if char_searcher == None:
-                char_searcher = Characters(name=name, image=image, url=url, story=story, element=element, country=country)
+                try:
+                    char_searcher = Characters(name=name, image=image, url=url, story=story, element=element, country=country)
+                except:
+                    abort(403)
             else:
                 if image!=None:
                     char_searcher.image=image

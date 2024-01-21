@@ -18,17 +18,13 @@ def send_feedback_answer(feedback_answer):
     mail.send(msg)
 
 '''Сохранение изображения персонажа'''
-def save_character_image(image, image_name, checker):
-    print(checker)
-    if checker==False:
+def save_character_image(image, image_name):
+    try:
+        full_path = os.path.join(current_app.root_path, 'static', 'images', 'posts')
+        picture_path=os.path.join(full_path,image_name)
+        i=Image.open(image)
+        i.save(picture_path)
         return True
-    else:
-        try:
-            full_path = os.path.join(current_app.root_path, 'static', 'images', 'posts')
-            picture_path=os.path.join(full_path,image_name)
-            i=Image.open(image)
-            i.save(picture_path)
-            return True
-        except Exception as e:
-            print("save_character_image"+str(e))
-            return False
+    except Exception as e:
+        print("save_character_image"+str(e))
+        return False
